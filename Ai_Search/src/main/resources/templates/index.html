@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG & 인터넷 검색 강화 스트리밍 대화</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 90vh;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .chat-header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 16px;
+            font-size: 1.2em;
+            text-align: center;
+            font-weight: bold;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message {
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 75%;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .bot-message {
+            background-color: #e9e9eb;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #f9f9f9;
+            align-items: center;
+        }
+        #message-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            resize: none;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+        #send-button {
+            padding: 12px 25px;
+            border: none;
+            background-color: #4a90e2;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+            flex-shrink: 0;
+        }
+        #send-button:disabled {
+            background-color: #a0c7ff;
+            cursor: not-allowed;
+        }
+        #upload-button {
+            width: 44px;
+            height: 44px;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 10px;
+            background-color: #fff;
+            transition: background-color 0.3s;
+            flex-shrink: 0;
+        }
+        #upload-button:hover {
+            background-color: #f0f0f0;
+        }
+        #upload-button svg {
+            width: 20px;
+            height: 20px;
+            fill: #555;
+        }
+        #upload-button.loading {
+            cursor: not-allowed;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #file-input {
+            display: none;
+        }
+        #toast-notification {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s, visibility 0.5s;
+            z-index: 1000;
+        }
+        #toast-notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        #toast-notification.success {
+            background-color: #28a745;
+        }
+        #toast-notification.error {
+            background-color: #dc3545;
+        }
+        /* --- 신규 추가: 채팅 모드 선택기 스타일 --- */
+        .chat-mode-selector {
+            position: relative;
+            margin-right: 10px;
+        }
+        .chat-mode-selector select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 10px 30px 10px 15px;
+            font-size: 0.9em;
+            color: #333;
+            cursor: pointer;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007AFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: .65em auto;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">RAG & 인터넷 검색 강화 스트리밍 대화</div>
+    <div class="chat-messages" id="chat-messages">
+    </div>
+    <div id="toast-notification"></div>
+    <div class="chat-input-area">
+        <label for="file-input" id="upload-button" title="지식 문서 업로드">
+            <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M761.6 364.8c-12.8-12.8-32-12.8-44.8 0l-160 160c-12.8 12.8-12.8 32 0 44.8 12.8 12.8 32 12.8 44.8 0l102.4-102.4v300.8c0 19.2 12.8 32 32 32s32-12.8 32-32V467.2l102.4 102.4c12.8 12.8 32 12.8 44.8 0 12.8-12.8 12.8-32 0-44.8L761.6 364.8zM896 896H128V128h448c19.2 0 32-12.8 32-32s-12.8-32-32-32H128C64 64 0 128 0 192v704c0 64 64 128 128 128h768c64 0 128-64 128-128V448c0-19.2-12.8-32-32-32s-32 12.8-32 32v448z"></path></svg>
+        </label>
+        <input type="file" id="file-input" accept=".txt,.pdf,.md,.docx">
+        <div class="chat-mode-selector" title="대화 모드 선택">
+            <select id="chat-mode-select">
+                <option value="DIRECT">직접 대화</option>
+                <option value="KNOWLEDGE_BASE">지식 기반</option>
+                <option value="INTERNET_SEARCH">인터넷 검색</option>
+            </select>
+        </div>
+        <textarea id="message-input" placeholder="질문을 입력하세요..." rows="1"></textarea>
+        <button id="send-button">보내기</button>
+    </div>
+</div>
+<script>
+    // --- DOM 요소 가져오기 ---
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const fileInput = document.getElementById('file-input');
+    const uploadButton = document.getElementById('upload-button');
+    const toast = document.getElementById('toast-notification');
+    // 수정: 새로운 드롭다운 선택 상자 요소 가져오기
+    const chatModeSelect = document.getElementById('chat-mode-select');
+    // --- 핵심 변수 ---
+    const userId = 'user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    let eventSource = null;
+    let currentBotMessageElement = null;
+    // --- 파일 업로드 로직 (변경 없음) ---
+    async function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        uploadButton.classList.add('loading');
+        uploadButton.style.pointerEvents = 'none';
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            const response = await fetch('/rag/upload', {
+                method: 'POST',
+                body: formData,
+            });
+            const result = await response.json();
+            if (response.ok && result.status === 200) {
+                showToast(`문서 "${file.name}" 업로드 성공!`, 'success');
+                // 스마트 전환: 업로드 성공 후, 자동으로 지식 기반 모드로 전환
+                chatModeSelect.value = 'KNOWLEDGE_BASE';
+                updatePlaceholder();
+            } else {
+                showToast(`업로드 실패: ${result.msg || '알 수 없는 오류'}`, 'error');
+            }
+        } catch (error) {
+            console.error('Upload failed:', error);
+            showToast('업로드 실패, 네트워크를 확인하거나 관리자에게 문의하세요.', 'error');
+        } finally {
+            uploadButton.classList.remove('loading');
+            uploadButton.style.pointerEvents = 'auto';
+            fileInput.value = '';
+        }
+    }
+    // --- Toast 알림 (변경 없음) ---
+    function showToast(message, type = 'success') {
+        toast.textContent = message;
+        toast.className = 'show';
+        toast.classList.add(type);
+        setTimeout(() => {
+            toast.className = toast.className.replace('show', '');
+        }, 3000);
+    }
+    // --- SSE 연결 (변경 없음) ---
+    function connectSSE() {
+        if (eventSource) {
+            eventSource.close();
+        }
+        eventSource = new EventSource(`/sse/connect?userId=${userId}`);
+        eventSource.addEventListener('add', (event) => {
+            if (!currentBotMessageElement) {
+                currentBotMessageElement = createMessageElement('bot-message');
+                chatMessages.appendChild(currentBotMessageElement);
+            }
+            if (event.data && event.data.toLowerCase() !== 'null') {
+                currentBotMessageElement.innerHTML += event.data.replace(/\n/g, '<br>');
+            }
+            scrollToBottom();
+        });
+        eventSource.addEventListener('finish', (event) => {
+            console.log('Stream finished:', event.data);
+            currentBotMessageElement = null;
+            sendButton.disabled = false;
+            messageInput.disabled = false;
+            eventSource.close();
+        });
+        eventSource.onerror = (error) => {
+            console.error('SSE Error:', error);
+            if (currentBotMessageElement) {
+                currentBotMessageElement.innerHTML += '<br><strong style="color: red;">연결이 끊어졌습니다. 다시 시도해 주세요.</strong>';
+            }
+            sendButton.disabled = false;
+            messageInput.disabled = false;
+            eventSource.close();
+        };
+    }
+    // --- 메시지 전송 (핵심 수정) ---
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+        displayUserMessage(message);
+        messageInput.value = '';
+        messageInput.focus();
+        sendButton.disabled = true;
+        messageInput.disabled = true;
+        connectSSE();
+        // 수정: 현재 선택된 모드 가져오기
+        const selectedMode = chatModeSelect.value;
+        try {
+            await fetch('/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                // 수정: 모드 정보가 포함된 전체 JSON 객체 전송
+                body: JSON.stringify({
+                    currentUserName: userId,
+                    message: message,
+                    mode: selectedMode // 백엔드에서 예상하는 필드는 'mode'
+                }),
+            });
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            if(currentBotMessageElement) {
+                currentBotMessageElement.innerHTML += '<br><strong style="color: red;">메시지 전송 실패, 백엔드 서비스를 확인해 주세요.</strong>';
+            } else {
+                displayBotMessage('<strong style="color: red;">메시지 전송 실패, 백엔드 서비스를 확인해 주세요.</strong>');
+            }
+            sendButton.disabled = false;
+            messageInput.disabled = false;
+        }
+    }
+    // --- UI 보조 함수 (변경 없음) ---
+    function createMessageElement(className, htmlContent = '') {
+        const div = document.createElement('div');
+        div.className = `message ${className}`;
+        div.innerHTML = htmlContent;
+        return div;
+    }
+    function displayUserMessage(message) {
+        const userMessageElement = createMessageElement('user-message', message);
+        chatMessages.appendChild(userMessageElement);
+        scrollToBottom();
+    }
+    function displayBotMessage(message) {
+        const botMessageElement = createMessageElement('bot-message', message);
+        chatMessages.appendChild(botMessageElement);
+        scrollToBottom();
+    }
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    // 수정: 드롭다운 상태에 따라 입력 상자 힌트 업데이트
+    function updatePlaceholder() {
+        const selectedMode = chatModeSelect.value;
+        switch(selectedMode) {
+            case 'KNOWLEDGE_BASE':
+                messageInput.placeholder = '업로드된 지식 기반으로 질문하세요...';
+                break;
+            case 'INTERNET_SEARCH':
+                messageInput.placeholder = '인터넷 검색 후 답변해 드릴게요...';
+                break;
+            case 'DIRECT':
+            default:
+                messageInput.placeholder = '직접 대화하세요...';
+                break;
+        }
+    }
+    // --- 이벤트 바인딩 ---
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+    fileInput.addEventListener('change', handleFileUpload);
+    // 수정: 드롭다운에 change 이벤트 바인딩, placeholder 업데이트
+    chatModeSelect.addEventListener('change', updatePlaceholder);
+    // placeholder 초기화
+    updatePlaceholder();
+</script>
+</body>
+</html>
