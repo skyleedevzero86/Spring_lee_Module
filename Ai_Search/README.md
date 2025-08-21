@@ -1,4 +1,10 @@
 # AI Search - RAG & 인터넷 검색 강화 스트리밍 대화 시스템
+<img width="830" height="843" alt="image" src="https://github.com/user-attachments/assets/ec6c8790-79b6-4a0f-9a9b-22a15a96a1c5" />
+<img width="843" height="872" alt="image" src="https://github.com/user-attachments/assets/b87490b7-994c-4de5-93e0-92aa851722ba" />
+
+#포스팅
+
+<a href="https://velog.io/@sleekydevzero86/spring-ai-searxng-integration">인터넷 검색 기능을 통합한 지능형 대화 Spring AI 구축하기</a>
 
 ## 📋 프로젝트 개요
 
