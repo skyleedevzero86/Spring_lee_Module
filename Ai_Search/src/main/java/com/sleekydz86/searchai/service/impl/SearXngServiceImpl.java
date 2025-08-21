@@ -42,6 +42,8 @@ public class SearXngServiceImpl implements SearXngService {
 
         Request request = new Request.Builder()
                 .url(url)
+                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .addHeader("Accept", "application/json")
                 .build();
 
         log.info("SearXNG에 요청을 보내는 중: {}", url);
@@ -60,8 +62,7 @@ public class SearXngServiceImpl implements SearXngService {
                 // 상태 코드와 응답 본문이 포함된 상세한 예외 발생
                 throw new RuntimeException(String.format(
                         "SearXNG 요청 실패. 상태 코드: %d, URL: %s, 응답 본문: %s",
-                        response.code(), url, errorBody
-                ));
+                        response.code(), url, errorBody));
             }
 
             ResponseBody body = response.body();
@@ -91,7 +92,8 @@ public class SearXngServiceImpl implements SearXngService {
             return Collections.emptyList();
         }
 
-        // 참고: 기존의 subList와 parallelStream 조합은 results 수가 SEARXNG_COUNTS보다 작을 경우 문제가 될 수 있습니다.
+        // 참고: 기존의 subList와 parallelStream 조합은 results 수가 SEARXNG_COUNTS보다 작을 경우 문제가 될 수
+        // 있습니다.
         // 먼저 limit를 적용한 후 정렬하는 것이 더 안전하고 효율적입니다.
         return results.stream()
                 .limit(SEARXNG_COUNTS)
