@@ -103,10 +103,10 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // QueryDSL
-    implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
-    implementation("com.querydsl:querydsl-apt:5.0.0:jakarta")
-    kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
-    kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
+    implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
+    implementation("com.querydsl:querydsl-apt:5.1.0:jakarta")
+    kapt("com.querydsl:querydsl-apt:5.1.0:jakarta")
+    kapt("com.querydsl:querydsl-apt:5.1.0:jakarta")
 
 
     implementation("com.querydsl:querydsl-core")

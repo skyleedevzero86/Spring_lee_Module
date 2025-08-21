@@ -1,14 +1,12 @@
 package com.krstudy.kapi.global.app
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.itextpdf.text.log.LoggerFactory
+
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ClassPathResource
 import java.io.IOException
 import jakarta.annotation.PostConstruct
-import java.util.logging.Logger
 
 @Configuration
 class AppConfig {
