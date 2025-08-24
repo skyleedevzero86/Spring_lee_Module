@@ -129,6 +129,7 @@ public class OtpService {
     }
 
     public String generateQRUrl(String username, String secret) {
+
         return String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=SHA256&digits=%d&period=%d",
                 issuer, username, secret, issuer, digits, period);
     }
@@ -136,16 +137,24 @@ public class OtpService {
     public String generateQRCodeImage(String username, String secret) {
         String qrUrl = generateQRUrl(username, secret);
 
+        System.out.println("Generated QR URL: " + qrUrl);
+        System.out.println("Username: " + username);
+        System.out.println("Secret: " + secret);
+
         try {
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(qrUrl, BarcodeFormat.QR_CODE, 200, 200);
+            BitMatrix bitMatrix = qrCodeWriter.encode(qrUrl, BarcodeFormat.QR_CODE, 400, 400);
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
 
             byte[] qrCodeImage = outputStream.toByteArray();
-            return Base64.getEncoder().encodeToString(qrCodeImage);
+            String base64Image = Base64.getEncoder().encodeToString(qrCodeImage);
+
+            System.out.println("QR Code generated successfully. Size: " + qrCodeImage.length + " bytes");
+            return base64Image;
         } catch (WriterException | IOException e) {
+            System.err.println("QR Code generation failed: " + e.getMessage());
             throw new RuntimeException("QR 코드 생성 실패", e);
         }
     }

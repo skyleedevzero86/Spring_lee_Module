@@ -1,202 +1,421 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OTP 설정</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .setup-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            max-width: 600px;
-            width: 100%;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
-        .steps {
-            margin-bottom: 30px;
-        }
-        .step {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 25px;
-        }
-        .step-number {
-            background: #667eea;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            flex-shrink: 0;
-        }
-        .step-content h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .step-content p {
-            color: #666;
-            line-height: 1.6;
-        }
-        .qr-section {
-            text-align: center;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
-        .qr-code {
-            margin: 20px 0;
-        }
-        .qr-code img {
-            border: 5px solid white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .secret-key {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-        .secret-key strong {
-            display: block;
-            margin-bottom: 10px;
-            color: #856404;
-        }
-        .secret-key code {
-            font-size: 18px;
-            color: #333;
-            word-break: break-all;
-        }
-        .verify-form {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 15px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 500;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #5a67d8;
-        }
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .back-link a {
-            color: #667eea;
-            text-decoration: none;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      .setup-container {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        width: 100%;
+      }
+      h2 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+      }
+      .steps {
+        margin-bottom: 30px;
+      }
+      .step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 25px;
+      }
+      .step-number {
+        background: #667eea;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+      }
+      .step-content h3 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      .step-content p {
+        color: #666;
+        line-height: 1.6;
+      }
+      .qr-section {
+        text-align: center;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 15px;
+        margin-bottom: 30px;
+      }
+      .qr-code {
+        margin: 20px 0;
+        text-align: center;
+      }
+      .qr-code img {
+        border: 5px solid white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        width: 400px;
+        height: 400px;
+        max-width: 100%;
+        height: auto;
+      }
+      .qr-code .qr-placeholder {
+        width: 300px;
+        height: 300px;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: #6c757d;
+      }
+      .secret-key {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+      }
+      .secret-key strong {
+        display: block;
+        margin-bottom: 10px;
+        color: #856404;
+      }
+      .secret-key code {
+        font-size: 18px;
+        color: #333;
+        word-break: break-all;
+      }
+      .verify-form {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 15px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #555;
+        font-weight: 500;
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+      button {
+        width: 100%;
+        padding: 14px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      button:hover {
+        background: #5a67d8;
+      }
+      .back-link {
+        text-align: center;
+        margin-top: 20px;
+      }
+      .back-link a {
+        color: #667eea;
+        text-decoration: none;
+      }
     </style>
-</head>
-<body>
-<div class="setup-container">
-    <h2>🔐 OTP 설정</h2>
+  </head>
+  <body>
+    <div class="setup-container">
+      <h2>🔐 OTP 설정</h2>
 
-    <div class="steps">
+      <div class="steps">
         <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-                <h3>OTP 앱 설치</h3>
-                <p>스마트폰에 Google Authenticator, Microsoft Authenticator, 또는 Authy 앱을 설치하세요.</p>
-            </div>
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>OTP 앱 설치</h3>
+            <p>
+              스마트폰에 Google Authenticator, Microsoft Authenticator, 또는
+              Authy 앱을 설치하세요.
+            </p>
+          </div>
         </div>
 
         <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-                <h3>QR 코드 스캔</h3>
-                <p>앱을 열고 아래 QR 코드를 스캔하거나 시크릿 키를 수동으로 입력하세요.</p>
-            </div>
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>QR 코드 스캔</h3>
+            <p>
+              앱을 열고 아래 QR 코드를 스캔하거나 시크릿 키를 수동으로
+              입력하세요.
+            </p>
+          </div>
         </div>
 
         <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-                <h3>코드 입력</h3>
-                <p>앱에 표시된 6자리 코드를 입력하여 설정을 완료하세요.</p>
-            </div>
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>코드 입력</h3>
+            <p>앱에 표시된 6자리 코드를 입력하여 설정을 완료하세요.</p>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="qr-section">
+      <div class="qr-section">
+        <h3>📱 QR 코드 스캔</h3>
+        <p>
+          OTP 앱에서 QR 코드를 스캔하거나 아래 시크릿 키를 수동으로 입력하세요.
+        </p>
+
         <div class="qr-code">
-            <img th:src="${qrCode}" alt="QR Code" width="200" height="200">
-        </div>
-    </div>
-
-    <div class="secret-key">
-        <strong>🔑 수동 입력용 시크릿 키:</strong>
-        <code th:text="${secret}"></code>
-    </div>
-
-    <div class="verify-form">
-        <form method="post" action="/otp-setup-verify">
-            <div class="form-group">
-                <label for="code">앱에 표시된 6자리 코드를 입력하세요:</label>
-                <input type="text" id="code" name="code" maxlength="6" pattern="[0-9]{6}" required placeholder="000000">
+          <img
+            th:src="${qrCode}"
+            alt="QR Code"
+            width="400"
+            height="400"
+            th:onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <div class="qr-placeholder" style="display: none">
+            <div>
+              <div style="font-size: 48px; margin-bottom: 10px">📱</div>
+              <div>QR 코드를 불러올 수 없습니다</div>
+              <div style="font-size: 12px; margin-top: 10px">
+                시크릿 키를 수동으로 입력하세요
+              </div>
             </div>
-            <button type="submit">OTP 활성화</button>
+          </div>
+        </div>
+
+        <div
+          style="
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+            font-size: 14px;
+          "
+        >
+          💡 <strong>팁:</strong> QR 코드가 인식되지 않으면 시크릿 키를 수동으로
+          입력하세요
+        </div>
+
+        <!-- 상세한 스캔 가이드 추가 -->
+        <div
+          style="
+            margin: 20px 0;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+          "
+        >
+          <h4 style="color: #155724; margin-bottom: 15px; text-align: center">
+            �� QR 코드 스캔 가이드
+          </h4>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 20px;
+              text-align: left;
+            "
+          >
+            <div>
+              <h5 style="color: #155724; margin-bottom: 10px">
+                ✅ 올바른 스캔 방법
+              </h5>
+              <ul
+                style="
+                  color: #155724;
+                  margin: 0;
+                  padding-left: 20px;
+                  font-size: 14px;
+                "
+              >
+                <li>QR 코드가 화면에 완전히 보이도록</li>
+                <li>카메라와 QR 코드 거리: 15-25cm</li>
+                <li>화면 밝기를 최대로 설정</li>
+                <li>QR 코드가 흔들리지 않도록 고정</li>
+                <li>직접적인 조명 아래에서 스캔</li>
+              </ul>
+            </div>
+            <div>
+              <h5 style="color: #dc3545; margin-bottom: 10px">
+                ❌ 피해야 할 것들
+              </h5>
+              <ul
+                style="
+                  color: #dc3545;
+                  margin: 0;
+                  padding-left: 20px;
+                  font-size: 14px;
+                "
+              >
+                <li>너무 가깝거나 먼 거리</li>
+                <li>화면 반사나 그림자</li>
+                <li>흔들리는 카메라</li>
+                <li>어두운 환경</li>
+                <li>QR 코드가 잘린 상태</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="secret-key">
+        <strong>🔑 수동 입력용 시크릿 키:</strong>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+          "
+        >
+          <code
+            th:text="${secret}"
+            style="
+              flex: 1;
+              font-size: 16px;
+              color: #333;
+              word-break: break-all;
+              padding: 10px;
+              background: #f8f9fa;
+              border-radius: 5px;
+            "
+          ></code>
+          <button
+            type="button"
+            onclick="copySecretKey()"
+            style="
+              padding: 8px 12px;
+              background: #667eea;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              white-space: nowrap;
+            "
+          >
+            복사
+          </button>
+        </div>
+        <div style="margin-top: 10px; font-size: 14px; color: #856404">
+          📱 OTP 앱에서 "수동 입력" 또는 "키 입력" 옵션을 선택하고 위 키를
+          입력하세요
+        </div>
+      </div>
+
+      <div class="verify-form">
+        <form method="post" action="/otp-setup-verify">
+          <div class="form-group">
+            <label for="code">앱에 표시된 6자리 코드를 입력하세요:</label>
+            <input
+              type="text"
+              id="code"
+              name="code"
+              maxlength="6"
+              pattern="[0-9]{6}"
+              required
+              placeholder="000000"
+            />
+          </div>
+          <button type="submit">OTP 활성화</button>
         </form>
+      </div>
+
+      <div class="back-link">
+        <a href="/dashboard">나중에 설정하기</a>
+      </div>
     </div>
 
-    <div class="back-link">
-        <a href="/dashboard">나중에 설정하기</a>
-    </div>
-</div>
-</body>
+    <script>
+      function copySecretKey() {
+        const secretElement = document.querySelector("code");
+        const secretText = secretElement.textContent;
+
+        if (navigator.clipboard) {
+          navigator.clipboard
+            .writeText(secretText)
+            .then(() => {
+              const button = event.target;
+              const originalText = button.textContent;
+              button.textContent = "복사됨!";
+              button.style.background = "#28a745";
+
+              setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = "#667eea";
+              }, 2000);
+            })
+            .catch((err) => {
+              console.error("클립보드 복사 실패:", err);
+              fallbackCopyTextToClipboard(secretText);
+            });
+        } else {
+          fallbackCopyTextToClipboard(secretText);
+        }
+      }
+
+      function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          document.execCommand("copy");
+          const button = event.target;
+          const originalText = button.textContent;
+          button.textContent = "복사됨!";
+          button.style.background = "#28a745";
+
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = "#667eea";
+          }, 2000);
+        } catch (err) {
+          console.error("복사 실패:", err);
+          alert("시크릿 키를 수동으로 복사하세요: " + text);
+        }
+
+        document.body.removeChild(textArea);
+      }
+    </script>
+  </body>
 </html>

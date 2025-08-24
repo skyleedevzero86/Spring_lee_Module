@@ -43,12 +43,10 @@ public class WebController {
             LoginResponse response = userService.login(request);
 
             if (response.isRequireOtp()) {
-                // OTP 입력 페이지로 이동
                 session.setAttribute("tempUsername", username);
                 session.setAttribute("tempPassword", password);
                 return "otp-verify";
             } else {
-                // 로그인 성공
                 session.setAttribute("username", username);
                 return "redirect:/dashboard";
             }

@@ -17,7 +17,7 @@ public class DataInitializer {
     @Bean
     CommandLineRunner init(UserRepository userRepository) {
         return args -> {
-            // 테스트용 사용자 생성
+
             if (!userRepository.existsByUsername("testuser")) {
                 User testUser = User.builder()
                         .username("testuser")
