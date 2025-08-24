@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.sleekydz86.domain.entity.User;
 
 @Controller
 @RequiredArgsConstructor
@@ -32,9 +33,9 @@ public class WebController {
 
     @PostMapping("/login")
     public String login(@RequestParam String username,
-                        @RequestParam String password,
-                        HttpSession session,
-                        Model model) {
+            @RequestParam String password,
+            HttpSession session,
+            Model model) {
         try {
             LoginRequest request = new LoginRequest();
             request.setUsername(username);
@@ -58,8 +59,8 @@ public class WebController {
 
     @PostMapping("/otp-verify")
     public String verifyOtp(@RequestParam String otpCode,
-                            HttpSession session,
-                            Model model) {
+            HttpSession session,
+            Model model) {
         try {
             String username = (String) session.getAttribute("tempUsername");
             String password = (String) session.getAttribute("tempPassword");
@@ -89,8 +90,8 @@ public class WebController {
 
     @PostMapping("/register")
     public String register(@RequestParam String username,
-                           @RequestParam String password,
-                           RedirectAttributes redirectAttributes) {
+            @RequestParam String password,
+            RedirectAttributes redirectAttributes) {
         try {
             RegisterRequest request = new RegisterRequest();
             request.setUsername(username);
@@ -111,7 +112,18 @@ public class WebController {
         if (username == null) {
             return "redirect:/login";
         }
-        model.addAttribute("username", username);
+
+        try {
+            User user = userService.findByUsername(username);
+            model.addAttribute("username", username);
+            model.addAttribute("otpEnabled", user.isOtpEnabled());
+            model.addAttribute("otpVerified", user.isOtpVerified());
+        } catch (Exception e) {
+            model.addAttribute("username", username);
+            model.addAttribute("otpEnabled", false);
+            model.addAttribute("otpVerified", false);
+        }
+
         return "dashboard";
     }
 
@@ -136,13 +148,35 @@ public class WebController {
 
     @PostMapping("/otp-setup-verify")
     public String verifyOtpSetup(@RequestParam String code,
-                                 HttpSession session,
-                                 RedirectAttributes redirectAttributes) {
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
         String username = (String) session.getAttribute("username");
         try {
             OtpVerifyResponse response = userService.verifyOtpSetup(username, code);
             if (response.isSuccess()) {
                 redirectAttributes.addFlashAttribute("success", "OTP가 성공적으로 활성화되었습니다!");
+            } else {
+                redirectAttributes.addFlashAttribute("error", response.getMessage());
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/otp-disable")
+    public String disableOtp(@RequestParam String code,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            OtpVerifyResponse response = userService.disableOtp(username, code);
+            if (response.isSuccess()) {
+                redirectAttributes.addFlashAttribute("success", "OTP가 성공적으로 비활성화되었습니다.");
             } else {
                 redirectAttributes.addFlashAttribute("error", response.getMessage());
             }

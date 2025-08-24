@@ -47,7 +47,8 @@ public class OtpService {
         byte[] bytes = new byte[SECRET_SIZE];
         random.nextBytes(bytes);
         Base32 base32 = new Base32();
-        return base32.encodeToString(bytes);
+        String secret = base32.encodeToString(bytes);
+        return secret.replace("=", "");
     }
 
     public String generateTOTP(String secret) {
@@ -129,9 +130,11 @@ public class OtpService {
     }
 
     public String generateQRUrl(String username, String secret) {
+        String encodedIssuer = java.net.URLEncoder.encode(issuer, java.nio.charset.StandardCharsets.UTF_8);
+        String encodedUsername = java.net.URLEncoder.encode(username, java.nio.charset.StandardCharsets.UTF_8);
 
         return String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=SHA256&digits=%d&period=%d",
-                issuer, username, secret, issuer, digits, period);
+                encodedIssuer, encodedUsername, secret, encodedIssuer, digits, period);
     }
 
     public String generateQRCodeImage(String username, String secret) {
@@ -143,7 +146,7 @@ public class OtpService {
 
         try {
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(qrUrl, BarcodeFormat.QR_CODE, 400, 400);
+            BitMatrix bitMatrix = qrCodeWriter.encode(qrUrl, BarcodeFormat.QR_CODE, 256, 256);
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
@@ -152,6 +155,7 @@ public class OtpService {
             String base64Image = Base64.getEncoder().encodeToString(qrCodeImage);
 
             System.out.println("QR Code generated successfully. Size: " + qrCodeImage.length + " bytes");
+            System.out.println("QR Code dimensions: 256x256 pixels");
             return base64Image;
         } catch (WriterException | IOException e) {
             System.err.println("QR Code generation failed: " + e.getMessage());

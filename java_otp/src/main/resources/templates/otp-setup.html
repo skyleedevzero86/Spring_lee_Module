@@ -75,8 +75,8 @@
         border: 5px solid white;
         border-radius: 15px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        width: 400px;
-        height: 400px;
+        width: 256px;
+        height: 256px;
         max-width: 100%;
         height: auto;
       }
@@ -206,8 +206,8 @@
           <img
             th:src="${qrCode}"
             alt="QR Code"
-            width="400"
-            height="400"
+            width="256"
+            height="256"
             th:onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
           />
           <div class="qr-placeholder" style="display: none">
@@ -244,7 +244,7 @@
           "
         >
           <h4 style="color: #155724; margin-bottom: 15px; text-align: center">
-            �� QR 코드 스캔 가이드
+            📱 QR 코드 스캔 가이드
           </h4>
           <div
             style="
@@ -293,6 +293,43 @@
               </ul>
             </div>
           </div>
+
+          <!-- Google Authenticator 특별 가이드 추가 -->
+          <div
+            style="
+              margin-top: 20px;
+              padding: 15px;
+              background: #fff3cd;
+              border-radius: 8px;
+              border-left: 4px solid #ffc107;
+            "
+          >
+            <h6 style="color: #856404; margin-bottom: 10px; text-align: center">
+              🔍 Google Authenticator 특별 가이드
+            </h6>
+            <ul
+              style="
+                color: #856404;
+                margin: 0;
+                padding-left: 20px;
+                font-size: 14px;
+              "
+            >
+              <li>
+                <strong>앱에서 "+" 버튼을 클릭</strong>하여 "QR 코드 스캔" 선택
+              </li>
+              <li><strong>QR 코드가 화면에 완전히 보이도록</strong> 확대</li>
+              <li>
+                <strong>카메라가 QR 코드를 정확히 인식</strong>할 때까지 거리
+                조정
+              </li>
+              <li><strong>스캔이 안 되면</strong> 시크릿 키를 수동으로 입력</li>
+              <li>
+                <strong>수동 입력 시</strong> "키 입력" 옵션 선택 후 시크릿 키
+                복사
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -309,7 +346,7 @@
           <code
             th:text="${secret}"
             style="
-              flex: 1;
+              flex: none;
               font-size: 16px;
               color: #333;
               word-break: break-all;
@@ -318,6 +355,19 @@
               border-radius: 5px;
             "
           ></code>
+        </div>
+        <div
+          style="
+            flex: none;
+            font-size: 16px;
+            color: #333;
+            word-break: break-all;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+          "
+        >
+          <br />
           <button
             type="button"
             onclick="copySecretKey()"
@@ -356,6 +406,37 @@
           </div>
           <button type="submit">OTP 활성화</button>
         </form>
+
+        <!-- OTP 비활성화 폼 추가 -->
+        <div
+          style="
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+          "
+        >
+          <h4 style="color: #dc3545; margin-bottom: 15px">⚠️ OTP 비활성화</h4>
+          <p style="color: #666; margin-bottom: 15px; font-size: 14px">
+            OTP를 비활성화하려면 현재 OTP 코드를 입력하세요.
+          </p>
+          <form method="post" action="/otp-disable">
+            <div class="form-group">
+              <label for="disableCode">OTP 코드 입력:</label>
+              <input
+                type="text"
+                id="disableCode"
+                name="code"
+                maxlength="6"
+                pattern="[0-9]{6}"
+                required
+                placeholder="000000"
+              />
+            </div>
+            <button type="submit" style="background: #dc3545">
+              OTP 비활성화
+            </button>
+          </form>
+        </div>
       </div>
 
       <div class="back-link">

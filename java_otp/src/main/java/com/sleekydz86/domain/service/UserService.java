@@ -17,6 +17,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final OtpService otpService;
 
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    }
+
     public RegisterResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("이미 존재하는 사용자입니다.");
