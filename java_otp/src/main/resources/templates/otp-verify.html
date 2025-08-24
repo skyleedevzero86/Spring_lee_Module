@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP 인증</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .otp-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 400px;
+            text-align: center;
+        }
+        .otp-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .otp-input {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .otp-input input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: border-color 0.3s;
+        }
+        .otp-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <script>
+        function moveToNext(current, nextFieldID) {
+            if (current.value.length >= current.maxLength) {
+                if (nextFieldID) {
+                    document.getElementById(nextFieldID).focus();
+                }
+            }
+        }
+
+        function collectOTP() {
+            let otp = '';
+            for(let i = 1; i <= 6; i++) {
+                otp += document.getElementById('otp' + i).value;
+            }
+            document.getElementById('otpCode').value = otp;
+            return true;
+        }
+    </script>
+</head>
+<body>
+<div class="otp-container">
+    <div class="otp-icon">🔐</div>
+    <h2>OTP 인증</h2>
+    <p>앱에서 생성된 6자리 코드를 입력하세요</p>
+
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+
+    <form method="post" action="/otp-verify" onsubmit="return collectOTP()">
+        <div class="otp-input">
+            <input type="text" id="otp1" maxlength="1" onkeyup="moveToNext(this, 'otp2')" pattern="[0-9]" required>
+            <input type="text" id="otp2" maxlength="1" onkeyup="moveToNext(this, 'otp3')" pattern="[0-9]" required>
+            <input type="text" id="otp3" maxlength="1" onkeyup="moveToNext(this, 'otp4')" pattern="[0-9]" required>
+            <input type="text" id="otp4" maxlength="1" onkeyup="moveToNext(this, 'otp5')" pattern="[0-9]" required>
+            <input type="text" id="otp5" maxlength="1" onkeyup="moveToNext(this, 'otp6')" pattern="[0-9]" required>
+            <input type="text" id="otp6" maxlength="1" pattern="[0-9]" required>
+        </div>
+        <input type="hidden" id="otpCode" name="otpCode">
+        <button type="submit">인증하기</button>
+    </form>
+</div>
+</body>
+</html>

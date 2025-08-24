@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        .navbar {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar h1 {
+            color: #333;
+        }
+        .navbar a {
+            color: #667eea;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .welcome-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .welcome-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #5a67d8;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <h1>🔐 OTP 시스템</h1>
+    <div>
+        <span th:text="${username}"></span>
+        <a href="/logout">로그아웃</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="welcome-card">
+        <h2>환영합니다, <span th:text="${username}"></span>님!</h2>
+
+        <div th:if="${success}" class="success" th:text="${success}"></div>
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+
+        <p>안전한 2단계 인증으로 계정을 보호하세요.</p>
+    </div>
+
+    <div class="card-grid">
+        <div class="card">
+            <h3>🛡️ OTP 설정</h3>
+            <p>Google Authenticator 또는 다른 OTP 앱을 사용하여 2단계 인증을 설정하세요.</p>
+            <a href="/otp-setup" class="btn">OTP 설정하기</a>
+        </div>
+
+        <div class="card">
+            <h3>📊 보안 상태</h3>
+            <p>현재 계정의 보안 수준을 확인하세요.</p>
+            <span class="status status-active">비밀번호 설정됨</span>
+        </div>
+
+        <div class="card">
+            <h3>⚙️ 계정 설정</h3>
+            <p>계정 정보를 관리하고 보안 설정을 변경하세요.</p>
+            <a href="#" class="btn">설정 관리</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

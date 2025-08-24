@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP 로그인 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .features {
+            text-align: left;
+            margin: 30px 0;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 20px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔐 OTP 로그인</h1>
+    <p>안전한 2단계 인증 시스템</p>
+
+    <div class="features">
+        <div class="feature">
+            <div class="feature-icon">✓</div>
+            <div>
+                <strong>TOTP 알고리즘</strong><br>
+                <small>시간 기반 일회용 비밀번호</small>
+            </div>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">🔒</div>
+            <div>
+                <strong>SHA-256 암호화</strong><br>
+                <small>강력한 해시 알고리즘 사용</small>
+            </div>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">📱</div>
+            <div>
+                <strong>Google Authenticator 호환</strong><br>
+                <small>모든 표준 OTP 앱 지원</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <a href="/login" class="btn btn-primary">로그인</a>
+        <a href="/register" class="btn btn-secondary">회원가입</a>
+    </div>
+</div>
+</body>
+</html>
