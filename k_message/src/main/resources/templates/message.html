@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메시지 작성</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+                <div class="container-fluid">
+                    <span class="navbar-brand">카카오 메시지</span>
+                    <div class="navbar-nav ms-auto">
+                        <a class="nav-link" href="/">홈</a>
+                        <a class="nav-link" href="/message">카카오 메시지</a>
+                        <a class="nav-link" href="/email">이메일</a>
+                        <a class="nav-link" href="/logout">로그아웃</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>피드 메시지 보내기</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/send/feed" method="post">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">제목</label>
+                            <input type="text" class="form-control" id="title" name="title"
+                                   value="오늘의 디저트" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">설명</label>
+                            <textarea class="form-control" id="description" name="description"
+                                      rows="3" required>아메리카노, 빵, 케익</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="imageUrl" class="form-label">이미지 URL</label>
+                            <input type="url" class="form-control" id="imageUrl" name="imageUrl"
+                                   value="https://mud-kage.kakao.com/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg"
+                                   required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="webUrl" class="form-label">웹 URL</label>
+                            <input type="url" class="form-control" id="webUrl" name="webUrl"
+                                   value="https://www.daum.net" required>
+                        </div>
+
+                        <!-- 이메일 알림 옵션 -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">📧 이메일 알림 설정</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailNotification" name="emailNotification">
+                                    <label class="form-check-label" for="emailNotification">
+                                        카카오 메시지 발송 결과를 이메일로 알림 받기
+                                    </label>
+                                </div>
+                                <div class="mb-2" id="emailInputGroup" style="display: none;">
+                                    <label for="notificationEmail" class="form-label">알림 받을 이메일</label>
+                                    <input type="email" class="form-control" id="notificationEmail" name="notificationEmail"
+                                           placeholder="example@email.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">피드 메시지 보내기</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>스크랩 메시지 보내기</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/send/scrap" method="post">
+                        <div class="mb-3">
+                            <label for="url" class="form-label">스크랩할 URL</label>
+                            <input type="url" class="form-control" id="url" name="url"
+                                   value="https://developers.kakao.com" required>
+                            <div class="form-text">
+                                카카오 개발자 콘솔에서 등록한 도메인만 사용 가능합니다.
+                            </div>
+                        </div>
+
+                        <!-- 이메일 알림 옵션 -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">📧 이메일 알림 설정</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="scrapEmailNotification" name="emailNotification">
+                                    <label class="form-check-label" for="scrapEmailNotification">
+                                        스크랩 메시지 발송 결과를 이메일로 알림 받기
+                                    </label>
+                                </div>
+                                <div class="mb-2" id="scrapEmailInputGroup" style="display: none;">
+                                    <label for="scrapNotificationEmail" class="form-label">알림 받을 이메일</label>
+                                    <input type="email" class="form-control" id="scrapNotificationEmail" name="notificationEmail"
+                                           placeholder="example@email.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">스크랩 메시지 보내기</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>미리보기</h5>
+                </div>
+                <div class="card-body">
+                    <div class="border p-3 rounded bg-light">
+                        <div class="d-flex">
+                            <img id="previewImage" src="https://mud-kage.kakao.com/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg"
+                                 class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                            <div>
+                                <h6 id="previewTitle" class="mb-1">오늘의 디저트</h6>
+                                <p id="previewDescription" class="text-muted small mb-2">아메리카노, 빵, 케익</p>
+                                <small class="text-muted">👍 100 💬 200</small>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-primary">웹으로 보기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+    document.getElementById('title').addEventListener('input', function() {
+        document.getElementById('previewTitle').textContent = this.value;
+    });
+
+    document.getElementById('description').addEventListener('input', function() {
+        document.getElementById('previewDescription').textContent = this.value;
+    });
+
+    document.getElementById('imageUrl').addEventListener('input', function() {
+        document.getElementById('previewImage').src = this.value;
+    });
+
+    document.getElementById('emailNotification').addEventListener('change', function() {
+        const emailInputGroup = document.getElementById('emailInputGroup');
+        if (this.checked) {
+            emailInputGroup.style.display = 'block';
+            document.getElementById('notificationEmail').required = true;
+        } else {
+            emailInputGroup.style.display = 'none';
+            document.getElementById('notificationEmail').required = false;
+        }
+    });
+
+    document.getElementById('scrapEmailNotification').addEventListener('change', function() {
+        const emailInputGroup = document.getElementById('scrapEmailInputGroup');
+        if (this.checked) {
+            emailInputGroup.style.display = 'block';
+            document.getElementById('scrapNotificationEmail').required = true;
+        } else {
+            emailInputGroup.style.display = 'none';
+            document.getElementById('scrapNotificationEmail').required = false;
+        }
+    });
+</script>
+</body>
+</html>

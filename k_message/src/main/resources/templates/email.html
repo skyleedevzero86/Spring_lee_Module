@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이메일 보내기</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+                <div class="container-fluid">
+                    <span class="navbar-brand">📧 이메일 발송</span>
+                    <div class="navbar-nav ms-auto">
+                        <a class="nav-link" href="/">홈</a>
+                        <a class="nav-link" href="/message">카카오 메시지</a>
+                        <a class="nav-link" href="/email">이메일</a>
+                        <a class="nav-link" href="/logout">로그아웃</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📤 이메일 보내기</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/send/email" method="post">
+                        <div class="mb-3">
+                            <label for="to" class="form-label">받는 사람 *</label>
+                            <input type="email" class="form-control" id="to" name="to"
+                                   placeholder="recipient@example.com" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="cc" class="form-label">참조 (CC)</label>
+                            <input type="email" class="form-control" id="cc" name="cc"
+                                   placeholder="cc@example.com">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">제목 *</label>
+                            <input type="text" class="form-control" id="subject" name="subject"
+                                   placeholder="이메일 제목" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="content" class="form-label">내용 *</label>
+                            <textarea class="form-control" id="content" name="content"
+                                      rows="8" placeholder="이메일 내용을 입력하세요..." required></textarea>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="isHtml" name="isHtml">
+                            <label class="form-check-label" for="isHtml">
+                                HTML 형식으로 발송
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">📧 이메일 보내기</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>🚀 통합 발송 (카카오 + 이메일)</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/send/both" method="post">
+                        <h6 class="text-primary">📱 카카오 메시지 정보</h6>
+                        <div class="mb-3">
+                            <label for="bothTitle" class="form-label">제목</label>
+                            <input type="text" class="form-control" id="bothTitle" name="title"
+                                   value="중요한 알림" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bothDescription" class="form-label">설명</label>
+                            <textarea class="form-control" id="bothDescription" name="description"
+                                      rows="2" required>확인해보세요!</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bothImageUrl" class="form-label">이미지 URL</label>
+                            <input type="url" class="form-control" id="bothImageUrl" name="imageUrl"
+                                   value="https://mud-kage.kakao.com/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg">
+                        </div>
+                        <div class="mb-3">
+                            <label for="bothWebUrl" class="form-label">웹 URL</label>
+                            <input type="url" class="form-control" id="bothWebUrl" name="webUrl"
+                                   value="https://www.daum.net">
+                        </div>
+
+                        <hr>
+
+                        <h6 class="text-success">📧 이메일 정보</h6>
+                        <div class="mb-3">
+                            <label for="emailTo" class="form-label">받는 사람</label>
+                            <input type="email" class="form-control" id="emailTo" name="emailTo"
+                                   placeholder="recipient@example.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="emailSubject" class="form-label">이메일 제목</label>
+                            <input type="text" class="form-control" id="emailSubject" name="emailSubject"
+                                   placeholder="카카오 메시지도 함께 확인하세요!" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="emailContent" class="form-label">이메일 내용</label>
+                            <textarea class="form-control" id="emailContent" name="emailContent"
+                                      rows="3" placeholder="카카오톡 메시지와 함께 이메일도 보냅니다." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning btn-lg w-100">
+                            🚀 카카오 메시지 + 이메일 동시 발송
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📝 HTML 이메일 템플릿 예제</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="templateAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="template1">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapse1" aria-expanded="false">
+                                    📋 기본 알림 템플릿
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#templateAccordion">
+                                <div class="accordion-body">
+                                    <small class="text-muted">HTML 형식 체크 후 아래 코드를 복사하여 사용하세요.</small>
+                                    <pre class="bg-light p-2 mt-2" style="font-size: 12px;">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;style&gt;
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; border: 1px solid #ddd; }
+        .footer { background: #f8f9fa; padding: 10px; text-align: center; color: #6c757d; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="header"&gt;
+        &lt;h2&gt;🔔 중요 알림&lt;/h2&gt;
+    &lt;/div&gt;
+    &lt;div class="content"&gt;
+        &lt;p&gt;안녕하세요!&lt;/p&gt;
+        &lt;p&gt;카카오 메시지와 함께 이메일도 보내드립니다.&lt;/p&gt;
+        &lt;p&gt;&lt;strong&gt;확인 부탁드립니다!&lt;/strong&gt;&lt;/p&gt;
+    &lt;/div&gt;
+    &lt;div class="footer"&gt;
+        &lt;p&gt;이 메시지는 자동으로 발송되었습니다.&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+    document.getElementById('isHtml').addEventListener('change', function() {
+        const contentTextarea = document.getElementById('content');
+        if (this.checked) {
+            contentTextarea.placeholder = 'HTML 코드를 입력하세요... 예: <h1>제목</h1><p>내용</p>';
+        } else {
+            contentTextarea.placeholder = '이메일 내용을 입력하세요...';
+        }
+    });
+
+    document.getElementById('bothTitle').addEventListener('input', function() {
+        document.getElementById('emailSubject').value = this.value + ' - 카카오 메시지도 확인하세요!';
+    });
+</script>
