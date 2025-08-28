@@ -24,6 +24,18 @@
         </div>
     </div>
 
+    <div class="row mb-4" th:if="${userInfo != null}">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="card-title">👤 로그인 정보</h6>
+                    <p class="mb-1"><strong>닉네임:</strong> <span th:text="${userInfo.nickname}"></span></p>
+                    <p class="mb-0"><strong>이메일:</strong> <span th:text="${userInfo.email}"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-6">
             <div class="card">
@@ -118,7 +130,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-warning btn-lg w-100">
-                            🚀 카카오 메시지 + 이메일 동시 발송
+                            �� 카카오 메시지 + 이메일 동시 발송
                         </button>
                     </form>
                 </div>
@@ -130,7 +142,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5>📝 HTML 이메일 템플릿 예제</h5>
+                    <h5>�� HTML 이메일 템플릿 예제</h5>
                 </div>
                 <div class="card-body">
                     <div class="accordion" id="templateAccordion">
@@ -182,7 +194,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-
     document.getElementById('isHtml').addEventListener('change', function() {
         const contentTextarea = document.getElementById('content');
         if (this.checked) {
@@ -196,3 +207,5 @@
         document.getElementById('emailSubject').value = this.value + ' - 카카오 메시지도 확인하세요!';
     });
 </script>
+</body>
+</html>

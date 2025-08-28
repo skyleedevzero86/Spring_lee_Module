@@ -12,7 +12,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header text-center">
-                    <h3>카카오 메시지 보내기</h3>
+                    <h3>🚀 카카오 메시지 & 이메일 시스템</h3>
                 </div>
                 <div class="card-body text-center">
                     <div th:if="${param.error}" class="alert alert-danger">
@@ -21,14 +21,22 @@
 
                     <div th:if="${!isLoggedIn}">
                         <p>카카오 로그인이 필요합니다.</p>
+                        <p class="text-muted small mb-3">메시지 전송을 위해 talk_message 권한이 필요합니다.</p>
                         <a th:href="${loginUrl}" class="btn btn-warning btn-lg">
                             <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png"
                                  alt="카카오 로그인" style="height: 40px;">
                         </a>
                     </div>
 
-                    <div th:if="${isLoggedIn}">
-                        <p class="text-success">✅ 카카오 로그인 완료!</p>
+                    <div th:if="${isLoggedIn}" class="text-start">
+                        <div class="alert alert-success">
+                            <h6>✅ 카카오 로그인 완료!</h6>
+                            <div th:if="${userInfo != null}">
+                                <p class="mb-1"><strong>닉네임:</strong> <span th:text="${userInfo.nickname}"></span></p>
+                                <p class="mb-1"><strong>이메일:</strong> <span th:text="${userInfo.email}"></span></p>
+                            </div>
+                        </div>
+
                         <div class="d-grid gap-2">
                             <a href="/message" class="btn btn-primary btn-lg">📱 카카오 메시지 보내기</a>
                             <a href="/email" class="btn btn-success btn-lg">📧 이메일 보내기</a>

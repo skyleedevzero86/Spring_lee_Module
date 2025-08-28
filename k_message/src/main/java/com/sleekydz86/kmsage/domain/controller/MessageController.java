@@ -10,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 
+import java.util.Map;
+
 @Controller
 public class MessageController {
 
@@ -24,6 +26,14 @@ public class MessageController {
         String accessToken = (String) session.getAttribute("accessToken");
         model.addAttribute("isLoggedIn", accessToken != null);
         model.addAttribute("loginUrl", kakaoService.getKakaoLoginUrl());
+
+        if (accessToken != null) {
+            Map<String, Object> userInfo = kakaoService.getUserInfo(accessToken);
+            if (userInfo != null) {
+                model.addAttribute("userInfo", userInfo);
+            }
+        }
+
         return "index";
     }
 
@@ -34,6 +44,7 @@ public class MessageController {
             session.setAttribute("accessToken", accessToken);
             return "redirect:/message";
         } catch (Exception e) {
+            System.err.println("로그인 실패: " + e.getMessage());
             return "redirect:/?error=login_failed";
         }
     }
@@ -44,6 +55,12 @@ public class MessageController {
         if (accessToken == null) {
             return "redirect:/";
         }
+
+        Map<String, Object> userInfo = kakaoService.getUserInfo(accessToken);
+        if (userInfo != null) {
+            model.addAttribute("userInfo", userInfo);
+        }
+
         return "message";
     }
 
@@ -53,18 +70,24 @@ public class MessageController {
         if (accessToken == null) {
             return "redirect:/";
         }
+
+        Map<String, Object> userInfo = kakaoService.getUserInfo(accessToken);
+        if (userInfo != null) {
+            model.addAttribute("userInfo", userInfo);
+        }
+
         return "email";
     }
 
     @PostMapping("/send/feed")
     public String sendFeedMessage(@RequestParam("title") String title,
-            @RequestParam("description") String description,
-            @RequestParam("imageUrl") String imageUrl,
-            @RequestParam("webUrl") String webUrl,
-            @RequestParam(value = "emailNotification", required = false) String emailNotification,
-            @RequestParam(value = "notificationEmail", required = false) String notificationEmail,
-            HttpSession session,
-            Model model) {
+                                  @RequestParam("description") String description,
+                                  @RequestParam("imageUrl") String imageUrl,
+                                  @RequestParam("webUrl") String webUrl,
+                                  @RequestParam(value = "emailNotification", required = false) String emailNotification,
+                                  @RequestParam(value = "notificationEmail", required = false) String notificationEmail,
+                                  HttpSession session,
+                                  Model model) {
 
         String accessToken = (String) session.getAttribute("accessToken");
         if (accessToken == null) {
@@ -100,14 +123,28 @@ public class MessageController {
 
     @PostMapping("/send/scrap")
     public String sendScrapMessage(@RequestParam("url") String url,
-            @RequestParam(value = "emailNotification", required = false) String emailNotification,
-            @RequestParam(value = "notificationEmail", required = false) String notificationEmail,
-            HttpSession session,
-            Model model) {
+                                   @RequestParam(value = "emailNotification", required = false) String emailNotification,
+                                   @RequestParam(value = "notificationEmail", required = false) String notificationEmail,
+                                   HttpSession session,
+                                   Model model) {
 
         String accessToken = (String) session.getAttribute("accessToken");
         if (accessToken == null) {
             return "redirect:/";
+        }
+
+        if (url == null || url.trim().isEmpty()) {
+            model.addAttribute("success", false);
+            model.addAttribute("message", "URL을 입력해주세요.");
+            return "result";
+        }
+
+        String domain = extractDomain(url);
+        if (!isValidDomain(domain)) {
+            model.addAttribute("success", false);
+            model.addAttribute("message", "허용되지 않은 도메인입니다: " + domain +
+                    "\n카카오 개발자 콘솔에서 등록된 도메인만 사용 가능합니다.");
+            return "result";
         }
 
         boolean success = kakaoService.sendScrapMessage(accessToken, url);
@@ -117,19 +154,80 @@ public class MessageController {
         }
 
         model.addAttribute("success", success);
-        model.addAttribute("message", success ? "스크랩 메시지를 성공적으로 보냈습니다!" : "스크랩 메시지 보내기에 실패했습니다.");
+        if (success) {
+            model.addAttribute("message", "스크랩 메시지를 성공적으로 보냈습니다!");
+        } else {
+            model.addAttribute("message", "스크랩 메시지 보내기에 실패했습니다. 허용된 도메인을 사용하세요.");
+        }
 
         return "result";
     }
 
+    private boolean isValidDomain(String domain) {
+        if (domain == null || domain.trim().isEmpty()) {
+            return false;
+        }
+
+        String[] allowedDomains = {
+                "developers.kakao.com",
+                "www.daum.net",
+                "daum.net",
+                "localhost",
+                "127.0.0.1"
+        };
+
+        for (String allowedDomain : allowedDomains) {
+            if (domain.equals(allowedDomain) || domain.endsWith("." + allowedDomain)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private String extractDomain(String url) {
+        try {
+            if (url == null || url.trim().isEmpty()) {
+                return "";
+            }
+
+            String cleanUrl = url.trim();
+
+            if (cleanUrl.startsWith("http://")) {
+                cleanUrl = cleanUrl.substring(7);
+            } else if (cleanUrl.startsWith("https://")) {
+                cleanUrl = cleanUrl.substring(8);
+            }
+
+            int portIndex = cleanUrl.indexOf(':');
+            if (portIndex != -1) {
+                cleanUrl = cleanUrl.substring(0, portIndex);
+            }
+
+            int slashIndex = cleanUrl.indexOf('/');
+            if (slashIndex != -1) {
+                cleanUrl = cleanUrl.substring(0, slashIndex);
+            }
+
+            int queryIndex = cleanUrl.indexOf('?');
+            if (queryIndex != -1) {
+                cleanUrl = cleanUrl.substring(0, queryIndex);
+            }
+
+            return cleanUrl.toLowerCase();
+        } catch (Exception e) {
+            return url;
+        }
+    }
+
     @PostMapping("/send/email")
     public String sendEmail(@RequestParam("to") String to,
-            @RequestParam(value = "cc", required = false) String cc,
-            @RequestParam("subject") String subject,
-            @RequestParam("content") String content,
-            @RequestParam(value = "isHtml", required = false) String isHtml,
-            HttpSession session,
-            Model model) {
+                            @RequestParam(value = "cc", required = false) String cc,
+                            @RequestParam("subject") String subject,
+                            @RequestParam("content") String content,
+                            @RequestParam(value = "isHtml", required = false) String isHtml,
+                            HttpSession session,
+                            Model model) {
 
         String accessToken = (String) session.getAttribute("accessToken");
         if (accessToken == null) {
@@ -158,14 +256,14 @@ public class MessageController {
 
     @PostMapping("/send/both")
     public String sendBoth(@RequestParam("title") String title,
-            @RequestParam("description") String description,
-            @RequestParam("imageUrl") String imageUrl,
-            @RequestParam("webUrl") String webUrl,
-            @RequestParam("emailTo") String emailTo,
-            @RequestParam("emailSubject") String emailSubject,
-            @RequestParam("emailContent") String emailContent,
-            HttpSession session,
-            Model model) {
+                           @RequestParam("description") String description,
+                           @RequestParam("imageUrl") String imageUrl,
+                           @RequestParam("webUrl") String webUrl,
+                           @RequestParam("emailTo") String emailTo,
+                           @RequestParam("emailSubject") String emailSubject,
+                           @RequestParam("emailContent") String emailContent,
+                           HttpSession session,
+                           Model model) {
 
         String accessToken = (String) session.getAttribute("accessToken");
         if (accessToken == null) {
@@ -215,5 +313,26 @@ public class MessageController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
+    }
+
+    @GetMapping("/test/email")
+    public String testEmail(HttpSession session, Model model) {
+        String accessToken = (String) session.getAttribute("accessToken");
+        if (accessToken == null) {
+            return "redirect:/";
+        }
+
+        EmailRequest testRequest = new EmailRequest();
+        testRequest.setTo("sleekydz86@naver.com");
+        testRequest.setSubject("[테스트] 이메일 설정 확인");
+        testRequest.setContent("이메일 설정이 정상적으로 작동하는지 테스트합니다.");
+        testRequest.setHtml(false);
+
+        boolean success = emailService.sendSimpleEmail(testRequest);
+
+        model.addAttribute("success", success);
+        model.addAttribute("message", success ? "테스트 이메일 발송 성공!" : "테스트 이메일 발송 실패");
+
+        return "result";
     }
 }
