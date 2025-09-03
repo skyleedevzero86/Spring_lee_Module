@@ -63,7 +63,7 @@ public class UserBehaviorAnalysisJob {
                 .map(event -> Tuple2.of(event.getUserId() + "_" + event.getActionType(), 1L))
                 .keyBy(tuple -> tuple.f0)
                 .window(TumblingProcessingTimeWindows.of(Time.minutes(5)))
-                .aggregate(new AggregateFunction<Tuple2<String, Long>, Long, Tuple3<String, String, Long>>() {
+                .aggregate(new AggregateFunction<Tuple2<String, Long>, Long, Long>() {
                     @Override
                     public Long createAccumulator() {
                         return 0L;
@@ -75,8 +75,8 @@ public class UserBehaviorAnalysisJob {
                     }
 
                     @Override
-                    public Tuple3<String, String, Long> getResult(Long accumulator) {
-                        return null; // WindowFunction에서 처리
+                    public Long getResult(Long accumulator) {
+                        return accumulator;
                     }
 
                     @Override
@@ -85,7 +85,8 @@ public class UserBehaviorAnalysisJob {
                     }
                 }, (key, window, input, out) -> {
                     String[] parts = key.split("_", 2);
-                    out.collect(Tuple3.of(parts[0], parts[1], input.iterator().next()));
+                    Long count = input.iterator().next();
+                    out.collect(Tuple3.of(parts[0], parts[1], count));
                 });
 
         DataStream<Tuple3<String, String, Double>> itemPopularity = behaviorStream
@@ -95,31 +96,32 @@ public class UserBehaviorAnalysisJob {
                 })
                 .keyBy(tuple -> tuple.f0)
                 .window(TumblingProcessingTimeWindows.of(Time.minutes(10)))
-                .aggregate(new AggregateFunction<Tuple3<String, String, Double>,
-                        Tuple3<String, String, Double>, Tuple3<String, String, Double>>() {
+                .aggregate(
+                        new AggregateFunction<Tuple3<String, String, Double>, Tuple3<String, String, Double>, Tuple3<String, String, Double>>() {
 
-                    @Override
-                    public Tuple3<String, String, Double> createAccumulator() {
-                        return Tuple3.of("", "", 0.0);
-                    }
+                            @Override
+                            public Tuple3<String, String, Double> createAccumulator() {
+                                return Tuple3.of("", "", 0.0);
+                            }
 
-                    @Override
-                    public Tuple3<String, String, Double> add(Tuple3<String, String, Double> value,
-                                                              Tuple3<String, String, Double> accumulator) {
-                        return Tuple3.of(value.f0, value.f1, accumulator.f2 + value.f2);
-                    }
+                            @Override
+                            public Tuple3<String, String, Double> add(Tuple3<String, String, Double> value,
+                                    Tuple3<String, String, Double> accumulator) {
+                                return Tuple3.of(value.f0, value.f1, accumulator.f2 + value.f2);
+                            }
 
-                    @Override
-                    public Tuple3<String, String, Double> getResult(Tuple3<String, String, Double> accumulator) {
-                        return accumulator;
-                    }
+                            @Override
+                            public Tuple3<String, String, Double> getResult(
+                                    Tuple3<String, String, Double> accumulator) {
+                                return accumulator;
+                            }
 
-                    @Override
-                    public Tuple3<String, String, Double> merge(Tuple3<String, String, Double> a,
-                                                                Tuple3<String, String, Double> b) {
-                        return Tuple3.of(a.f0, a.f1, a.f2 + b.f2);
-                    }
-                });
+                            @Override
+                            public Tuple3<String, String, Double> merge(Tuple3<String, String, Double> a,
+                                    Tuple3<String, String, Double> b) {
+                                return Tuple3.of(a.f0, a.f1, a.f2 + b.f2);
+                            }
+                        });
 
         userActionStats.addSink(JdbcSink.sink(
                 "INSERT INTO user_behavior_stats (user_id, action_type, count, window_time) " +
@@ -127,7 +129,7 @@ public class UserBehaviorAnalysisJob {
                 new JdbcStatementBuilder<Tuple3<String, String, Long>>() {
                     @Override
                     public void accept(PreparedStatement statement,
-                                       Tuple3<String, String, Long> tuple) throws SQLException {
+                            Tuple3<String, String, Long> tuple) throws SQLException {
                         statement.setString(1, tuple.f0);
                         statement.setString(2, tuple.f1);
                         statement.setLong(3, tuple.f2);
@@ -143,8 +145,7 @@ public class UserBehaviorAnalysisJob {
                         .withDriverName("com.mysql.cj.jdbc.Driver")
                         .withUsername("root")
                         .withPassword("password")
-                        .build()
-        ));
+                        .build()));
 
         itemPopularity.addSink(JdbcSink.sink(
                 "INSERT INTO item_popularity (item_id, category, popularity_score, updated_at) " +
@@ -153,7 +154,7 @@ public class UserBehaviorAnalysisJob {
                 new JdbcStatementBuilder<Tuple3<String, String, Double>>() {
                     @Override
                     public void accept(PreparedStatement statement,
-                                       Tuple3<String, String, Double> tuple) throws SQLException {
+                            Tuple3<String, String, Double> tuple) throws SQLException {
                         statement.setString(1, tuple.f0);
                         statement.setString(2, tuple.f1);
                         statement.setDouble(3, tuple.f2);
@@ -169,8 +170,7 @@ public class UserBehaviorAnalysisJob {
                         .withDriverName("com.mysql.cj.jdbc.Driver")
                         .withUsername("root")
                         .withPassword("password")
-                        .build()
-        ));
+                        .build()));
 
         behaviorStream.addSink(JdbcSink.sink(
                 "INSERT INTO user_behavior_events (user_id, item_id, action_type, category, " +
@@ -201,20 +201,25 @@ public class UserBehaviorAnalysisJob {
                         .withDriverName("com.mysql.cj.jdbc.Driver")
                         .withUsername("root")
                         .withPassword("password")
-                        .build()
-        ));
+                        .build()));
 
         env.execute("User Behavior Analysis Job");
     }
 
     private static double getActionScore(String actionType) {
         switch (actionType.toUpperCase()) {
-            case "VIEW": return 1.0;
-            case "CLICK": return 2.0;
-            case "LIKE": return 3.0;
-            case "SHARE": return 4.0;
-            case "PURCHASE": return 10.0;
-            default: return 0.5;
+            case "VIEW":
+                return 1.0;
+            case "CLICK":
+                return 2.0;
+            case "LIKE":
+                return 3.0;
+            case "SHARE":
+                return 4.0;
+            case "PURCHASE":
+                return 10.0;
+            default:
+                return 0.5;
         }
     }
 }

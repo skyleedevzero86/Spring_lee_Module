@@ -1,5 +1,6 @@
-package com.sleekydz86.config;
+package com.sleekydz86.global.config;
 
+import com.sleekydz86.global.websocket.RealtimeDashboardHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;

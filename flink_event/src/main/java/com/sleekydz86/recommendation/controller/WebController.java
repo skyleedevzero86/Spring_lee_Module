@@ -1,5 +1,6 @@
 package com.sleekydz86.recommendation.controller;
 
+import com.sleekydz86.recommendation.service.RecommendationService;
 import com.sleekydz86.recommendation.service.UserBehaviorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,6 @@ public class WebController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        // 대시보드 통계 데이터 조회
         model.addAttribute("totalUsers", getTotalUsers());
         model.addAttribute("totalEvents", getTotalEvents());
         model.addAttribute("totalItems", getTotalItems());

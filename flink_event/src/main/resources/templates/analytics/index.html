@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>분석 - Flink Event Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .metric-card h3 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/dashboard">
+            <i class="fas fa-chart-line me-2"></i>Flink Event Analysis
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="/dashboard">대시보드</a>
+            <a class="nav-link" href="/products">상품</a>
+            <a class="nav-link active" href="/analytics">분석</a>
+            <a class="nav-link" href="/admin">관리자</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="fas fa-chart-bar me-2"></i>고급 분석
+    </h1>
+
+    <div class="analytics-card">
+        <h4 class="mb-3">분석 기간 선택</h4>
+        <div class="row">
+            <div class="col-md-3">
+                <select class="form-select" id="timeRange" onchange="updateAnalytics()">
+                    <option value="24h">최근 24시간</option>
+                    <option value="7d">최근 7일</option>
+                    <option value="30d">최근 30일</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary" onclick="updateAnalytics()">
+                    <i class="fas fa-sync me-2"></i>새로고침
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="analytics-card">
+        <h4 class="mb-4">
+            <i class="fas fa-clock me-2"></i>시간별 이벤트 분석
+        </h4>
+        <div class="chart-container">
+            <canvas id="hourlyChart"></canvas>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="analytics-card">
+                <h4 class="mb-4">
+                    <i class="fas fa-chart-pie me-2"></i>카테고리별 분석
+                </h4>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="analytics-card">
+                <h4 class="mb-4">
+                    <i class="fas fa-list me-2"></i>카테고리 상세
+                </h4>
+                <div id="categoryDetails">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="analytics-card">
+        <h4 class="mb-4">
+            <i class="fas fa-users me-2"></i>사용자 행동 패턴
+        </h4>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="actionTypeChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="deviceTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let hourlyChart, categoryChart, actionTypeChart, deviceTypeChart;
+
+    function initCharts() {
+
+        const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+        hourlyChart = new Chart(hourlyCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '이벤트 수',
+                    data: [],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: '고유 사용자',
+                    data: [],
+                    borderColor: '#764ba2',
+                    backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: '구매',
+                    data: [],
+                    borderColor: '#ff6b6b',
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        categoryChart = new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '총 이벤트',
+                    data: [],
+                    backgroundColor: '#667eea'
+                }, {
+                    label: '고유 사용자',
+                    data: [],
+                    backgroundColor: '#764ba2'
+                }, {
+                    label: '구매',
+                    data: [],
+                    backgroundColor: '#ff6b6b'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const actionCtx = document.getElementById('actionTypeChart').getContext('2d');
+        actionTypeChart = new Chart(actionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        const deviceCtx = document.getElementById('deviceTypeChart').getContext('2d');
+        deviceTypeChart = new Chart(deviceCtx, {
+            type: 'pie',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    function updateAnalytics() {
+        const timeRange = document.getElementById('timeRange').value;
+
+        fetch('/api/analytics/hourly')
+            .then(response => response.json())
+            .then(data => {
+                updateHourlyChart(data);
+            });
+
+        fetch('/api/analytics/categories')
+            .then(response => response.json())
+            .then(data => {
+                updateCategoryChart(data);
+                updateCategoryDetails(data);
+            });
+    }
+
+    function updateHourlyChart(data) {
+        const labels = data.map(item => item.hour);
+        const events = data.map(item => item.events);
+        const users = data.map(item => item.unique_users);
+        const purchases = data.map(item => item.purchases);
+
+        hourlyChart.data.labels = labels;
+        hourlyChart.data.datasets[0].data = events;
+        hourlyChart.data.datasets[1].data = users;
+        hourlyChart.data.datasets[2].data = purchases;
+        hourlyChart.update();
+    }
+
+    function updateCategoryChart(data) {
+        const labels = data.map(item => item.category);
+        const totalEvents = data.map(item => item.total_events);
+        const uniqueUsers = data.map(item => item.unique_users);
+        const purchases = data.map(item => item.purchases);
+
+        categoryChart.data.labels = labels;
+        categoryChart.data.datasets[0].data = totalEvents;
+        categoryChart.data.datasets[1].data = uniqueUsers;
+        categoryChart.data.datasets[2].data = purchases;
+        categoryChart.update();
+    }
+
+    function updateCategoryDetails(data) {
+        const detailsDiv = document.getElementById('categoryDetails');
+        detailsDiv.innerHTML = '';
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card mb-3';
+            card.innerHTML = `
+                    <div class="card-body">
+                        <h6 class="card-title">${item.category}</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                이벤트: ${item.total_events}<br>
+                                사용자: ${item.unique_users}<br>
+                                구매: ${item.purchases}<br>
+                                평균 체류: ${Math.round(item.avg_duration || 0)}초
+                            </small>
+                        </p>
+                    </div>
+                `;
+            detailsDiv.appendChild(card);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initCharts();
+        updateAnalytics();
+    });
+</script>
+</body>
+</html>
