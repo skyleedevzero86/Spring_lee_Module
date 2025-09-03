@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMS 발송</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+                <div class="container-fluid">
+                    <span class="navbar-brand">🖼️ MMS 발송</span>
+                    <div class="navbar-nav ms-auto">
+                        <a class="nav-link" href="/">홈</a>
+                        <a class="nav-link" href="/message">카카오 메시지</a>
+                        <a class="nav-link" href="/email">이메일</a>
+                        <a class="nav-link" href="/solapi/">SOLAPI</a>
+                        <a class="nav-link" href="/logout">로그아웃</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>🖼️ MMS 발송</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/solapi/send/mms" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="to" class="form-label">수신번호 *</label>
+                            <input type="tel" class="form-control" id="to" name="to"
+                                   placeholder="01012345678" pattern="[0-9]{10,11}" required>
+                            <div class="form-text">01012345678 형식으로 입력하세요</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">제목 *</label>
+                            <input type="text" class="form-control" id="subject" name="subject"
+                                   placeholder="MMS 제목을 입력하세요" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="text" class="form-label">메시지 내용 *</label>
+                            <textarea class="form-control" id="text" name="text" rows="4"
+                                      placeholder="MMS 메시지 내용을 입력하세요" required></textarea>
+                            <div class="form-text">
+                                <span id="charCount">0</span>/2000자
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label">이미지 파일 *</label>
+                            <input type="file" class="form-control" id="image" name="image"
+                                   accept="image/*" required>
+                            <div class="form-text">
+                                JPG, PNG 파일만 가능 (최대 200KB)
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="scheduledDate" class="form-label">예약 발송 (선택사항)</label>
+                            <input type="datetime-local" class="form-control" id="scheduledDate" name="scheduledDate">
+                            <div class="form-text">예약하지 않으면 즉시 발송됩니다</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-info">🖼️ MMS 발송</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6>📋 MMS 가이드</h6>
+                </div>
+                <div class="card-body">
+                    <h6>🖼️ MMS 특징</h6>
+                    <ul class="small">
+                        <li>이미지와 텍스트 함께 전송</li>
+                        <li>최대 200KB 이미지</li>
+                        <li>JPG, PNG 형식 지원</li>
+                        <li>시각적 효과 극대화</li>
+                    </ul>
+
+                    <h6>📸 이미지 요구사항</h6>
+                    <ul class="small">
+                        <li>파일 크기: 최대 200KB</li>
+                        <li>형식: JPG, PNG</li>
+                        <li>권장 해상도: 640x640</li>
+                        <li>가로세로 비율: 1:1 권장</li>
+                    </ul>
+
+                    <h6>📞 사용 사례</h6>
+                    <ul class="small">
+                        <li>이벤트 홍보</li>
+                        <li>상품 소개</li>
+                        <li>초대장</li>
+                        <li>감사 인사</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>💡 템플릿 예제</h6>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-sm btn-outline-info mb-2" onclick="setTemplate('promotion')">
+                        홍보 메시지
+                    </button>
+                    <button class="btn btn-sm btn-outline-info mb-2" onclick="setTemplate('invitation')">
+                        초대 메시지
+                    </button>
+                    <button class="btn btn-sm btn-outline-info mb-2" onclick="setTemplate('thanks')">
+                        감사 메시지
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const templates = {
+        promotion: {
+            subject: "[홍보] 특별 할인 이벤트",
+            text: "   특별 할인 이벤트가 시작되었습니다!\n\n✅ 최대 50% 할인\n✅ 무료 배송\n✅ 사은품 증정\n\n지금 바로 확인해보세요!"
+        },
+        invitation: {
+            subject: "[초대] 오픈 이벤트",
+            text: "새로운 매장 오픈을 축하해주세요!\n\n   일시: 2024년 1월 20일\n📍 장소: 강남점\n🎁 오픈 기념 선물 증정\n\n많은 참여 부탁드립니다!"
+        },
+        thanks: {
+            subject: "[감사] 고객님께",
+            text: "고객님의 소중한 후원에 감사드립니다.\n\n앞으로도 더 나은 서비스로 보답하겠습니다.\n\n감사합니다."
+        }
+    };
+
+    function setTemplate(type) {
+        const template = templates[type];
+        document.getElementById('subject').value = template.subject;
+        document.getElementById('text').value = template.text;
+        updateCharCount();
+    }
+
+    function updateCharCount() {
+        const text = document.getElementById('text').value;
+        const count = text.length;
+        document.getElementById('charCount').textContent = count;
+
+        if (count > 2000) {
+            document.getElementById('charCount').style.color = 'red';
+        } else {
+            document.getElementById('charCount').style.color = 'black';
+        }
+    }
+
+    document.getElementById('text').addEventListener('input', updateCharCount);
+    updateCharCount();
+    document.getElementById('image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const fileSize = file.size / 1024;
+            if (fileSize > 200) {
+                alert('파일 크기가 200KB를 초과합니다. 다른 이미지를 선택해주세요.');
+                e.target.value = '';
+            }
+        }
+    });
+</script>
+</body>
+</html>
