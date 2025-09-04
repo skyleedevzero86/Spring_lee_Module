@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -23,24 +25,50 @@ public class RealtimeDashboardHandler implements WebSocketHandler {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService scheduler;
+    private volatile boolean isRunning = false;
+
+    @PostConstruct
+    public void init() {
+        scheduler = Executors.newScheduledThreadPool(2);
+        log.info("RealtimeDashboardHandler 초기화 완료");
+    }
+
+    @PreDestroy
+    public void destroy() {
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                scheduler.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+        log.info("RealtimeDashboardHandler 종료");
+    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         sessions.put(session.getId(), session);
-        log.info("WebSocket 연결 생성: {}", session.getId());
+        log.info("WebSocket 연결됨: {}", session.getId());
+        sendDashboardStats(session);
 
-        sendDashboardData(session);
+        if (!isRunning) {
+            startRealtimeUpdates();
+        }
     }
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-        if (message instanceof TextMessage textMessage) {
-            String payload = textMessage.getPayload();
-            log.debug("WebSocket 메시지 수신: {}", payload);
+        if (message instanceof TextMessage) {
+            String payload = ((TextMessage) message).getPayload();
+            log.debug("메시지 수신: {}", payload);
 
             if ("getStats".equals(payload)) {
-                sendDashboardData(session);
+                sendDashboardStats(session);
             }
         }
     }
@@ -55,6 +83,10 @@ public class RealtimeDashboardHandler implements WebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
         sessions.remove(session.getId());
         log.info("WebSocket 연결 종료: {}, 상태: {}", session.getId(), closeStatus);
+
+        if (sessions.isEmpty() && isRunning) {
+            stopRealtimeUpdates();
+        }
     }
 
     @Override
@@ -62,40 +94,82 @@ public class RealtimeDashboardHandler implements WebSocketHandler {
         return false;
     }
 
-    private void sendDashboardData(WebSocketSession session) {
-        try {
-            Map<String, Object> dashboardData = getRealtimeDashboardData();
-            String jsonData = objectMapper.writeValueAsString(dashboardData);
+    private void startRealtimeUpdates() {
+        if (isRunning) return;
 
-            if (session.isOpen()) {
-                session.sendMessage(new TextMessage(jsonData));
+        isRunning = true;
+        log.info("실시간 업데이트 시작");
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (!sessions.isEmpty()) {
+                    broadcastDashboardStats();
+                }
+            } catch (Exception e) {
+                log.error("실시간 업데이트 오류", e);
             }
-        } catch (IOException e) {
-            log.error("대시보드 데이터 전송 실패: {}", session.getId(), e);
+        }, 10, 10, TimeUnit.SECONDS);
+    }
+
+    private void stopRealtimeUpdates() {
+        if (!isRunning) return;
+
+        isRunning = false;
+        log.info("실시간 업데이트 중지");
+    }
+
+    private void broadcastDashboardStats() {
+        if (sessions.isEmpty()) return;
+
+        try {
+            Map<String, Object> stats = getDashboardStats();
+            String jsonStats = objectMapper.writeValueAsString(stats);
+
+            sessions.entrySet().removeIf(entry -> {
+                WebSocketSession session = entry.getValue();
+                try {
+                    if (session.isOpen()) {
+                        session.sendMessage(new TextMessage(jsonStats));
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } catch (IOException e) {
+                    log.error("메시지 전송 실패: {}", session.getId(), e);
+                    return true;
+                }
+            });
+
+        } catch (Exception e) {
+            log.error("대시보드 통계 조회 실패", e);
         }
     }
 
-    private Map<String, Object> getRealtimeDashboardData() {
+    private void sendDashboardStats(WebSocketSession session) {
+        try {
+            Map<String, Object> stats = getDashboardStats();
+            String jsonStats = objectMapper.writeValueAsString(stats);
+            session.sendMessage(new TextMessage(jsonStats));
+        } catch (Exception e) {
+            log.error("대시보드 통계 전송 실패", e);
+        }
+    }
+
+    private Map<String, Object> getDashboardStats() {
         try {
             int activeUsers = getActiveUsers();
             int eventsPerSecond = getEventsPerSecond();
-            List<Map<String, Object>> topCategories = getTopCategories();
+            Map<String, Integer> topCategories = getTopCategories();
             List<Map<String, Object>> recentEvents = getRecentEvents();
-            List<Map<String, Object>> topItems = getTopItems();
 
             return Map.of(
-                    "timestamp", System.currentTimeMillis(),
                     "activeUsers", activeUsers,
                     "eventsPerSecond", eventsPerSecond,
                     "topCategories", topCategories,
                     "recentEvents", recentEvents,
-                    "topItems", topItems,
-                    "totalEvents", getTotalEvents(),
-                    "totalUsers", getTotalUsers()
+                    "timestamp", System.currentTimeMillis()
             );
-
         } catch (Exception e) {
-            log.error("실시간 대시보드 데이터 조회 실패", e);
+            log.error("대시보드 통계 조회 중 오류", e);
             return Map.of("error", "데이터 조회 실패");
         }
     }
@@ -104,8 +178,7 @@ public class RealtimeDashboardHandler implements WebSocketHandler {
         try {
             return jdbcTemplate.queryForObject(
                     "SELECT COUNT(DISTINCT user_id) FROM user_behavior_events WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 1 HOUR)",
-                    Integer.class
-            );
+                    Integer.class);
         } catch (Exception e) {
             log.error("활성 사용자 수 조회 실패", e);
             return 0;
@@ -116,29 +189,32 @@ public class RealtimeDashboardHandler implements WebSocketHandler {
         try {
             return jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM user_behavior_events WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 1 MINUTE)",
-                    Integer.class
-            );
+                    Integer.class);
         } catch (Exception e) {
-            log.error("초당 이벤트 수 조회 실패", e);
+            log.error("분당 이벤트 수 조회 실패", e);
             return 0;
         }
     }
 
-    private List<Map<String, Object>> getTopCategories() {
+    private Map<String, Integer> getTopCategories() {
         try {
             String sql = """
                 SELECT category, COUNT(*) as count
-                FROM user_behavior_events 
+                FROM user_behavior_events
                 WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
                 AND category IS NOT NULL
                 GROUP BY category
                 ORDER BY count DESC
                 LIMIT 5
                 """;
-            return jdbcTemplate.queryForList(sql);
+
+            return jdbcTemplate.queryForList(sql).stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                            row -> (String) row.get("category"),
+                            row -> ((Number) row.get("count")).intValue()));
         } catch (Exception e) {
             log.error("인기 카테고리 조회 실패", e);
-            return List.of();
+            return Map.of();
         }
     }
 
@@ -146,81 +222,15 @@ public class RealtimeDashboardHandler implements WebSocketHandler {
         try {
             String sql = """
                 SELECT user_id, item_id, action_type, category, timestamp
-                FROM user_behavior_events 
-                ORDER BY timestamp DESC 
-                LIMIT 10
+                FROM user_behavior_events
+                ORDER BY timestamp DESC
+                LIMIT 20
                 """;
+
             return jdbcTemplate.queryForList(sql);
         } catch (Exception e) {
             log.error("최근 이벤트 조회 실패", e);
             return List.of();
         }
-    }
-
-    private List<Map<String, Object>> getTopItems() {
-        try {
-            String sql = """
-                SELECT item_id, category, popularity_score
-                FROM item_popularity
-                ORDER BY popularity_score DESC
-                LIMIT 10
-                """;
-            return jdbcTemplate.queryForList(sql);
-        } catch (Exception e) {
-            log.error("인기 아이템 조회 실패", e);
-            return List.of();
-        }
-    }
-
-    private long getTotalEvents() {
-        try {
-            return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM user_behavior_events", Long.class);
-        } catch (Exception e) {
-            log.error("총 이벤트 수 조회 실패", e);
-            return 0L;
-        }
-    }
-
-    private int getTotalUsers() {
-        try {
-            return jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT user_id) FROM user_behavior_events", Integer.class);
-        } catch (Exception e) {
-            log.error("총 사용자 수 조회 실패", e);
-            return 0;
-        }
-    }
-
-    public void startRealtimeUpdates() {
-        scheduler.scheduleAtFixedRate(() -> {
-            if (!sessions.isEmpty()) {
-                Map<String, Object> data = getRealtimeDashboardData();
-                broadcastToAllSessions(data);
-            }
-        }, 5, 5, TimeUnit.SECONDS);
-    }
-
-    private void broadcastToAllSessions(Map<String, Object> data) {
-        try {
-            String jsonData = objectMapper.writeValueAsString(data);
-            TextMessage message = new TextMessage(jsonData);
-
-            sessions.values().removeIf(session -> {
-                try {
-                    if (session.isOpen()) {
-                        session.sendMessage(message);
-                        return false;
-                    }
-                } catch (IOException e) {
-                    log.error("브로드캐스트 전송 실패: {}", session.getId(), e);
-                }
-                return true; // 연결이 끊어진 세션 제거
-            });
-        } catch (Exception e) {
-            log.error("브로드캐스트 데이터 직렬화 실패", e);
-        }
-    }
-
-    public void stopRealtimeUpdates() {
-        scheduler.shutdown();
     }
 }

@@ -129,7 +129,7 @@ public class UserBehaviorAnalysisJob {
                 new JdbcStatementBuilder<Tuple3<String, String, Long>>() {
                     @Override
                     public void accept(PreparedStatement statement,
-                            Tuple3<String, String, Long> tuple) throws SQLException {
+                                       Tuple3<String, String, Long> tuple) throws SQLException {
                         statement.setString(1, tuple.f0);
                         statement.setString(2, tuple.f1);
                         statement.setLong(3, tuple.f2);
@@ -144,7 +144,7 @@ public class UserBehaviorAnalysisJob {
                         .withUrl("jdbc:mysql://localhost:3306/recommendation")
                         .withDriverName("com.mysql.cj.jdbc.Driver")
                         .withUsername("root")
-                        .withPassword("password")
+                        .withPassword("1234")
                         .build()));
 
         itemPopularity.addSink(JdbcSink.sink(
@@ -154,7 +154,7 @@ public class UserBehaviorAnalysisJob {
                 new JdbcStatementBuilder<Tuple3<String, String, Double>>() {
                     @Override
                     public void accept(PreparedStatement statement,
-                            Tuple3<String, String, Double> tuple) throws SQLException {
+                                       Tuple3<String, String, Double> tuple) throws SQLException {
                         statement.setString(1, tuple.f0);
                         statement.setString(2, tuple.f1);
                         statement.setDouble(3, tuple.f2);
@@ -169,7 +169,7 @@ public class UserBehaviorAnalysisJob {
                         .withUrl("jdbc:mysql://localhost:3306/recommendation")
                         .withDriverName("com.mysql.cj.jdbc.Driver")
                         .withUsername("root")
-                        .withPassword("password")
+                        .withPassword("1234")
                         .build()));
 
         behaviorStream.addSink(JdbcSink.sink(
@@ -200,7 +200,7 @@ public class UserBehaviorAnalysisJob {
                         .withUrl("jdbc:mysql://localhost:3306/recommendation")
                         .withDriverName("com.mysql.cj.jdbc.Driver")
                         .withUsername("root")
-                        .withPassword("password")
+                        .withPassword("1234")
                         .build()));
 
         env.execute("User Behavior Analysis Job");
