@@ -1,22 +1,19 @@
 package com.sleekydz86.ocrstudy1.doamin.model;
 
+import com.sleekydz86.ocrstudy1.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.w3c.dom.DocumentType;
+import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "images")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Image {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class Image extends BaseEntity {
     @Column(nullable = false)
     private String originalFilename;
 
@@ -53,13 +50,6 @@ public class Image {
 
     @Column(length = 2000)
     private String encryptedExtractedIdInfo;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Builder.Default
-    private LocalDateTime updatedAt = LocalDateTime.now();
 
     public void updateOcrText(String ocrText) {
         this.ocrText = ocrText;
