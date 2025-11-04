@@ -229,11 +229,17 @@ OCR Study 01은 **실제 서비스 환경에서 사용 가능한 수준의 문�
    - 기본 자격증명: `minioadmin` / `minioadmin`
    - 버킷 이름: `ocr-study` (자동 생성)
 
-4. **Tesseract OCR**
+4. **Tesseract OCR** ⚠️
+
    - 한국어/영어 언어 데이터 설치 필요
    - Windows: `C:\Program Files\Tesseract-OCR\tessdata`
    - macOS: `/usr/local/share/tessdata`
    - Linux: `/usr/share/tesseract-ocr/4.00/tessdata`
+
+   > **💡 중요**: Tesseract OCR이 없어도 애플리케이션은 실행됩니다. 하지만 OCR 기능은 동작하지 않으며, 빈 텍스트를 반환합니다.
+   >
+   > - 이미지 업로드, 파일 저장, 얼굴 인식 등 다른 기능은 정상 동작합니다.
+   > - OCR 기능을 사용하려면 반드시 Tesseract OCR을 설치해야 합니다.
 
 #### Tesseract OCR 설치 방법
 
