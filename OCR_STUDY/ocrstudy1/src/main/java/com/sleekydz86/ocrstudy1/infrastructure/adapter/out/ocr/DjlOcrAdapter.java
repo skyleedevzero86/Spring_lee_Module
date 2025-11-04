@@ -1,7 +1,7 @@
 package com.sleekydz86.ocrstudy1.infrastructure.adapter.out.ocr;
 
 import com.sleekydz86.ocrstudy1.application.port.out.OcrServicePort;
-import com.sleekydz86.ocrstudy1.domain.model.OcrResult;
+import com.sleekydz86.ocrstudy1.doamin.model.OcrResult;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;

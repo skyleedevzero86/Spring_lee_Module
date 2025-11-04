@@ -4,8 +4,8 @@ import com.sleekydz86.ocrstudy1.application.port.out.AIAnalysisPort;
 import com.sleekydz86.ocrstudy1.doamin.model.DocumentAnalysis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.chat.ChatResponse;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
@@ -25,7 +25,7 @@ public class SpringAIAnalysisAdapter implements AIAnalysisPort {
         try {
             String promptText = buildAnalysisPrompt(ocrText, documentType, filename);
 
-            ChatResponse response = chatClient.call(new Prompt(new UserMessage(promptText)));
+            ChatResponse response = chatClient.prompt().user(promptText).call().chatResponse();
             String aiResponse = response.getResult().getOutput().getContent();
 
             return parseAIResponse(aiResponse, ocrText, documentType);
@@ -40,7 +40,7 @@ public class SpringAIAnalysisAdapter implements AIAnalysisPort {
     public DocumentAnalysis verifyDocument(String ocrText, String documentType, Map<String, String> extractedInfo) {
         try {
             String promptText = buildVerificationPrompt(ocrText, documentType, extractedInfo);
-            ChatResponse response = chatClient.call(new Prompt(new UserMessage(promptText)));
+            ChatResponse response = chatClient.prompt().user(promptText).call().chatResponse();
             String aiResponse = response.getResult().getOutput().getContent();
 
             return parseVerificationResponse(aiResponse, ocrText, documentType, extractedInfo);
@@ -71,8 +71,8 @@ public class SpringAIAnalysisAdapter implements AIAnalysisPort {
                     "ocrText", ocrText != null ? ocrText : ""
             );
 
-            Prompt prompt = promptTemplate.create(variables);
-            ChatResponse response = chatClient.call(prompt);
+            String promptText = promptTemplate.render(variables);
+            ChatResponse response = chatClient.prompt().user(promptText).call().chatResponse();
             String summary = response.getResult().getOutput().getContent();
 
             return summary != null ? summary.trim() : "요약을 생성할 수 없습니다.";
