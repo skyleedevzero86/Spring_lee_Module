@@ -5,7 +5,9 @@ import ai.djl.inference.Predictor;
 import ai.djl.modality.cv.Image;
 import ai.djl.modality.cv.ImageFactory;
 import ai.djl.modality.cv.output.DetectedObjects;
+import ai.djl.modality.cv.output.BoundingBox;
 import ai.djl.modality.cv.output.Rectangle;
+import ai.djl.modality.Classifications;
 import ai.djl.modality.cv.transform.Normalize;
 import ai.djl.modality.cv.transform.Resize;
 import ai.djl.modality.cv.transform.ToTensor;
@@ -168,15 +170,17 @@ public class DjlFaceRecognitionAdapter implements FaceRecognitionPort {
         try (Predictor<Image, DetectedObjects> predictor = model.newPredictor()) {
             DetectedObjects detections = predictor.predict(image);
 
-            for (ai.djl.modality.cv.output.DetectedObjects.DetectedObject detection : detections.items()) {
+            List<DetectedObjects.DetectedObject> items = detections.items();
+            for (DetectedObjects.DetectedObject detection : items) {
                 if (detection.getClassName().equals("face") && detection.getProbability() > 0.5) {
-                    Rectangle boundingBox = detection.getBoundingBox();
+                    BoundingBox boundingBox = detection.getBoundingBox();
+                    Rectangle bounds = boundingBox.getBounds();
 
                     FaceRecognition.FaceInfo faceInfo = FaceRecognition.FaceInfo.builder()
-                            .x(boundingBox.getX())
-                            .y(boundingBox.getY())
-                            .width(boundingBox.getWidth())
-                            .height(boundingBox.getHeight())
+                            .x(bounds.getX())
+                            .y(bounds.getY())
+                            .width(bounds.getWidth())
+                            .height(bounds.getHeight())
                             .confidence(detection.getProbability())
                             .encoding("")
                             .build();
@@ -187,7 +191,7 @@ public class DjlFaceRecognitionAdapter implements FaceRecognitionPort {
 
             log.info("Detected {} faces in image", faces.size());
 
-        } catch (TranslateException | ModelException e) {
+        } catch (TranslateException e) {
             log.error("Failed to perform face detection with model", e);
         }
 
@@ -202,10 +206,10 @@ public class DjlFaceRecognitionAdapter implements FaceRecognitionPort {
         }
 
         try {
-            int x = Math.max(0, (int) faceInfo.getX());
-            int y = Math.max(0, (int) faceInfo.getY());
-            int width = Math.max(1, (int) faceInfo.getWidth());
-            int height = Math.max(1, (int) faceInfo.getHeight());
+            int x = Math.max(0, faceInfo.getX().intValue());
+            int y = Math.max(0, faceInfo.getY().intValue());
+            int width = Math.max(1, faceInfo.getWidth().intValue());
+            int height = Math.max(1, faceInfo.getHeight().intValue());
 
             int imgWidth = image.getWidth();
             int imgHeight = image.getHeight();
@@ -333,7 +337,7 @@ public class DjlFaceRecognitionAdapter implements FaceRecognitionPort {
 
         @Override
         public DetectedObjects processOutput(TranslatorContext ctx, NDList list) {
-            return new DetectedObjects(new ArrayList<>());
+            return new DetectedObjects(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         }
     }
 

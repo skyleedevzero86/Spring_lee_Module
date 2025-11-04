@@ -92,7 +92,7 @@ public class DjlOcrAdapter implements OcrServicePort {
         List<OcrResult.BoundingBox> boxes = new ArrayList<>();
 
         try {
-            List<Word> words = tesseract.getWords(image, ITesseract.RenderedFormat.TEXT);
+            List<Word> words = tesseract.getWords(image, 1);
 
             if (words != null && !words.isEmpty()) {
                 for (Word word : words) {
@@ -141,7 +141,7 @@ public class DjlOcrAdapter implements OcrServicePort {
 
     private double calculateAverageConfidence(BufferedImage image) {
         try {
-            List<Word> words = tesseract.getWords(image, ITesseract.RenderedFormat.TEXT);
+            List<Word> words = tesseract.getWords(image, 1); 
             if (words != null && !words.isEmpty()) {
                 double totalConfidence = 0.0;
                 int count = 0;

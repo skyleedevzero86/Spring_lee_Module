@@ -1,8 +1,8 @@
 package com.sleekydz86.ocrstudy1.global.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -45,10 +45,14 @@ public class RedisConfig {
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
+        
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Object.class)
+                .allowIfSubType("com.sleekydz86.ocrstudy1")
+                .build();
         objectMapper.activateDefaultTyping(
-                TypeFactory.defaultInstance(),
-                ObjectMapper.DefaultTyping.NON_FINAL,
-                JsonTypeInfo.As.PROPERTY
+                ptv,
+                ObjectMapper.DefaultTyping.NON_FINAL
         );
 
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
@@ -63,10 +67,14 @@ public class RedisConfig {
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
+        
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Object.class)
+                .allowIfSubType("com.sleekydz86.ocrstudy1")
+                .build();
         objectMapper.activateDefaultTyping(
-                TypeFactory.defaultInstance(),
-                ObjectMapper.DefaultTyping.NON_FINAL,
-                JsonTypeInfo.As.PROPERTY
+                ptv,
+                ObjectMapper.DefaultTyping.NON_FINAL
         );
 
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);

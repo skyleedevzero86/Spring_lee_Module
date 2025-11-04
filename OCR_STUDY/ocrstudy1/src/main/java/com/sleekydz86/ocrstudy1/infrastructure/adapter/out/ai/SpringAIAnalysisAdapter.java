@@ -25,8 +25,7 @@ public class SpringAIAnalysisAdapter implements AIAnalysisPort {
         try {
             String promptText = buildAnalysisPrompt(ocrText, documentType, filename);
 
-            ChatResponse response = chatClient.prompt().user(promptText).call().chatResponse();
-            String aiResponse = response.getResult().getOutput().getContent();
+            String aiResponse = chatClient.prompt().user(promptText).call().content();
 
             return parseAIResponse(aiResponse, ocrText, documentType);
 
@@ -40,8 +39,7 @@ public class SpringAIAnalysisAdapter implements AIAnalysisPort {
     public DocumentAnalysis verifyDocument(String ocrText, String documentType, Map<String, String> extractedInfo) {
         try {
             String promptText = buildVerificationPrompt(ocrText, documentType, extractedInfo);
-            ChatResponse response = chatClient.prompt().user(promptText).call().chatResponse();
-            String aiResponse = response.getResult().getOutput().getContent();
+            String aiResponse = chatClient.prompt().user(promptText).call().content();
 
             return parseVerificationResponse(aiResponse, ocrText, documentType, extractedInfo);
 
@@ -72,8 +70,7 @@ public class SpringAIAnalysisAdapter implements AIAnalysisPort {
             );
 
             String promptText = promptTemplate.render(variables);
-            ChatResponse response = chatClient.prompt().user(promptText).call().chatResponse();
-            String summary = response.getResult().getOutput().getContent();
+            String summary = chatClient.prompt().user(promptText).call().content();
 
             return summary != null ? summary.trim() : "요약을 생성할 수 없습니다.";
 
