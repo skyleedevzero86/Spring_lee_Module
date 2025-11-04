@@ -91,7 +91,7 @@ public class ImageUploadService implements ImageUploadUseCase {
             }
 
 
-            if (faceRecognition.isHasFace()) {
+            if (faceRecognition.getHasFace() != null && faceRecognition.getHasFace()) {
                 String faceEncoding = faceRecognition.getFaces().isEmpty()
                         ? ""
                         : faceRecognition.getFaces().get(0).getEncoding();
@@ -102,7 +102,7 @@ public class ImageUploadService implements ImageUploadUseCase {
 
             IdVerification idVerification = idVerificationUseCase.verifyIdCard(image.getId());
             String extractedInfo = null;
-            if (idVerification.isIdCard()) {
+            if (idVerification.getIsIdCard() != null && idVerification.getIsIdCard()) {
                 if (idVerification.getExtractedInfo() != null) {
                     extractedInfo = formatIdInfo(idVerification.getExtractedInfo());
 
@@ -119,8 +119,8 @@ public class ImageUploadService implements ImageUploadUseCase {
                     image.getId(),
                     image.getOriginalFilename(),
                     ocrText,
-                    faceRecognition.isHasFace(),
-                    idVerification.isIdCard(),
+                    faceRecognition.getHasFace() != null && faceRecognition.getHasFace(),
+                    idVerification.getIsIdCard() != null && idVerification.getIsIdCard(),
                     extractedInfo
             );
 
