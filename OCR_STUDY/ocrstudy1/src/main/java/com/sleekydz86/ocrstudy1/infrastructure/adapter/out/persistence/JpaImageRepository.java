@@ -63,10 +63,5 @@ public class JpaImageRepository implements ImageRepository {
     public void deleteById(Long id) {
         springDataImageRepository.deleteById(id);
     }
-
-    interface SpringDataImageRepository extends JpaRepository<Image, Long> {
-        Optional<Image> findTopByOrderByCreatedAtDesc();
-        Page<Image> findByDocumentType(DocumentType documentType, Pageable pageable);
-    }
 }
 
