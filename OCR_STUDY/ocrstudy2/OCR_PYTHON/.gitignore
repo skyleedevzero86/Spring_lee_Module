@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+*.log
+
+
+# Restrict updates: allow only Python sources and README.md
+# Ignore everything by default
+*
+
+# Keep these tracked
+!.gitignore
+!**/*.py
+!**/[Rr][Ee][Aa][Dd][Mm][Ee].md
