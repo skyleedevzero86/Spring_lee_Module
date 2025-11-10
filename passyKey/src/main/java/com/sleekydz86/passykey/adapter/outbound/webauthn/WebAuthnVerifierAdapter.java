@@ -14,6 +14,7 @@ import com.webauthn4j.data.RegistrationParameters;
 import com.webauthn4j.data.AuthenticationParameters;
 import com.webauthn4j.data.RegistrationRequest;
 import com.webauthn4j.data.AuthenticationRequest;
+import com.webauthn4j.credential.CredentialRecord;
 import com.webauthn4j.util.exception.WebAuthnException;
 import org.springframework.stereotype.Component;
 
@@ -31,20 +32,19 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
     }
 
     @Override
-    public void verifyRegistration(byte[] attestationObjectBytes, byte[] clientDataJSONBytes, ServerProperty serverProperty) {
+    public void verifyRegistration(byte[] attestationObjectBytes, byte[] clientDataJSONBytes,
+            ServerProperty serverProperty) {
         RegistrationRequest registrationRequest = new RegistrationRequest(
                 attestationObjectBytes,
                 clientDataJSONBytes,
                 null,
-                null
-        );
+                null);
 
         RegistrationParameters registrationParameters = new RegistrationParameters(
                 serverProperty,
                 Collections.emptyList(),
                 false,
-                true
-        );
+                true);
 
         try {
             webAuthnManager.validate(registrationRequest, registrationParameters);
@@ -55,34 +55,21 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
 
     @Override
     public void verifyAuthentication(byte[] authenticatorDataBytes, byte[] clientDataJSONBytes,
-                                     byte[] signatureBytes, byte[] userHandle, ServerProperty serverProperty,
-                                     RegisteredCredential registeredCredential) {
-        AuthenticatorAssertionResponse response = new AuthenticatorAssertionResponse(
+            byte[] signatureBytes, byte[] userHandle, ServerProperty serverProperty,
+            RegisteredCredential registeredCredential) {
+        AuthenticationRequest authenticationRequest = new AuthenticationRequest(
+                registeredCredential.getCredentialId(),
                 authenticatorDataBytes,
                 clientDataJSONBytes,
                 signatureBytes,
-                userHandle
-        );
-
-        com.webauthn4j.data.attestation.authenticator.Credential credential =
-                com.webauthn4j.data.attestation.authenticator.Credential.builder()
-                        .credentialId(registeredCredential.getCredentialId())
-                        .publicKeyCOSE(registeredCredential.getPublicKeyCose())
-                        .signCount(registeredCredential.getCounter())
-                        .userHandle(registeredCredential.getUserHandle())
-                        .build();
-
-        AuthenticationRequest authenticationRequest = new AuthenticationRequest(
-                response,
-                serverProperty
-        );
+                userHandle);
 
         AuthenticationParameters authenticationParameters = new AuthenticationParameters(
                 serverProperty,
-                Collections.singletonList(credential),
+                registeredCredential,
                 null,
-                false
-        );
+                false,
+                true);
 
         try {
             webAuthnManager.validate(authenticationRequest, authenticationParameters);
@@ -96,8 +83,7 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
         return new ServerProperty(
                 origin,
                 rpId,
-                challenge
-        );
+                challenge);
     }
 
     @Override
@@ -116,6 +102,3 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
         return authenticatorData.getSignCount();
     }
 }
-
-
-
