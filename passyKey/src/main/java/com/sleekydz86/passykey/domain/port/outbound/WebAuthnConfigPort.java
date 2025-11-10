@@ -6,3 +6,4 @@ public interface WebAuthnConfigPort {
     String getAllowedOrigins();
 }
 
+

@@ -10,3 +10,4 @@ public interface WebAuthnRegistrationUseCase {
                             String clientDataJSONBase64, String[] transports, HttpSession session);
 }
 
+

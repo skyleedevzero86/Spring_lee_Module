@@ -13,3 +13,4 @@ public interface WebAuthnCredentialRepositoryPort {
     void deleteByCredentialId(String credentialId);
 }
 
+

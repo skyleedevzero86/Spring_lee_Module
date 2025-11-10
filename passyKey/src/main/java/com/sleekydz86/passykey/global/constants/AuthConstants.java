@@ -10,3 +10,4 @@ public final class AuthConstants {
     public static final String REDIRECT_LOGIN = "/login";
 }
 
+

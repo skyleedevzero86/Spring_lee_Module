@@ -15,3 +15,4 @@ public interface WebAuthnVerifierPort {
     long extractSignCount(byte[] authenticatorDataBytes);
 }
 
+

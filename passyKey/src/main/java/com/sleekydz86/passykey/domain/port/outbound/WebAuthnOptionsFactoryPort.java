@@ -13,3 +13,4 @@ public interface WebAuthnOptionsFactoryPort {
     PublicKeyCredentialRequestOptions createAuthenticationOptions(Challenge challenge, String rpId, List<WebAuthnCredential> credentials);
 }
 
+
