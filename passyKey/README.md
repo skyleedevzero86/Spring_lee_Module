@@ -331,4 +331,7 @@ Authorization: Bearer <token>
 ## 📧 문의
 
 프로젝트에 대한 문의사항이 있으시면 이슈를 생성해주세요.
+<br/>
+
+<a href="https://velog.io/@sleekydevzero86/spring-webauthn-passkeys-implementation">비밀번호 없는 인증, Spring Boot 서버 측 검증 로직 적용하기</a>
 
