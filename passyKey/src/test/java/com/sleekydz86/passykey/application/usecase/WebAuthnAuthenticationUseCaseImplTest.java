@@ -1,5 +1,6 @@
 package com.sleekydz86.passykey.application.usecase;
 
+import com.sleekydz86.passykey.adapter.outbound.webauthn.RegisteredCredential;
 import com.sleekydz86.passykey.domain.model.User;
 import com.sleekydz86.passykey.domain.model.WebAuthnCredential;
 import com.sleekydz86.passykey.domain.port.outbound.ChallengeServicePort;
@@ -144,7 +145,7 @@ class WebAuthnAuthenticationUseCaseImplTest {
                 .thenReturn(serverProperty);
         doNothing().when(verifierPort).verifyAuthentication(
                 any(byte[].class), any(byte[].class), any(byte[].class),
-                any(byte[].class), eq(serverProperty), any());
+                any(byte[].class), eq(serverProperty), any(RegisteredCredential.class));
         doNothing().when(challengeService).removeChallenge(
                 "sessionId", WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
         when(verifierPort.extractSignCount(any(byte[].class))).thenReturn(1L);
@@ -160,7 +161,7 @@ class WebAuthnAuthenticationUseCaseImplTest {
         assertThat(result.getUsername()).isEqualTo("testuser");
         verify(verifierPort, times(1)).verifyAuthentication(
                 any(byte[].class), any(byte[].class), any(byte[].class),
-                any(byte[].class), eq(serverProperty), any());
+                any(byte[].class), eq(serverProperty), any(RegisteredCredential.class));
         verify(challengeService, times(1)).removeChallenge(
                 "sessionId", WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
         verify(credentialRepository, times(1)).save(any(WebAuthnCredential.class));
@@ -181,7 +182,7 @@ class WebAuthnAuthenticationUseCaseImplTest {
 
         verify(verifierPort, never()).verifyAuthentication(
                 any(byte[].class), any(byte[].class), any(byte[].class),
-                any(byte[].class), any(), any());
+                any(byte[].class), any(), any(RegisteredCredential.class));
     }
 
     @Test
@@ -202,7 +203,7 @@ class WebAuthnAuthenticationUseCaseImplTest {
 
         verify(verifierPort, never()).verifyAuthentication(
                 any(byte[].class), any(byte[].class), any(byte[].class),
-                any(byte[].class), any(), any());
+                any(byte[].class), any(), any(RegisteredCredential.class));
     }
 
     @Test
@@ -222,7 +223,7 @@ class WebAuthnAuthenticationUseCaseImplTest {
         doThrow(new WebAuthnException("검증 실패"))
                 .when(verifierPort).verifyAuthentication(
                         any(byte[].class), any(byte[].class), any(byte[].class),
-                        any(byte[].class), eq(serverProperty), any());
+                        any(byte[].class), eq(serverProperty), any(RegisteredCredential.class));
 
         // when & then
         assertThatThrownBy(() -> authenticationUseCase.authenticate(
