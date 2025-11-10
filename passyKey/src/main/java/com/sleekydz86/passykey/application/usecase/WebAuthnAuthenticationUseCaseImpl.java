@@ -15,7 +15,7 @@ import com.sleekydz86.passykey.global.exception.CredentialNotFoundException;
 import com.sleekydz86.passykey.global.exception.WebAuthnException;
 import com.sleekydz86.passykey.global.util.Base64UrlConverter;
 import com.webauthn4j.data.PublicKeyCredentialRequestOptions;
-import com.webauthn4j.data.attestation.authenticator.RegisteredCredential;
+import com.sleekydz86.passykey.adapter.outbound.webauthn.RegisteredCredential;
 import com.webauthn4j.data.client.Origin;
 import com.webauthn4j.data.client.challenge.Challenge;
 import com.webauthn4j.server.ServerProperty;
