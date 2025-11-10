@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>회원가입 - PassyKey</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>PassyKey 회원가입</h1>
+      </header>
+      <main>
+        <div class="auth-card">
+          <form id="registerForm">
+            <div class="form-group">
+              <label for="username">사용자명</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                required
+                minlength="3"
+                maxlength="50"
+              />
+              <span class="error-message" id="usernameError"></span>
+            </div>
+            <div class="form-group">
+              <label for="email">이메일</label>
+              <input type="email" id="email" name="email" required />
+              <span class="error-message" id="emailError"></span>
+            </div>
+            <div class="form-group">
+              <label for="displayName">표시 이름</label>
+              <input
+                type="text"
+                id="displayName"
+                name="displayName"
+                required
+                maxlength="100"
+              />
+            </div>
+            <div class="form-group">
+              <label for="password">비밀번호</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                minlength="6"
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">회원가입</button>
+          </form>
+          <div id="registerMessage" class="message"></div>
+          <div class="divider">
+            <span>회원가입 후 패스키를 추가하세요</span>
+          </div>
+          <button
+            id="addPasskeyBtn"
+            class="btn btn-secondary"
+            style="display: none"
+          >
+            패스키 추가
+          </button>
+          <div id="passkeyMessage" class="message"></div>
+          <div class="link-section">
+            <a href="/login">이미 계정이 있으신가요? 로그인</a>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script th:src="@{/js/register.js}"></script>
+  </body>
+</html>

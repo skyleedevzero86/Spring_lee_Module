@@ -1,0 +1,109 @@
+package com.sleekydz86.passykey.application.usecase;
+
+import com.sleekydz86.passykey.domain.model.User;
+import com.sleekydz86.passykey.domain.model.WebAuthnCredential;
+import com.sleekydz86.passykey.domain.port.inbound.WebAuthnRegistrationUseCase;
+import com.sleekydz86.passykey.domain.port.outbound.ChallengeServicePort;
+import com.sleekydz86.passykey.domain.port.outbound.WebAuthnConfigPort;
+import com.sleekydz86.passykey.domain.port.outbound.WebAuthnCredentialRepositoryPort;
+import com.sleekydz86.passykey.domain.port.outbound.WebAuthnOptionsFactoryPort;
+import com.sleekydz86.passykey.domain.port.outbound.WebAuthnVerifierPort;
+import com.sleekydz86.passykey.global.constants.WebAuthnConstants;
+import com.sleekydz86.passykey.global.exception.ChallengeExpiredException;
+import com.sleekydz86.passykey.global.exception.WebAuthnException;
+import com.sleekydz86.passykey.global.util.Base64UrlConverter;
+import com.webauthn4j.data.PublicKeyCredentialCreationOptions;
+import com.webauthn4j.data.client.Origin;
+import com.webauthn4j.data.client.challenge.Challenge;
+import com.webauthn4j.server.ServerProperty;
+import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class WebAuthnRegistrationUseCaseImpl implements WebAuthnRegistrationUseCase {
+
+    private static final Logger logger = LoggerFactory.getLogger(WebAuthnRegistrationUseCaseImpl.class);
+
+    private final WebAuthnCredentialRepositoryPort credentialRepository;
+    private final ChallengeServicePort challengeService;
+    private final WebAuthnOptionsFactoryPort optionsFactory;
+    private final WebAuthnVerifierPort verifierPort;
+    private final WebAuthnConfigPort configPort;
+
+    public WebAuthnRegistrationUseCaseImpl(
+            WebAuthnCredentialRepositoryPort credentialRepository,
+            ChallengeServicePort challengeService,
+            WebAuthnOptionsFactoryPort optionsFactory,
+            WebAuthnVerifierPort verifierPort,
+            WebAuthnConfigPort configPort) {
+        this.credentialRepository = credentialRepository;
+        this.challengeService = challengeService;
+        this.optionsFactory = optionsFactory;
+        this.verifierPort = verifierPort;
+        this.configPort = configPort;
+    }
+
+    @Override
+    public PublicKeyCredentialCreationOptions createRegistrationOptions(User user, HttpSession session) {
+        String sessionId = session.getId();
+        Challenge challenge = challengeService.generateAndStoreChallenge(
+                sessionId, WebAuthnConstants.CHALLENGE_TYPE_REGISTRATION);
+
+        return optionsFactory.createRegistrationOptions(
+                user, challenge, configPort.getRpId(), configPort.getRpName());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void registerCredential(User user, String credentialId, String attestationObjectBase64,
+                                   String clientDataJSONBase64, String[] transports, HttpSession session) {
+        try {
+            byte[] attestationObjectBytes = Base64UrlConverter.decode(attestationObjectBase64);
+            byte[] clientDataJSONBytes = Base64UrlConverter.decode(clientDataJSONBase64);
+
+            byte[] publicKeyCose = verifierPort.extractPublicKeyCose(attestationObjectBytes);
+
+            String sessionId = session.getId();
+            Challenge challenge = challengeService.getChallenge(
+                    sessionId, WebAuthnConstants.CHALLENGE_TYPE_REGISTRATION);
+
+            if (challenge == null) {
+                throw new ChallengeExpiredException("챌린지를 찾을 수 없거나 만료되었습니다");
+            }
+
+            Origin origin = new Origin(configPort.getAllowedOrigins());
+            ServerProperty serverProperty = verifierPort.createServerProperty(
+                    origin, configPort.getRpId(), challenge);
+
+            verifierPort.verifyRegistration(attestationObjectBytes, clientDataJSONBytes, serverProperty);
+            challengeService.removeChallenge(sessionId, WebAuthnConstants.CHALLENGE_TYPE_REGISTRATION);
+
+            saveCredential(user, credentialId, publicKeyCose, transports);
+            logger.info("사용자 인증서 등록 성공: {}", user.getUsername());
+        } catch (WebAuthnException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("인증서 등록 실패", e);
+            throw new WebAuthnException("인증서 등록 실패: " + e.getMessage(), e);
+        }
+    }
+
+    private void saveCredential(User user, String credentialId, byte[] publicKeyCose, String[] transports) {
+        String transportsString = transports != null
+                ? String.join(WebAuthnConstants.TRANSPORT_SEPARATOR, transports)
+                : "";
+
+        WebAuthnCredential credential = new WebAuthnCredential(
+                credentialId,
+                Base64UrlConverter.encode(publicKeyCose),
+                WebAuthnConstants.CREDENTIAL_COUNTER_INITIAL,
+                transportsString,
+                user
+        );
+
+        credentialRepository.save(credential);
+    }
+}

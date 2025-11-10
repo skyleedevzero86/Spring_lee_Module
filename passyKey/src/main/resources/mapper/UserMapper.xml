@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.passykey.adapter.outbound.persistence.UserMyBatisMapper">
+
+    <resultMap id="userResultMap" type="User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <result property="displayName" column="display_name"/>
+        <result property="userHandle" column="user_handle"/>
+        <result property="enabled" column="enabled"/>
+        <result property="accountNonExpired" column="account_non_expired"/>
+        <result property="accountNonLocked" column="account_non_locked"/>
+        <result property="credentialsNonExpired" column="credentials_non_expired"/>
+    </resultMap>
+
+    <select id="save" statementType="CALLABLE" parameterType="map">
+        {CALL sp_save_user(
+            #{operation, mode=IN, jdbcType=CHAR},
+            #{user.id, mode=IN, jdbcType=BIGINT},
+            #{user.username, mode=IN, jdbcType=VARCHAR},
+            #{user.password, mode=IN, jdbcType=VARCHAR},
+            #{user.email, mode=IN, jdbcType=VARCHAR},
+            #{user.displayName, mode=IN, jdbcType=VARCHAR},
+            #{user.userHandle, mode=IN, jdbcType=VARCHAR},
+            #{user.enabled, mode=IN, jdbcType=BOOLEAN},
+            #{user.accountNonExpired, mode=IN, jdbcType=BOOLEAN},
+            #{user.accountNonLocked, mode=IN, jdbcType=BOOLEAN},
+            #{user.credentialsNonExpired, mode=IN, jdbcType=BOOLEAN},
+            #{resultId, mode=OUT, jdbcType=BIGINT}
+        )}
+    </select>
+
+    <select id="selectById" parameterType="Long" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle, 
+               enabled, account_non_expired, account_non_locked, credentials_non_expired
+        FROM users WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" parameterType="String" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle, 
+               enabled, account_non_expired, account_non_locked, credentials_non_expired
+        FROM users WHERE username = #{username}
+    </select>
+
+    <select id="selectByEmail" parameterType="String" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle, 
+               enabled, account_non_expired, account_non_locked, credentials_non_expired
+        FROM users WHERE email = #{email}
+    </select>
+
+    <select id="selectByUserHandle" parameterType="String" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle, 
+               enabled, account_non_expired, account_non_locked, credentials_non_expired
+        FROM users WHERE user_handle = #{userHandle}
+    </select>
+
+    <select id="selectAll" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle, 
+               enabled, account_non_expired, account_non_locked, credentials_non_expired
+        FROM v_users
+    </select>
+
+    <select id="existsByUsername" parameterType="String" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM users WHERE username = #{username}
+    </select>
+
+    <select id="existsByEmail" parameterType="String" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM users WHERE email = #{email}
+    </select>
+
+</mapper>
