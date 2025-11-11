@@ -23,10 +23,10 @@ public class ProductController {
         int result = productService.executeCrudOperation("INSERT", product);
         if (result > 0) {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body("Product inserted successfully. ID: " + product.getId());
+                    .body("상품이 성공적으로 등록되었습니다. ID: " + product.getId());
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Failed to insert product");
+                .body("상품 등록에 실패했습니다");
     }
 
     @PutMapping("/{id}")
@@ -34,10 +34,10 @@ public class ProductController {
         product.setId(id);
         int result = productService.executeCrudOperation("UPDATE", product);
         if (result > 0) {
-            return ResponseEntity.ok("Product updated successfully");
+            return ResponseEntity.ok("상품이 성공적으로 수정되었습니다");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Product not found or update failed");
+                .body("상품을 찾을 수 없거나 수정에 실패했습니다");
     }
 
     @DeleteMapping("/{id}")
@@ -46,10 +46,10 @@ public class ProductController {
         product.setId(id);
         int result = productService.executeCrudOperation("DELETE", product);
         if (result > 0) {
-            return ResponseEntity.ok("Product deleted successfully");
+            return ResponseEntity.ok("상품이 성공적으로 삭제되었습니다");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Product not found or delete failed");
+                .body("상품을 찾을 수 없거나 삭제에 실패했습니다");
     }
 
     @GetMapping("/{id}")
@@ -94,9 +94,9 @@ public class ProductController {
             @RequestBody Product product) {
         int result = productService.executeProcedure(operation, product);
         if (result > 0) {
-            return ResponseEntity.ok("Procedure executed successfully. Affected rows: " + result);
+            return ResponseEntity.ok("프로시저가 성공적으로 실행되었습니다. 영향받은 행 수: " + result);
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Procedure execution failed");
+                .body("프로시저 실행에 실패했습니다");
     }
 }
