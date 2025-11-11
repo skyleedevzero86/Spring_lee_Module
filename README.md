@@ -98,6 +98,7 @@
 
 - AbstractFactoryDesign
 - BuilderDesignPattern
+- Strategy
 
 ### 특수 기능
 
