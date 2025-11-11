@@ -1,100 +1,108 @@
 # Spring_lee_Module
-스프링 basic Study 복습<br/>
-1. DB락 <br/>
 
-2. 단축주소는 테이블의 주키(숫자)를 사용기능추가<br/>
-   - 301,302 사용 금지 및 타임리프 사용 하면 안됨 X<br/>
-   - REST API로 구현 및 단축주소가 생성되면 제목만 수정할 수 있고, 다른 부분은 수정 X <br/>
-   
-3. RabbitMQ with STOMP 학습<br/>
-   - HTTP<br/>
-          - 통신 방식 : 1 : 1<br/>
-          - 실패가능성 : 있음<br/>
-          - 즉시응답가능 : 가능<br/><br/>
-   - 큐<br/>
-          - 통신 방식 : 1 : N<br/>
-          - 실패가능성 : 없음<br/>
-          - 신뢰성있는 통신<br/>
-          - 즉시응답가능 : 불가능<br/><br/>
-   - RabbitMQ<br/>
-          - 사용방식 : 메세지 큐<br/>
-          - 단톡방의 이름 : 익스체인지<br/>
-          - 단톡방에 메세지 보내는 사람 : 프로듀서<br/>
-          - 단톡방에 전달된 메세지를 읽는 사람 : 컨슈머<br/>
-          - 실질적으로는 익스체인지에는 1개 이상의 큐가 연결되어 있고, 컨슈머는 큐를 섭스크라이브 한다.<br/>
-          - 특정 익스체인지에 전달된 데이터가 해당 익스체인지에 연결된 큐들중 누구에게 데이터를 전달할지는 바인딩 룰이 결정된다.<br/>
-          - 즉 특정 익스체인지에 전달된 데이터가 해당 익스체인지에 연결된 큐들에게 무조건 전달되는 것은 아니다.<br/><br/>
-   - 카프카 미니 이벤트 추가<br/>
-   
-4. 메일리서치<br/>
-          - Elasticsearch와 유사한 기능, 1천개의 결과를 5초 만에 찾을 수 있을 정도<br/>
-          - 게시판에서 제목, 본문, 작성자 등을 검색할 때 유용하며 검색은 풀 스캔을 수행하기에 성능이 좋지 않지만, 고성능 검색을 가능<br/>
-          - 특히 한글 텍스트의 경우 데이터베이스 풀텍스트 인덱스를 지원하지 않아 외부 도구가 필요한데, Elasticsearch보다 가벼우면서도 쉽게 사용할 수 있는 대안<br/>
-          
-5. fly클라우드<br/>
-          - AWS,NCP 대신 사용.. 버전 업데이트용
-   
-7. 맹_Study<br/>
-          - 스터디 그룹 좀더 효율적인 코드를 작성하기위해 스터디모임<br/>
-          - 코틀린 베이직 모드<br/>
-          - 코틀린 패턴 <br/>
+스프링 basic Study 복습
 
+## 목차
 
+### 데이터베이스 & 동시성 제어
 
-9. 베이직 MSA<br/>
-          - msa 프로젝트 하기위해서 베이직 학습
+- DB_Study
+- basic_lock2
+- concurrency
+- payment_study
 
-10. api 스터디용<br/>
-          -  복습 차원
+### URL 단축 서비스
 
-11. 디코서버 확인용<br/>
-         - AWS 배포 실시간 확인하기위해 학습용
-12. 슬랙서버 확인용<br/>
-         - NCP 배포 실시간 확인하기위해 학습용
+- studyUrl
 
-13. jooq_basic업로드<br/>
-         - jooq_basic 업로드
+### 메시지 큐 & 이벤트 스트리밍
 
-14. 멱등성의 이해와 실전 적용: 토스페이먼츠 예제를 활용한 결제 시스템 구축<br/>
-         - https://blog.naver.com/sleekydz86/223296131758
+- rabbit_mq
+- flink_event
 
-14. 코틀린과 스프링부트로 간단한 Rest API 서버 만들기: 입문 가이드<br/>
-         - https://velog.io/@sleekydevzero86/kotlin-springboot-rest-api-guide
+### 검색 엔진
 
-15. 베이직2 MSA<br/>
-          - msa 프로젝트 하기위해서 베이직 학습(발표용 - youtube에 적용)
+- sb_search
+- Ai_Search
 
-16. 하이버네이트 레거시 시리즈<br/>
-         - Hibernate2,Hibernate3,jqgrid
+### MSA (Microservices Architecture)
 
-17. 동시성
-18. # 💸 쿠폰 발행 서비스
-## 동시성 제어
-### synchronized 를 이용한 동시성 제어
+- bt_msa
+- lky_msa
+  - authentication-server
+  - config-server
+  - eureka-server
+  - gateway-server
+  - history-service
+  - mstudy
 
-- 장점
-  - 자바에서 제공하는 내장 동기화 메커니즘으로 사용하기 쉽다.
-  - 간단하고 명료한 방법으로 스레드 간의 경쟁 조건을 제어할 수 있다.
-- 단점
-  - 락을 획득한 스레드만 해당 블록을 실행할 수 있으므로 데드락의 위험이 존재한다.
-  - 성능 면에서 다른 동시성 제어 메커니즘에 비해 비효율적일 수 있다.
-  - 다중 서버 환경에서 사용할 수 없다.
-### DB 배타락을 이용한 동시성 제어
+### gRPC
 
-- 장점
-  - 데이터베이스 트랜잭션을 활용하여 데이터 일관성을 보장하는 강력한 방법이다.
-  - 다중 서버 환경에서 동시성 문제를 해결하는데 유용하다.
-- 단점
-  - 데이터베이스 락을 사용하면 성능 저하가 발생할 수 있다.
-  - 데이터베이스 락을 오용하면 데드락이 발생할 수 있으며, 이를 처리하는데 복잡한 로직이 필요하다.
-  - 데이터베이스 락을 사용하면, 해당 트랜잭션 커밋전까지 읽기가 불가능하여, 순차차감 데이터에 대해 조회가 불가능하다.
-### 분산락을 이용한 동시성 제어
-- 장점
-  - 분산 시스템에서의 동시성 문제를 처리하는데 유용하다.
-  - 다양한 분산락 알고리즘을 통해 세밀한 동시성 제어를 가능하게 한다.
-- 단점
-  - 구현과 관리가 복잡하며, 올바르게 구현하기 어렵다.
-  - 네트워크 지연 등과 같은 외부 요인에 의해 성능이 영향을 받을 수 있다.
-    
-19. NextSpring
-    - Next.js 버전 학습하기위해 만듬
+- grpc_basic
+- grpc_basic2
+- grpc_client_basic
+- grpc-multi-server
+- Ggrpc\_모음집
+
+### ORM & 데이터베이스 프레임워크
+
+- Hibernate2
+- Hibernate3
+- jpa_jqgrid
+- jqboot
+- mybatis_batch
+- mybatis_batch2
+
+### AOP (Aspect-Oriented Programming)
+
+- AOP\_리마인드
+  - Aop001
+  - Aop002
+  - Aop003
+  - Aop004
+  - Aop005
+  - Aop006
+  - Aop007
+  - Aop008
+  - Aop009
+  - Aop010
+
+### 인증 & 보안
+
+- AppleLoginStudy
+- passyKey
+- java_otp
+
+### 프론트엔드 통합
+
+- NextSpring
+- ReactSpring
+
+### 모니터링 & 로깅
+
+- ja_elk
+- springDico
+- slackSprig
+
+### 기타 학습 프로젝트
+
+- k_message
+- k_rstudy
+- 맹\_Study
+- s_arc
+- tomboy_boot
+- white_rpi
+- 리팩토링2판
+
+### 디자인 패턴
+
+- AbstractFactoryDesign
+- BuilderDesignPattern
+
+### 특수 기능
+
+- CinemaReservationSystem
+- OCR_STUDY
+- GoogleAi
+- graphQl
+- VirtualThreadDemo

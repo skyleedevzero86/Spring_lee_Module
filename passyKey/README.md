@@ -24,6 +24,7 @@ WebAuthn/Passkey 기반의 비밀번호 없는 인증 시스템입니다. Spring
 ## 🛠 기술 스택
 
 ### Backend
+
 - **Java 21**: 최신 Java 기능 활용
 - **Spring Boot 3.5.7**: 웹 애플리케이션 프레임워크
 - **Spring Security**: 인증 및 보안
@@ -34,10 +35,12 @@ WebAuthn/Passkey 기반의 비밀번호 없는 인증 시스템입니다. Spring
 - **WebAuthn4j Spring Security 0.11.2.RELEASE**: Spring Security 통합
 
 ### Frontend
+
 - **Thymeleaf**: 서버 사이드 템플릿 엔진
 - **HTML/CSS/JavaScript**: 클라이언트 사이드 구현
 
 ### Testing
+
 - **JUnit 5**: 단위 테스트
 - **Mockito**: 모킹 프레임워크
 - **Spring Boot Test**: 통합 테스트
@@ -149,17 +152,22 @@ src/
 ### 설치 및 실행
 
 1. **저장소 클론**
+
    ```bash
    git clone <repository-url>
    cd passyKey
    ```
 
 2. **데이터베이스 설정**
+
    - MySQL 데이터베이스 생성
+
    ```sql
    CREATE DATABASE passykeydb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
+
    - `src/main/resources/application.yml` 파일에서 데이터베이스 연결 정보 수정
+
    ```yaml
    spring:
      datasource:
@@ -169,8 +177,10 @@ src/
    ```
 
 3. **Redis 설정**
+
    - Redis 서버 실행
    - `src/main/resources/application.yml` 파일에서 Redis 연결 정보 수정
+
    ```yaml
    spring:
      data:
@@ -181,13 +191,14 @@ src/
    ```
 
 4. **애플리케이션 실행**
+
    ```bash
    # Windows
    gradlew.bat bootRun
-   
+
    # Linux/Mac
    ./gradlew bootRun
-   
+
    # 또는 빌드 후 실행
    gradlew.bat build  # Windows
    ./gradlew build    # Linux/Mac
@@ -202,6 +213,7 @@ src/
 ### 공개 API (`/api/public`)
 
 #### 사용자 등록
+
 ```http
 POST /api/public/register
 Content-Type: application/json
@@ -215,6 +227,7 @@ Content-Type: application/json
 ```
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -230,11 +243,13 @@ Content-Type: application/json
 ```
 
 #### 사용자명 중복 확인
+
 ```http
 GET /api/public/check-username?username=testuser
 ```
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -244,11 +259,13 @@ GET /api/public/check-username?username=testuser
 ```
 
 #### 이메일 중복 확인
+
 ```http
 GET /api/public/check-email?email=test@example.com
 ```
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -260,6 +277,7 @@ GET /api/public/check-email?email=test@example.com
 ### 인증 API (`/api/auth`)
 
 #### 패스키 인증
+
 ```http
 POST /api/auth/webauthn/authenticate
 Content-Type: application/json
@@ -277,6 +295,7 @@ Content-Type: application/json
 ```
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -289,11 +308,13 @@ Content-Type: application/json
 ```
 
 #### 로그아웃
+
 ```http
 POST /api/auth/logout
 ```
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -305,12 +326,15 @@ POST /api/auth/logout
 ### WebAuthn API (`/api/webauthn`)
 
 #### 패스키 등록 옵션 생성
+
 ```http
 POST /api/webauthn/register/options
 ```
+
 > **참고**: 세션 기반 인증이 필요합니다. 로그인 후 사용 가능합니다.
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -334,6 +358,7 @@ POST /api/webauthn/register/options
 ```
 
 #### 패스키 등록
+
 ```http
 POST /api/webauthn/register
 Content-Type: application/json
@@ -356,6 +381,7 @@ Content-Type: application/json
 ```
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -367,12 +393,15 @@ Content-Type: application/json
 ```
 
 #### 인증 옵션 생성
+
 ```http
 POST /api/webauthn/authenticate/options?username=testuser
 ```
+
 > **참고**: `username` 파라미터는 선택사항입니다. 세션에 로그인된 사용자가 있으면 해당 사용자의 인증 옵션이 생성됩니다.
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -388,12 +417,15 @@ POST /api/webauthn/authenticate/options?username=testuser
 ```
 
 #### 인증서 목록 조회
+
 ```http
 GET /api/webauthn/credentials
 ```
+
 > **참고**: 세션 기반 인증이 필요합니다.
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -413,12 +445,15 @@ GET /api/webauthn/credentials
 ```
 
 #### 인증서 삭제
+
 ```http
 DELETE /api/webauthn/credentials/{credentialId}
 ```
+
 > **참고**: 세션 기반 인증이 필요합니다. `credentialId`는 Base64 URL 인코딩된 값입니다.
 
 **응답 예시:**
+
 ```json
 {
   "success": true,
@@ -464,6 +499,7 @@ gradlew.bat test --tests "UserControllerTest"
 ### 테이블 구조
 
 #### users 테이블
+
 - 사용자 정보를 저장하는 테이블
 - 주요 필드:
   - `id`: BIGINT (PK, AUTO_INCREMENT)
@@ -475,6 +511,7 @@ gradlew.bat test --tests "UserControllerTest"
   - `enabled`, `account_non_expired`, `account_non_locked`, `credentials_non_expired`: BOOLEAN
 
 #### webauthn_credentials 테이블
+
 - WebAuthn 인증서 정보를 저장하는 테이블
 - 주요 필드:
   - `id`: BIGINT (PK, AUTO_INCREMENT)
@@ -490,6 +527,7 @@ gradlew.bat test --tests "UserControllerTest"
 ### 뷰 및 저장 프로시저
 
 스키마에는 다음이 포함되어 있습니다:
+
 - `v_users`: 사용자 정보 조회 뷰
 - `v_webauthn_credentials`: 인증서와 사용자 정보 조인 뷰
 - `sp_save_user`: 사용자 정보 저장 프로시저 (INSERT/UPDATE 통합)
@@ -522,4 +560,3 @@ gradlew.bat test --tests "UserControllerTest"
 <br/>
 
 <a href="https://velog.io/@sleekydevzero86/spring-webauthn-passkeys-implementation">비밀번호 없는 인증, Spring Boot 서버 측 검증 로직 적용하기</a>
-
