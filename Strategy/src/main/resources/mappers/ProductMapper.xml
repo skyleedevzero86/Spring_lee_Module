@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.strategy.domain.repository.ProductRepository">
+
+    <resultMap id="productResultMap" type="com.sleekydz86.strategy.domain.model.Product">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="price" column="price"/>
+        <result property="stock" column="stock"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.sleekydz86.strategy.domain.model.Product" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO products (name, description, price, stock, created_at, updated_at)
+        VALUES (#{name}, #{description}, #{price}, #{stock}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.sleekydz86.strategy.domain.model.Product">
+        UPDATE products
+        SET name = #{name},
+            description = #{description},
+            price = #{price},
+            stock = #{stock},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="Long">
+        DELETE FROM products
+        WHERE id = #{id}
+    </delete>
+
+    <select id="findById" parameterType="Long" resultMap="productResultMap">
+        SELECT id, name, description, price, stock, created_at, updated_at
+        FROM products
+        WHERE id = #{id}
+    </select>
+
+    <select id="executeProcedure" statementType="CALLABLE" parameterType="map">
+        {CALL sp_product_crud(
+            #{operation, mode=IN, jdbcType=VARCHAR},
+            #{product.id, mode=IN, jdbcType=BIGINT},
+            #{product.name, mode=IN, jdbcType=VARCHAR},
+            #{product.description, mode=IN, jdbcType=VARCHAR},
+            #{product.price, mode=IN, jdbcType=DOUBLE},
+            #{product.stock, mode=IN, jdbcType=INTEGER},
+            #{resultId, mode=OUT, jdbcType=BIGINT},
+            #{affectedRows, mode=OUT, jdbcType=INTEGER}
+        )}
+    </select>
+
+    <!-- 뷰를 사용한 복잡한 조건 조회 -->
+    <select id="searchByView" parameterType="com.sleekydz86.strategy.domain.dto.ProductSearchRequest" resultMap="productResultMap">
+        SELECT id, name, description, price, stock, created_at, updated_at
+        FROM v_product_search
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="minPrice != null">
+                AND price >= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND price &lt;= #{maxPrice}
+            </if>
+            <if test="minStock != null">
+                AND stock >= #{minStock}
+            </if>
+            <if test="maxStock != null">
+                AND stock &lt;= #{maxStock}
+            </if>
+        </where>
+        ORDER BY 
+        <choose>
+            <when test="sortBy == 'name'">name</when>
+            <when test="sortBy == 'price'">price</when>
+            <when test="sortBy == 'stock'">stock</when>
+            <when test="sortBy == 'createdAt'">created_at</when>
+            <otherwise>id</otherwise>
+        </choose>
+        <choose>
+            <when test="sortOrder == 'DESC'">DESC</when>
+            <otherwise>ASC</otherwise>
+        </choose>
+        LIMIT #{size} OFFSET #{page} * #{size}
+    </select>
+
+    <select id="countByView" parameterType="com.sleekydz86.strategy.domain.dto.ProductSearchRequest" resultType="Long">
+        SELECT COUNT(*)
+        FROM v_product_search
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="minPrice != null">
+                AND price >= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND price &lt;= #{maxPrice}
+            </if>
+            <if test="minStock != null">
+                AND stock >= #{minStock}
+            </if>
+            <if test="maxStock != null">
+                AND stock &lt;= #{maxStock}
+            </if>
+        </where>
+    </select>
+
+</mapper>
+
