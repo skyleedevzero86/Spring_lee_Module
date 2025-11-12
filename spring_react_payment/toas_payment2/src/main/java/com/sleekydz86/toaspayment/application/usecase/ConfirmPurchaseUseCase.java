@@ -64,8 +64,18 @@ public class ConfirmPurchaseUseCase {
 
     private void savePaymentSuccess(Order order, OrderId orderId, PurchaseConfirmRequest request, TossPaymentResponse response) {
         PaymentMethod paymentMethod = mapPaymentMethod(response.method());
-        order.completePayment(request.paymentKey(), paymentMethod);
+        String paymentKeyFromResponse = response.paymentKey();
+        String originalOrderId = paymentKeyFromResponse != null && !paymentKeyFromResponse.isBlank() 
+            ? paymentKeyFromResponse 
+            : null;
+        
+        log.info("토스 응답 정보 - paymentKey: {}, orderId: {}, originalOrderId 저장값: {}", 
+            paymentKeyFromResponse, response.orderId(), originalOrderId);
+        
+        order.completePayment(request.paymentKey(), paymentMethod, originalOrderId);
         orderRepository.save(order);
+        
+        log.info("결제 승인 완료 - 주문 ID: {}, 원본 주문번호: {}", orderId, originalOrderId);
 
         Money requestAmount = Money.of(request.amount());
         PaymentLog successLog = PaymentLog.create(

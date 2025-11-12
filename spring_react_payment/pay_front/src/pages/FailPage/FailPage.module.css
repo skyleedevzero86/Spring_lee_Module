@@ -1,20 +1,65 @@
 .container {
   max-width: 32rem;
   margin: 2.5rem auto;
-  padding: 1rem;
+  padding: 2rem;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   text-align: center;
+  background-color: #ffffff;
+}
+
+.errorTitle {
+  color: #dc2626;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
 }
 
 .errorText {
   color: #dc2626;
-  font-weight: bold;
-  font-size: 1.25rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
 }
 
-.message {
-  margin-top: 0.5rem;
-  color: #4b5563;
+.orderInfo {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.retryButton,
+.homeButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.retryButton {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.retryButton:hover {
+  background-color: #2563eb;
+}
+
+.homeButton {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.homeButton:hover {
+  background-color: #e5e7eb;
 }
 

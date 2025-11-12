@@ -3,12 +3,15 @@ import { paymentService } from '@/lib/services/paymentService';
 import type { OrderResponse } from '@/types/api';
 import styles from './MyOrdersPage.module.css';
 import { downloadReceipt } from './utils';
+import { useAuthStore } from '@/store/authStore';
 
 export default function MyOrdersPage() {
+  const { isAdmin } = useAuthStore();
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [receiptError, setReceiptError] = useState<string | null>(null);
+  const isUserAdmin = isAdmin();
 
   useEffect(() => {
     loadOrders();
@@ -68,6 +71,7 @@ export default function MyOrdersPage() {
             <thead>
               <tr className={styles.tableHeader}>
                 <th>주문번호</th>
+                {isUserAdmin && <th>원본 주문번호</th>}
                 <th>주문명</th>
                 <th>금액</th>
                 <th>결제수단</th>
@@ -79,16 +83,17 @@ export default function MyOrdersPage() {
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id}>
-                  <td>{order.orderId}</td>
+                  <td>{order.orderId || '-'}</td>
+                  {isUserAdmin && <td>{order.originalOrderId || '-'}</td>}
                   <td>{order.orderName}</td>
                   <td>{order.amount.toLocaleString()}원</td>
-                  <td>{order.paymentMethod || '-'}</td>
-                  <td>{order.status}</td>
+                  <td>{order.paymentMethodDisplay}</td>
+                  <td>{order.statusDisplay}</td>
                   <td>{new Date(order.createdAt).toLocaleString('ko-KR')}</td>
                   <td>
                     {order.status === 'DONE' && (
                       <button
-                        onClick={() => handleDownloadReceipt(order.orderId)}
+                        onClick={() => handleDownloadReceipt(order.orderId || order.originalOrderId || '')}
                         className={styles.downloadButton}
                       >
                         영수증 다운로드

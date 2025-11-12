@@ -115,15 +115,18 @@ export const usePaymentWidget = () => {
           customerName: customerInfo.name,
           customerEmail: customerInfo.email,
           successUrl: `${window.location.origin}/success?paymentUUID=${purchaseId}&orderId=${orderId}`,
-          failUrl: `${window.location.origin}/pay/fail`,
+          failUrl: `${window.location.origin}/pay/fail?orderId=${orderId}`,
         });
       } catch (err: unknown) {
+        if (err instanceof Error && err.message?.includes('tosspayments.com')) {
+          return;
+        }
         let errorMessage = '결제를 시작할 수 없습니다.';
 
         if (err instanceof AxiosError) {
           errorMessage =
             err.response?.data?.message ||
-            `서버 오류: ${err.response?.status} ${err.response?.statusText}`;
+            `서버 오류가 발생했습니다. 상태 코드: ${err.response?.status}`;
         } else if (err instanceof Error) {
           errorMessage = err.message || '결제 요청 중 오류가 발생했습니다.';
         }

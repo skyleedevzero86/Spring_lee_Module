@@ -2,6 +2,7 @@ package com.sleekydz86.toaspayment.application.usecase;
 
 import com.sleekydz86.toaspayment.application.dto.OrderResponse;
 import com.sleekydz86.toaspayment.application.dto.SearchOrdersRequest;
+import com.sleekydz86.toaspayment.application.util.OrderDisplayUtil;
 import com.sleekydz86.toaspayment.domain.order.Order;
 import com.sleekydz86.toaspayment.domain.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,17 +40,30 @@ public class SearchOrdersUseCase {
                     }
                     return true;
                 })
-                .map(order -> new OrderResponse(
-                        order.getId(),
-                        order.getOrderId().toString(),
-                        order.getOrderName(),
-                        order.getMemberId(),
-                        order.getFinalAmount().toInteger(),
-                        order.getPaymentMethod() != null ? order.getPaymentMethod().name() : null,
-                        order.getStatus().name(),
-                        order.getCreatedAt(),
-                        order.getUpdatedAt()
-                ))
+                .map(order -> {
+                    String orderIdValue = order.getOrderId().toString();
+                    String displayOrderId = OrderDisplayUtil.isOrdersFormat(orderIdValue) 
+                        ? orderIdValue 
+                        : (OrderDisplayUtil.isUuidFormat(orderIdValue) ? null : orderIdValue);
+                    String originalOrderId = order.getOriginalOrderId() != null 
+                        ? order.getOriginalOrderId() 
+                        : (OrderDisplayUtil.isUuidFormat(orderIdValue) ? orderIdValue : null);
+                    
+                    return new OrderResponse(
+                            order.getId(),
+                            displayOrderId,
+                            originalOrderId,
+                            order.getOrderName(),
+                            order.getMemberId(),
+                            order.getFinalAmount().toInteger(),
+                            order.getPaymentMethod() != null ? order.getPaymentMethod().name() : null,
+                            OrderDisplayUtil.getPaymentMethodDisplayName(order.getPaymentMethod()),
+                            order.getStatus().name(),
+                            OrderDisplayUtil.getStatusDisplayName(order.getStatus()),
+                            order.getCreatedAt(),
+                            order.getUpdatedAt()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 }

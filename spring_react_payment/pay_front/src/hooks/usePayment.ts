@@ -49,8 +49,8 @@ export const usePayment = () => {
           amount: { currency: 'KRW' as const, value: amount },
           orderId: String(purchaseId),
           orderName: '예매 티켓',
-          successUrl: `${window.location.origin}/success`,
-          failUrl: `${window.location.origin}/pay/fail`,
+          successUrl: `${window.location.origin}/success?orderId=${purchaseId}&amount=${amount}`,
+          failUrl: `${window.location.origin}/pay/fail?orderId=${purchaseId}`,
           customerName: customerInfo.name,
           customerEmail: customerInfo.email,
           customerMobilePhone: customerInfo.mobilePhone,
@@ -58,6 +58,9 @@ export const usePayment = () => {
 
         await payment.requestPayment(paymentParams);
       } catch (err: unknown) {
+        if (err instanceof Error && err.message?.includes('tosspayments.com')) {
+          return;
+        }
         const errorMessage = handleApiError(err) || '결제를 시작할 수 없습니다.';
         setError(errorMessage);
         return;

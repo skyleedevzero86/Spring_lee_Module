@@ -1,8 +1,10 @@
 package com.sleekydz86.toaspayment.presentation;
 
 import com.sleekydz86.toaspayment.application.dto.OrderResponse;
+import com.sleekydz86.toaspayment.application.dto.PaymentLogResponse;
 import com.sleekydz86.toaspayment.application.dto.SearchOrdersRequest;
 import com.sleekydz86.toaspayment.application.usecase.GetAllOrdersUseCase;
+import com.sleekydz86.toaspayment.application.usecase.GetOrderLogsUseCase;
 import com.sleekydz86.toaspayment.application.usecase.SearchOrdersUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -22,6 +24,7 @@ import java.util.List;
 public class AdminController {
     private final GetAllOrdersUseCase getAllOrdersUseCase;
     private final SearchOrdersUseCase searchOrdersUseCase;
+    private final GetOrderLogsUseCase getOrderLogsUseCase;
 
     @Operation(summary = "모든 결제 기록 조회", description = "관리자가 모든 사용자의 결제 기록을 조회합니다.")
     @SecurityRequirement(name = "bearerAuth")
@@ -50,6 +53,14 @@ public class AdminController {
         );
         List<OrderResponse> orders = searchOrdersUseCase.execute(request);
         return ResponseEntity.ok(orders);
+    }
+
+    @Operation(summary = "주문 로그 조회", description = "주문 ID로 해당 주문의 로그를 조회합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/orders/{orderId}/logs")
+    public ResponseEntity<List<PaymentLogResponse>> getOrderLogs(@PathVariable String orderId) {
+        List<PaymentLogResponse> logs = getOrderLogsUseCase.execute(orderId);
+        return ResponseEntity.ok(logs);
     }
 }
 

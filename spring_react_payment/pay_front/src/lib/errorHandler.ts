@@ -15,6 +15,9 @@ export const handleApiError = (err: unknown): string => {
     if (errorData?.error) {
       return errorData.error;
     }
+    if (err.response?.status === 400) {
+      return '입력값이 올바르지 않습니다. 다시 확인해주세요.';
+    }
     if (err.response?.status === 401) {
       return '인증이 필요합니다. 다시 로그인해주세요.';
     }
@@ -27,7 +30,7 @@ export const handleApiError = (err: unknown): string => {
     if (err.response?.status === 500) {
       return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
     }
-    return '서버 오류가 발생했습니다.';
+    return `서버 오류가 발생했습니다. (상태 코드: ${err.response?.status || '알 수 없음'})`;
   }
   if (err instanceof Error) {
     return err.message;

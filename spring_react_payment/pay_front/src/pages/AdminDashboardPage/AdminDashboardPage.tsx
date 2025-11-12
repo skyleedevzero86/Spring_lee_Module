@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import type { OrderResponse } from '@/types/api';
+import type { OrderResponse, PaymentLogResponse } from '@/types/api';
 import styles from './AdminDashboardPage.module.css';
 import { handleSearch, loadAllOrders } from './utils';
+import { adminService } from '@/lib/services/adminService';
+import { handleApiError } from '@/lib/errorHandler';
 
 export default function AdminDashboardPage() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
@@ -14,6 +16,10 @@ export default function AdminDashboardPage() {
     startDate: '',
     endDate: '',
   });
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [logs, setLogs] = useState<PaymentLogResponse[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [showLogModal, setShowLogModal] = useState(false);
 
   useEffect(() => {
     loadAllOrders(setOrders, setLoading, setError);
@@ -25,6 +31,30 @@ export default function AdminDashboardPage() {
 
   const onLoadAll = async () => {
     await loadAllOrders(setOrders, setLoading, setError);
+  };
+
+  const handleOrderNameClick = async (orderId: string | null) => {
+    if (!orderId) return;
+    
+    setSelectedOrderId(orderId);
+    setShowLogModal(true);
+    setLogsLoading(true);
+    setError(null);
+
+    try {
+      const orderLogs = await adminService.getOrderLogs(orderId);
+      setLogs(orderLogs);
+    } catch (err: unknown) {
+      setError(handleApiError(err));
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setShowLogModal(false);
+    setLogs([]);
+    setSelectedOrderId(null);
   };
 
   if (loading && orders.length === 0) {
@@ -120,6 +150,7 @@ export default function AdminDashboardPage() {
               <tr className={styles.tableHeader}>
                 <th>아이디</th>
                 <th>주문번호</th>
+                <th>원본 주문번호</th>
                 <th>주문명</th>
                 <th>사용자 ID</th>
                 <th>금액</th>
@@ -132,17 +163,64 @@ export default function AdminDashboardPage() {
               {orders.map((order) => (
                 <tr key={order.id}>
                   <td>{order.id}</td>
-                  <td>{order.orderId}</td>
-                  <td>{order.orderName}</td>
+                  <td>{order.orderId || '-'}</td>
+                  <td>{order.originalOrderId || '-'}</td>
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() => handleOrderNameClick(order.orderId || order.originalOrderId)}
+                      className={styles.orderNameButton}
+                      disabled={!order.orderId && !order.originalOrderId}
+                    >
+                      {order.orderName}
+                    </button>
+                  </td>
                   <td>{order.memberId}</td>
                   <td>{order.amount.toLocaleString()}원</td>
-                  <td>{order.paymentMethod || '-'}</td>
-                  <td>{order.status}</td>
+                  <td>{order.paymentMethodDisplay}</td>
+                  <td>{order.statusDisplay}</td>
                   <td>{new Date(order.createdAt).toLocaleString('ko-KR')}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {showLogModal && (
+        <div className={styles.modalOverlay} onClick={closeModal}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>주문 로그</h2>
+              <button type="button" className={styles.closeButton} onClick={closeModal}>
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              {logsLoading ? (
+                <div className={styles.loadingText}>로딩 중...</div>
+              ) : logs.length === 0 ? (
+                <div className={styles.emptyText}>로그가 없습니다.</div>
+              ) : (
+                <table className={styles.logTable}>
+                  <thead>
+                    <tr>
+                      <th>시간</th>
+                      <th>메시지</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {logs.map((log) => (
+                      <tr key={log.id}>
+                        <td>{new Date(log.createdAt).toLocaleString('ko-KR')}</td>
+                        <td>{log.message}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

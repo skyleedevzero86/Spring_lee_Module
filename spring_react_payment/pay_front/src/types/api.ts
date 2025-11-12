@@ -31,12 +31,15 @@ export interface RegisterResponse {
 
 export interface OrderResponse {
   id: number;
-  orderId: string;
+  orderId: string | null;
+  originalOrderId: string | null;
   orderName: string;
   memberId: number;
   amount: number;
   paymentMethod: string | null;
+  paymentMethodDisplay: string;
   status: string;
+  statusDisplay: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -72,5 +75,15 @@ export interface PaymentRequestParams {
   customerName: string;
   customerEmail: string;
   customerMobilePhone: string;
+}
+
+export interface PaymentLogResponse {
+  id: number;
+  orderId: string;
+  memberId: number;
+  logType: string;
+  message: string;
+  details: string | null;
+  createdAt: string;
 }
 

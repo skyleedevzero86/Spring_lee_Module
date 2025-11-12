@@ -32,6 +32,9 @@ public class Order {
 
     private String paymentKey;
 
+    @Column(name = "original_order_id")
+    private String originalOrderId;
+
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
@@ -77,6 +80,16 @@ public class Order {
         }
         this.paymentKey = paymentKey;
         this.paymentMethod = paymentMethod;
+        this.status = OrderStatus.DONE;
+    }
+
+    public void completePayment(String paymentKey, PaymentMethod paymentMethod, String originalOrderId) {
+        if (this.status != OrderStatus.PENDING) {
+            throw new IllegalStateException("결제 완료할 수 없는 주문 상태입니다. 현재 상태: " + this.status);
+        }
+        this.paymentKey = paymentKey;
+        this.paymentMethod = paymentMethod;
+        this.originalOrderId = originalOrderId;
         this.status = OrderStatus.DONE;
     }
 

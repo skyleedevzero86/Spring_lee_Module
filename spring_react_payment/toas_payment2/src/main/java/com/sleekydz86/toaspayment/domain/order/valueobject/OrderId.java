@@ -7,7 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Embeddable
 @Getter
@@ -17,6 +19,9 @@ public class OrderId {
     @Column(name = "order_id", nullable = false, unique = true)
     private String value;
 
+    private static final AtomicLong sequence = new AtomicLong(0);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
     private OrderId(String value) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException("OrderId는 필수입니다.");
@@ -25,7 +30,11 @@ public class OrderId {
     }
 
     public static OrderId generate() {
-        return new OrderId(UUID.randomUUID().toString());
+        LocalDateTime now = LocalDateTime.now();
+        String dateTime = now.format(DATE_FORMATTER);
+        long seq = sequence.incrementAndGet() % 1000;
+        String orderNumber = String.format("orders-%s-%03d", dateTime, seq);
+        return new OrderId(orderNumber);
     }
 
     public static OrderId of(String value) {

@@ -5,11 +5,14 @@ import java.time.LocalDateTime;
 public record OrderResponse(
         Long id,
         String orderId,
+        String originalOrderId,
         String orderName,
         Long memberId,
         Integer amount,
         String paymentMethod,
+        String paymentMethodDisplay,
         String status,
+        String statusDisplay,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
