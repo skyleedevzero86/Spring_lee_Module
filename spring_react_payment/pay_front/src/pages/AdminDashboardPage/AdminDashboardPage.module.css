@@ -1,0 +1,132 @@
+.container {
+  max-width: 72rem;
+  margin: 5rem auto;
+  padding: 1.5rem;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+}
+
+.loadingContainer {
+  max-width: 72rem;
+  margin: 5rem auto;
+  padding: 1.5rem;
+}
+
+.searchSection {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+}
+
+.searchTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.searchGrid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .searchGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.searchField {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+}
+
+.buttonGroup {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.searchButton {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.searchButton:hover {
+  background-color: #1d4ed8;
+}
+
+.loadAllButton {
+  background-color: #4b5563;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.loadAllButton:hover {
+  background-color: #374151;
+}
+
+.errorMessage {
+  margin-bottom: 1rem;
+  color: #dc2626;
+}
+
+.emptyMessage {
+  color: #4b5563;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #d1d5db;
+}
+
+.tableHeader {
+  background-color: #f3f4f6;
+}
+
+.tableHeader th {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+  text-align: left;
+}
+
+.table tbody td {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+}
+

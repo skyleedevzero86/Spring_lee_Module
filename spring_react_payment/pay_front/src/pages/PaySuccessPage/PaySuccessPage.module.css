@@ -1,0 +1,52 @@
+.container {
+  max-width: 32rem;
+  margin: 3rem auto;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.loadingText {
+  color: #4b5563;
+}
+
+.successContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.successTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.successMessage {
+  color: #4b5563;
+}
+
+.errorContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.errorTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #dc2626;
+}
+
+.errorMessage {
+  color: #4b5563;
+}
+
+.errorDetail {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #ef4444;
+}
+

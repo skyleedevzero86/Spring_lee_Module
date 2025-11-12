@@ -1,0 +1,165 @@
+.container {
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+.main {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .main {
+    align-items: flex-start;
+  }
+}
+
+.header {
+  text-align: center;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .header {
+    text-align: left;
+  }
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: bold;
+  color: var(--foreground);
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  color: var(--muted-foreground);
+  margin-bottom: 1.5rem;
+  font-size: 1.125rem;
+}
+
+.guideSection {
+  width: 100%;
+  margin-top: 2rem;
+  padding: 2rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.guideTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .guideTitle {
+    text-align: left;
+  }
+}
+
+.guideContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.guideStep {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.stepNumber {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.stepContent {
+  flex: 1;
+}
+
+.stepTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.stepDescription {
+  color: var(--muted-foreground);
+  line-height: 1.6;
+}
+
+.welcomeSection {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+  .welcomeSection {
+    text-align: left;
+  }
+}
+
+.welcomeTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--foreground);
+  margin-bottom: 1rem;
+}
+
+.userInfo {
+  padding: 1.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+}
+
+.userRole {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.userDescription {
+  color: var(--muted-foreground);
+  line-height: 1.6;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .buttonGroup {
+    flex-direction: row;
+    width: auto;
+  }
+}
+

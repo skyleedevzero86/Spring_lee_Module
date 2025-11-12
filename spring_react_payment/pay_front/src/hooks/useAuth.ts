@@ -1,12 +1,14 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '@/lib/services/authService';
+import { useAuthStore } from '@/store/authStore';
 import type { LoginRequest } from '@/types/api';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { setAuth, clearAuth } = useAuthStore();
 
   const login = useCallback(async (credentials: LoginRequest) => {
     setLoading(true);
@@ -14,8 +16,16 @@ export const useAuth = () => {
 
     try {
       const response = await authService.login(credentials);
-      if (response.data?.token) {
-        localStorage.setItem('token', response.data.token);
+      if (response.data?.token && response.data) {
+        setAuth(
+          {
+            userId: response.data.userId,
+            email: response.data.email,
+            name: response.data.name,
+            role: response.data.role,
+          },
+          response.data.token
+        );
       }
       navigate('/');
       return response;
@@ -27,12 +37,12 @@ export const useAuth = () => {
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, setAuth]);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('token');
+    clearAuth();
     navigate('/login');
-  }, [navigate]);
+  }, [navigate, clearAuth]);
 
   return {
     login,

@@ -1,0 +1,69 @@
+.container {
+  max-width: 42rem;
+  margin: 3rem auto;
+  padding: 1.5rem;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.card {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+}
+
+.cardContent {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.cardDescription {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 1rem;
+}
+
+.amountCard {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+}
+
+.amountText {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.amountValue {
+  font-weight: bold;
+  font-size: 1.125rem;
+}
+
+.errorMessage {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.375rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.payButton {
+  width: 100%;
+}
+
