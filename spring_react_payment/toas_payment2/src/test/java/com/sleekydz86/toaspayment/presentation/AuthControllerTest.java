@@ -77,3 +77,4 @@ class AuthControllerTest {
         assertThat(response.getBody().data().email()).isEqualTo("newuser@example.com");
     }
 }
+

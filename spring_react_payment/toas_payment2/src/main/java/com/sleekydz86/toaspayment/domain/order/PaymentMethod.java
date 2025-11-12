@@ -8,3 +8,4 @@ public enum PaymentMethod {
     EASY_PAY
 }
 
+

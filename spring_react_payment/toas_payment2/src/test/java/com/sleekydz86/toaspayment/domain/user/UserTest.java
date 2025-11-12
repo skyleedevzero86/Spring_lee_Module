@@ -70,3 +70,4 @@ class UserTest {
         assertThat(result).isFalse();
     }
 }
+
