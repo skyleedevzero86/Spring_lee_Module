@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 
 interface StoreState {
-  // Add your store state here
   count: number
   increment: () => void
   decrement: () => void

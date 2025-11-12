@@ -4,9 +4,26 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-build.gradle
+
+# Logs
+*.log
+*.logs
+hs_err_pid*.log
+replay_pid*.log
+
+# YAML files
+*.yaml
 *.yml
+!**/gradle/wrapper/gradle-wrapper.properties
+
+# Profiling
+*.grof
+
+# Solidity
+*.sol
+
 *.properties
+!**/src/main/resources/application.properties.example
 
 ### STS ###
 .apt_generated

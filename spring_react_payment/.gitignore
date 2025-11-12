@@ -1,0 +1,78 @@
+# Logs
+*.log
+*.logs
+
+# YAML files
+*.yaml
+*.yml
+!**/gradle/wrapper/gradle-wrapper.properties
+
+# Profiling
+*.grof
+
+# Solidity
+*.sol
+
+# Cursor IDE
+.cursor/
+*.cursor-*
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Node modules
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+bin/
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Spring Boot
+*.properties
+!**/src/main/resources/application.properties.example
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# Package files
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Test reports
+test-results/
+*.test-report

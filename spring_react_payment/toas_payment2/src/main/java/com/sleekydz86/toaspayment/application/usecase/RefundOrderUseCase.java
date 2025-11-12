@@ -1,0 +1,93 @@
+package com.sleekydz86.toaspayment.application.usecase;
+
+import com.sleekydz86.toaspayment.application.dto.RefundRequest;
+import com.sleekydz86.toaspayment.domain.order.Order;
+import com.sleekydz86.toaspayment.domain.order.OrderRepository;
+import com.sleekydz86.toaspayment.domain.order.valueobject.Money;
+import com.sleekydz86.toaspayment.domain.order.valueobject.OrderId;
+import com.sleekydz86.toaspayment.domain.payment.PaymentGateway;
+import com.sleekydz86.toaspayment.exception.BadRequestException;
+import com.sleekydz86.toaspayment.infrastructure.external.TossPaymentException;
+import com.sleekydz86.toaspayment.infrastructure.external.dto.TossPaymentResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class RefundOrderUseCase {
+    private final OrderRepository orderRepository;
+    private final PaymentGateway paymentGateway;
+
+    @Transactional
+    public void execute(RefundRequest request) {
+        OrderId orderId = OrderId.of(request.orderId());
+        Order order = orderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new BadRequestException("주문을 찾을 수 없습니다."));
+
+        if (!order.isRefundable()) {
+            throw new BadRequestException("환불 가능한 주문이 아닙니다.");
+        }
+
+        Money refundAmount = Money.of(request.paidAmount());
+        order.requestRefund();
+        orderRepository.save(order);
+
+        try {
+            TossPaymentResponse response = paymentGateway.refundPayment(
+                    request.paymentKey(),
+                    request.refundReason()
+            );
+
+            validateRefundResponse(response, refundAmount);
+
+            order.completeRefund();
+            orderRepository.save(order);
+
+            log.info("환불 완료 - 주문 ID: {}, 금액: {}원", orderId, refundAmount.toInteger());
+        } catch (TossPaymentException e) {
+            log.error("토스 페이먼츠 환불 실패 - 주문 ID: {}, 오류: {}", orderId, e.getMessage());
+            order.failRefund();
+            orderRepository.save(order);
+            throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
+                    "환불 처리에 실패했습니다: " + e.getMessage(),
+                    org.springframework.http.HttpStatus.valueOf(e.getStatusCode())
+            );
+        } catch (Exception e) {
+            log.error("환불 처리 중 예상치 못한 오류 발생 - 주문 ID: {}, 오류: {}", orderId, e.getMessage(), e);
+            order.failRefund();
+            orderRepository.save(order);
+            throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
+                    "환불 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    private void validateRefundResponse(TossPaymentResponse response, Money expectedAmount) {
+        if (response.balanceAmount() != null && response.balanceAmount() != 0) {
+            throw new BadRequestException("환불 후 잔액이 남아있습니다. 잔액: " + response.balanceAmount() + "원");
+        }
+
+        if (response.cancels() == null || response.cancels().isEmpty()) {
+            throw new BadRequestException("환불 정보를 찾을 수 없습니다.");
+        }
+
+        TossPaymentResponse.CancelDto cancel = response.cancels().get(0);
+
+        if (!"CANCELED".equals(response.status())) {
+            throw new BadRequestException("환불 상태가 올바르지 않습니다. 현재 상태: " + response.status());
+        }
+
+        if (!"DONE".equals(cancel.cancelStatus())) {
+            throw new BadRequestException("환불이 완료되지 않았습니다. 현재 상태: " + cancel.cancelStatus());
+        }
+
+        if (!cancel.cancelAmount().equals(expectedAmount.toInteger())) {
+            throw new BadRequestException("환불 금액이 일치하지 않습니다. 예상 금액: " + expectedAmount.toInteger() + "원, 실제 금액: " + cancel.cancelAmount() + "원");
+        }
+    }
+}
+
