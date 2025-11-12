@@ -23,18 +23,35 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    private User(String email, String password, String name) {
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
+
+    private User(String email, String password, String name, UserRole role) {
         this.email = email;
         this.password = password;
         this.name = name;
+        this.role = role;
     }
 
     public static User create(String email, String encodedPassword, String name) {
-        return new User(email, encodedPassword, name);
+        return new User(email, encodedPassword, name, UserRole.USER);
+    }
+
+    public static User createAdmin(String email, String encodedPassword, String name) {
+        return new User(email, encodedPassword, name, UserRole.ADMIN);
     }
 
     public boolean matchesPassword(String rawPassword, com.sleekydz86.toaspayment.domain.user.PasswordEncoder encoder) {
         return encoder.matches(rawPassword, this.password);
+    }
+
+    public boolean isAdmin() {
+        return this.role == UserRole.ADMIN;
+    }
+
+    public boolean isUser() {
+        return this.role == UserRole.USER;
     }
 }
 

@@ -7,6 +7,9 @@ import com.sleekydz86.toaspayment.domain.order.PaymentMethod;
 import com.sleekydz86.toaspayment.domain.order.valueobject.Money;
 import com.sleekydz86.toaspayment.domain.order.valueobject.OrderId;
 import com.sleekydz86.toaspayment.domain.payment.PaymentGateway;
+import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLog;
+import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogRepository;
+import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogType;
 import com.sleekydz86.toaspayment.exception.BadRequestException;
 import com.sleekydz86.toaspayment.infrastructure.external.TossPaymentException;
 import com.sleekydz86.toaspayment.infrastructure.external.dto.TossPaymentResponse;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ConfirmPurchaseUseCase {
     private final OrderRepository orderRepository;
     private final PaymentGateway paymentGateway;
+    private final PaymentLogRepository paymentLogRepository;
 
     @Transactional
     public void execute(PurchaseConfirmRequest request) {
@@ -46,11 +50,29 @@ public class ConfirmPurchaseUseCase {
             order.completePayment(request.paymentKey(), paymentMethod);
             orderRepository.save(order);
 
+            PaymentLog successLog = PaymentLog.create(
+                    orderId.toString(),
+                    order.getMemberId(),
+                    PaymentLogType.PAYMENT_SUCCESS,
+                    "결제 성공 - 금액: " + requestAmount.toInteger() + "원, 결제수단: " + paymentMethod
+            );
+            paymentLogRepository.save(successLog);
+
             log.info("결제 승인 완료 - 주문 ID: {}", orderId);
         } catch (TossPaymentException e) {
             log.error("토스 페이먼츠 결제 승인 실패 - 주문 ID: {}, 오류: {}", orderId, e.getMessage());
             order.abort();
             orderRepository.save(order);
+
+            PaymentLog failLog = PaymentLog.create(
+                    orderId.toString(),
+                    order.getMemberId(),
+                    PaymentLogType.PAYMENT_FAILED,
+                    "토스 페이먼츠 결제 실패: " + e.getMessage(),
+                    "상태 코드: " + e.getStatusCode()
+            );
+            paymentLogRepository.save(failLog);
+
             throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
                     "결제 승인에 실패했습니다: " + e.getMessage(),
                     org.springframework.http.HttpStatus.valueOf(e.getStatusCode())
@@ -59,6 +81,15 @@ public class ConfirmPurchaseUseCase {
             log.error("결제 승인 처리 중 예상치 못한 오류 발생 - 주문 ID: {}, 오류: {}", orderId, e.getMessage(), e);
             order.abort();
             orderRepository.save(order);
+
+            PaymentLog errorLog = PaymentLog.create(
+                    orderId.toString(),
+                    order.getMemberId(),
+                    PaymentLogType.PAYMENT_ERROR,
+                    "결제 처리 중 오류 발생: " + e.getMessage()
+            );
+            paymentLogRepository.save(errorLog);
+
             throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
                     "결제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
                     org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR

@@ -6,6 +6,9 @@ import com.sleekydz86.toaspayment.domain.order.Order;
 import com.sleekydz86.toaspayment.domain.order.OrderRepository;
 import com.sleekydz86.toaspayment.domain.order.valueobject.Money;
 import com.sleekydz86.toaspayment.domain.order.valueobject.OrderId;
+import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLog;
+import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogRepository;
+import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class InitPurchaseUseCase {
     private final OrderRepository orderRepository;
+    private final PaymentLogRepository paymentLogRepository;
 
     @Transactional
     public PurchaseInitResponse execute(PurchaseInitRequest request) {
@@ -29,6 +33,14 @@ public class InitPurchaseUseCase {
         Order order = Order.create(orderId, "예매 티켓", memberId, amount);
 
         orderRepository.save(order);
+
+        PaymentLog paymentLog = PaymentLog.create(
+                orderId.toString(),
+                memberId,
+                PaymentLogType.PAYMENT_INIT,
+                "결제 초기화 - 금액: " + amount.toInteger() + "원"
+        );
+        paymentLogRepository.save(paymentLog);
 
         log.info("결제 초기화 완료 - 주문 ID: {}, 사용자 ID: {}, 금액: {}원", orderId, memberId, amount.toInteger());
 

@@ -6,6 +6,9 @@ import com.sleekydz86.toaspayment.domain.order.OrderRepository;
 import com.sleekydz86.toaspayment.domain.order.valueobject.Money;
 import com.sleekydz86.toaspayment.domain.order.valueobject.OrderId;
 import com.sleekydz86.toaspayment.domain.payment.PaymentGateway;
+import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLog;
+import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogRepository;
+import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogType;
 import com.sleekydz86.toaspayment.exception.BadRequestException;
 import com.sleekydz86.toaspayment.infrastructure.external.TossPaymentException;
 import com.sleekydz86.toaspayment.infrastructure.external.dto.TossPaymentResponse;
@@ -14,12 +17,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefundOrderUseCase {
     private final OrderRepository orderRepository;
     private final PaymentGateway paymentGateway;
+    private final PaymentLogRepository paymentLogRepository;
+    private static final int REFUND_DEADLINE_DAYS = 14;
 
     @Transactional
     public void execute(RefundRequest request) {
@@ -28,12 +36,42 @@ public class RefundOrderUseCase {
                 .orElseThrow(() -> new BadRequestException("주문을 찾을 수 없습니다."));
 
         if (!order.isRefundable()) {
+            PaymentLog log = PaymentLog.create(
+                    orderId.toString(),
+                    order.getMemberId(),
+                    PaymentLogType.REFUND_FAILED,
+                    "환불 가능한 주문이 아닙니다. 현재 상태: " + order.getStatus()
+            );
+            paymentLogRepository.save(log);
             throw new BadRequestException("환불 가능한 주문이 아닙니다.");
+        }
+
+        LocalDateTime paymentDate = order.getCreatedAt();
+        LocalDateTime now = LocalDateTime.now();
+        long daysSincePayment = ChronoUnit.DAYS.between(paymentDate, now);
+
+        if (daysSincePayment > REFUND_DEADLINE_DAYS) {
+            PaymentLog log = PaymentLog.create(
+                    orderId.toString(),
+                    order.getMemberId(),
+                    PaymentLogType.REFUND_FAILED,
+                    "환불 기한이 지났습니다. 결제일로부터 " + daysSincePayment + "일 경과 (기한: " + REFUND_DEADLINE_DAYS + "일)"
+            );
+            paymentLogRepository.save(log);
+            throw new BadRequestException("결제일로부터 14일이 지나 환불할 수 없습니다.");
         }
 
         Money refundAmount = Money.of(request.paidAmount());
         order.requestRefund();
         orderRepository.save(order);
+
+        PaymentLog requestLog = PaymentLog.create(
+                orderId.toString(),
+                order.getMemberId(),
+                PaymentLogType.REFUND_REQUESTED,
+                "환불 요청: " + request.refundReason()
+        );
+        paymentLogRepository.save(requestLog);
 
         try {
             TossPaymentResponse response = paymentGateway.refundPayment(
@@ -46,11 +84,29 @@ public class RefundOrderUseCase {
             order.completeRefund();
             orderRepository.save(order);
 
+            PaymentLog successLog = PaymentLog.create(
+                    orderId.toString(),
+                    order.getMemberId(),
+                    PaymentLogType.REFUND_SUCCESS,
+                    "환불 완료 - 금액: " + refundAmount.toInteger() + "원"
+            );
+            paymentLogRepository.save(successLog);
+
             log.info("환불 완료 - 주문 ID: {}, 금액: {}원", orderId, refundAmount.toInteger());
         } catch (TossPaymentException e) {
             log.error("토스 페이먼츠 환불 실패 - 주문 ID: {}, 오류: {}", orderId, e.getMessage());
             order.failRefund();
             orderRepository.save(order);
+
+            PaymentLog failLog = PaymentLog.create(
+                    orderId.toString(),
+                    order.getMemberId(),
+                    PaymentLogType.REFUND_FAILED,
+                    "토스 페이먼츠 환불 실패: " + e.getMessage(),
+                    "상태 코드: " + e.getStatusCode()
+            );
+            paymentLogRepository.save(failLog);
+
             throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
                     "환불 처리에 실패했습니다: " + e.getMessage(),
                     org.springframework.http.HttpStatus.valueOf(e.getStatusCode())
@@ -59,6 +115,15 @@ public class RefundOrderUseCase {
             log.error("환불 처리 중 예상치 못한 오류 발생 - 주문 ID: {}, 오류: {}", orderId, e.getMessage(), e);
             order.failRefund();
             orderRepository.save(order);
+
+            PaymentLog errorLog = PaymentLog.create(
+                    orderId.toString(),
+                    order.getMemberId(),
+                    PaymentLogType.PAYMENT_ERROR,
+                    "환불 처리 중 오류 발생: " + e.getMessage()
+            );
+            paymentLogRepository.save(errorLog);
+
             throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
                     "환불 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
                     org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR

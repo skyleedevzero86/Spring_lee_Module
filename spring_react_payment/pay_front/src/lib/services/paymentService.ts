@@ -3,6 +3,7 @@ import type {
   PurchaseInitRequest,
   PurchaseInitResponse,
   PurchaseConfirmRequest,
+  OrderResponse,
 } from '@/types/api';
 
 const PAYMENT_BASE_URL = '/api/v1/purchase';
@@ -26,6 +27,21 @@ export const paymentService = {
       request
     );
     return { success: response.status === 200 };
+  },
+
+  async getUserOrders(): Promise<OrderResponse[]> {
+    const response = await api.get<OrderResponse[]>(
+      `${PAYMENT_BASE_URL}/orders`
+    );
+    return response.data;
+  },
+
+  async downloadReceipt(orderId: string): Promise<Blob> {
+    const response = await api.get(
+      `${PAYMENT_BASE_URL}/receipt/${orderId}`,
+      { responseType: 'blob' }
+    );
+    return response.data;
   },
 };
 

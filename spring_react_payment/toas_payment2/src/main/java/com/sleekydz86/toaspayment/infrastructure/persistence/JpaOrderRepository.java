@@ -10,10 +10,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import java.util.List;
+
 @Repository
 public interface JpaOrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByOrderId_Value(String orderId);
     Optional<Order> findByOrderId_ValueAndMemberId(String orderId, Long memberId);
+    List<Order> findByMemberId(Long memberId);
 }
 
 @Component
@@ -34,6 +37,16 @@ class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Optional<Order> findByOrderIdAndMemberId(OrderId orderId, Long memberId) {
         return jpaOrderRepository.findByOrderId_ValueAndMemberId(orderId.toString(), memberId);
+    }
+
+    @Override
+    public List<Order> findByMemberId(Long memberId) {
+        return jpaOrderRepository.findByMemberId(memberId);
+    }
+
+    @Override
+    public List<Order> findAll() {
+        return jpaOrderRepository.findAll();
     }
 }
 

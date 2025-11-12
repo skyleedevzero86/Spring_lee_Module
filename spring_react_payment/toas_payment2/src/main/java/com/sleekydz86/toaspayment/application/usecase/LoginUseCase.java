@@ -27,13 +27,13 @@ public class LoginUseCase {
             throw new BadRequestException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
 
-        String token = jwtTokenProvider.generateToken(user.getId(), user.getEmail());
+        String token = jwtTokenProvider.generateToken(user.getId(), user.getEmail(), user.getRole().name());
 
-        log.info("로그인 성공 - 사용자 ID: {}, 이메일: {}", user.getId(), user.getEmail());
+        log.info("로그인 성공 - 사용자 ID: {}, 이메일: {}, 역할: {}", user.getId(), user.getEmail(), user.getRole());
 
         return new LoginResponse(
                 "로그인 성공",
-                new LoginResponse.LoginData(user.getId(), user.getEmail(), user.getName(), token)
+                new LoginResponse.LoginData(user.getId(), user.getEmail(), user.getName(), user.getRole().name(), token)
         );
     }
 }

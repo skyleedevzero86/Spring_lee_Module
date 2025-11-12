@@ -51,6 +51,7 @@ spring_react_payment/
 - **JWT** - 토큰 기반 인증
 - **BCrypt** - 비밀번호 암호화
 - **Swagger/OpenAPI** - API 문서화
+- **iText7** - PDF 생성 라이브러리
 - **Gradle** - 빌드 도구
 
 ## 아키텍처
@@ -60,6 +61,10 @@ spring_react_payment/
 백엔드는 Domain-Driven Design 원칙을 따릅니다:
 
 - **Domain Layer**: 비즈니스 로직 및 도메인 모델
+  - `order`: 주문 도메인
+  - `user`: 사용자 도메인 (권한 포함)
+  - `payment`: 결제 도메인 인터페이스
+  - `paymentlog`: 결제 로그 도메인
 - **Application Layer**: Use Case 및 DTO
 - **Infrastructure Layer**: Repository 구현, 외부 API 클라이언트, 보안 구현
 - **Presentation Layer**: REST API 컨트롤러
@@ -67,6 +72,14 @@ spring_react_payment/
 ### 프론트엔드 아키텍처
 
 - **Pages**: 라우트별 페이지 컴포넌트
+  - 홈 페이지 (`/`)
+  - 로그인 페이지 (`/login`)
+  - 회원가입 페이지 (`/register`)
+  - 결제 페이지 (`/pay`)
+  - 결제 성공 페이지 (`/success`)
+  - 결제 실패 페이지 (`/pay/fail`)
+  - 내 결제 내역 페이지 (`/orders`)
+  - 관리자 대시보드 페이지 (`/admin`)
 - **Components**: 재사용 가능한 UI 컴포넌트
 - **Hooks**: 비즈니스 로직을 캡슐화한 Custom Hooks
 - **Services**: API 호출을 담당하는 서비스 레이어
@@ -138,11 +151,29 @@ jwt:
 
 ## 주요 기능
 
+### 인증 및 권한
+
 - ✅ 사용자 회원가입 및 로그인 (JWT 인증)
+- ✅ 관리자 권한과 사용자 권한 구분
 - ✅ 비밀번호 BCrypt 암호화
+- ✅ 역할 기반 접근 제어 (RBAC)
+
+### 결제 기능
+
 - ✅ 결제 초기화
 - ✅ 결제 승인 (토스 페이먼츠 연동)
-- ✅ 환불 처리
+- ✅ 환불 처리 (결제일로부터 14일 이내만 가능)
+- ✅ 결제 로그 기록 (결제 초기화, 성공, 실패, 환불 등)
+
+### 영수증 및 조회
+
+- ✅ 사용자 결제 영수증 PDF 생성 (결제일로부터 14일 이내만 가능)
+- ✅ 사용자 본인 결제 기록 조회
+- ✅ 관리자 전체 결제 기록 조회
+- ✅ 관리자 결제 검색 기능 (주문번호, 사용자 ID, 상태, 날짜 범위)
+
+### 기타
+
 - ✅ Swagger API 문서화
 - ✅ 전역 예외 처리
 - ✅ CORS 설정
@@ -158,7 +189,15 @@ jwt:
 
 - `POST /api/v1/purchase/init` - 결제 초기화
 - `POST /api/v1/purchase/confirm` - 결제 승인
-- `POST /api/v1/purchase/refund` - 환불
+- `POST /api/v1/purchase/refund` - 환불 (결제일로부터 14일 이내만 가능)
+- `GET /api/v1/purchase/receipt/{orderId}` - 영수증 PDF 다운로드 (결제일로부터 14일 이내만 가능)
+- `GET /api/v1/purchase/orders` - 사용자 본인 결제 기록 조회
+
+### 관리자 API (관리자 권한 필요)
+
+- `GET /api/v1/admin/orders` - 모든 사용자의 결제 기록 조회
+- `GET /api/v1/admin/orders/search` - 결제 기록 검색
+  - 쿼리 파라미터: `orderId`, `memberId`, `status`, `startDate`, `endDate`
 
 자세한 API 문서는 Swagger UI에서 확인할 수 있습니다:
 
@@ -205,6 +244,20 @@ pnpm build
 - [프론트엔드 README](./pay_front/README.md)
 - [백엔드 README](./toas_payment2/README.md)
 
+## 주요 제약사항
+
+### 환불 및 영수증 제한
+
+- 환불은 결제일로부터 **14일 이내**만 가능합니다
+- 영수증 다운로드는 결제일로부터 **14일 이내**만 가능합니다
+- 14일 경과 후에는 환불 및 영수증 발급이 불가능합니다
+
+### 권한 관리
+
+- 사용자는 본인의 결제 기록만 조회 가능합니다
+- 관리자는 모든 사용자의 결제 기록을 조회 및 검색할 수 있습니다
+- 관리자 API는 `ADMIN` 역할이 필요합니다
+
 ## 개발 가이드
 
 ### 코드 스타일
@@ -218,6 +271,7 @@ pnpm build
 - 일반 주석은 최소화
 - 테스트 코드는 `//given`, `//when`, `//then` 형식만 사용
 - 모든 로그 및 예외 메시지는 한국어로 작성
+- 페이지에 표시되는 모든 텍스트는 한국어로 작성
 
 ## 라이선스
 

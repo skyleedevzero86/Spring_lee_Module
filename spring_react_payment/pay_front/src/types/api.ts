@@ -9,8 +9,36 @@ export interface LoginResponse {
     userId: number;
     email: string;
     name: string;
+    role: string;
     token: string;
   };
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  name: string;
+}
+
+export interface RegisterResponse {
+  message?: string;
+  data?: {
+    userId: number;
+    email: string;
+    name: string;
+  };
+}
+
+export interface OrderResponse {
+  id: number;
+  orderId: string;
+  orderName: string;
+  memberId: number;
+  amount: number;
+  paymentMethod: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PurchaseInitRequest {

@@ -8,10 +8,10 @@ export default function HomePage() {
         <main className="flex flex-col gap-8 items-center sm:items-start max-w-4xl mx-auto">
           <div className="text-center sm:text-left w-full">
             <h1 className="text-4xl font-bold text-foreground mb-4">
-              Toss Payment
+              토스 결제
             </h1>
             <p className="text-muted-foreground mb-6">
-              Toss Payments Sample Integration
+              토스 페이먼츠 결제 시스템
             </p>
           </div>
 
@@ -21,9 +21,19 @@ export default function HomePage() {
                 로그인
               </Button>
             </Link>
+            <Link to="/register">
+              <Button variant="outline" size="lg">
+                회원가입
+              </Button>
+            </Link>
             <Link to="/pay">
               <Button variant="outline" size="lg">
                 결제하기
+              </Button>
+            </Link>
+            <Link to="/orders">
+              <Button variant="outline" size="lg">
+                내 결제 내역
               </Button>
             </Link>
           </div>
@@ -34,7 +44,7 @@ export default function HomePage() {
               <li>사용자 로그인</li>
               <li>공연 예매 결제</li>
               <li>결제 성공/실패 처리</li>
-              <li>Toss Payments 연동</li>
+              <li>토스 페이먼츠 연동</li>
             </ul>
           </div>
         </main>
