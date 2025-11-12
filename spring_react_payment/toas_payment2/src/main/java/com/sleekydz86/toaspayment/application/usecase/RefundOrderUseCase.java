@@ -36,14 +36,21 @@ public class RefundOrderUseCase {
                 .orElseThrow(() -> new BadRequestException("주문을 찾을 수 없습니다."));
 
         if (!order.isRefundable()) {
-            PaymentLog log = PaymentLog.create(
+            String errorMessage = String.format(
+                    "환불 가능한 주문이 아닙니다. 현재 상태: %s (필요한 상태: DONE), paymentKey: %s",
+                    order.getStatus(),
+                    order.getPaymentKey() != null ? "있음" : "없음"
+            );
+            PaymentLog paymentLog = PaymentLog.create(
                     orderId.toString(),
                     order.getMemberId(),
                     PaymentLogType.REFUND_FAILED,
-                    "환불 가능한 주문이 아닙니다. 현재 상태: " + order.getStatus()
+                    errorMessage
             );
-            paymentLogRepository.save(log);
-            throw new BadRequestException("환불 가능한 주문이 아닙니다.");
+            paymentLogRepository.save(paymentLog);
+            log.warn("환불 실패 - 주문 ID: {}, 상태: {}, paymentKey 존재: {}", 
+                    orderId, order.getStatus(), order.getPaymentKey() != null);
+            throw new BadRequestException(errorMessage);
         }
 
         LocalDateTime paymentDate = order.getCreatedAt();
@@ -51,14 +58,20 @@ public class RefundOrderUseCase {
         long daysSincePayment = ChronoUnit.DAYS.between(paymentDate, now);
 
         if (daysSincePayment > REFUND_DEADLINE_DAYS) {
-            PaymentLog log = PaymentLog.create(
+            String errorMessage = String.format(
+                    "환불 기한이 지났습니다. 결제일: %s, 경과일: %d일 (기한: %d일)",
+                    paymentDate, daysSincePayment, REFUND_DEADLINE_DAYS
+            );
+            PaymentLog paymentLog = PaymentLog.create(
                     orderId.toString(),
                     order.getMemberId(),
                     PaymentLogType.REFUND_FAILED,
-                    "환불 기한이 지났습니다. 결제일로부터 " + daysSincePayment + "일 경과 (기한: " + REFUND_DEADLINE_DAYS + "일)"
+                    errorMessage
             );
-            paymentLogRepository.save(log);
-            throw new BadRequestException("결제일로부터 14일이 지나 환불할 수 없습니다.");
+            paymentLogRepository.save(paymentLog);
+            log.warn("환불 실패 - 주문 ID: {}, 결제일: {}, 경과일: {}일", 
+                    orderId, paymentDate, daysSincePayment);
+            throw new BadRequestException(errorMessage);
         }
 
         Money refundAmount = Money.of(request.paidAmount());

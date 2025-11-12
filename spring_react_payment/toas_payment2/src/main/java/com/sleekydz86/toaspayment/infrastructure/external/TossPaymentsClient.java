@@ -35,17 +35,16 @@ public class TossPaymentsClient implements PaymentGateway {
             ResponseEntity<TossPaymentResponse> response = restTemplate.postForEntity(
                     config.getApproveUrl(),
                     entity,
-                    TossPaymentResponse.class
-            );
+                    TossPaymentResponse.class);
 
             if (response.getBody() == null) {
                 throw new IllegalStateException("토스 페이먼츠에서 응답을 받지 못했습니다.");
             }
 
             TossPaymentResponse responseBody = response.getBody();
-            log.info("토스 페이먼츠 응답 전체 - paymentKey: {}, orderId: {}, status: {}, method: {}, totalAmount: {}", 
-                responseBody.paymentKey(), responseBody.orderId(), responseBody.status(), 
-                responseBody.method(), responseBody.totalAmount());
+            log.info("토스 페이먼츠 응답 전체 - paymentKey: {}, orderId: {}, status: {}, method: {}, totalAmount: {}",
+                    responseBody.paymentKey(), responseBody.orderId(), responseBody.status(),
+                    responseBody.method(), responseBody.totalAmount());
 
             return responseBody;
         } catch (HttpClientErrorException e) {
@@ -79,8 +78,7 @@ public class TossPaymentsClient implements PaymentGateway {
             ResponseEntity<TossPaymentResponse> response = restTemplate.postForEntity(
                     refundUrl,
                     entity,
-                    TossPaymentResponse.class
-            );
+                    TossPaymentResponse.class);
 
             if (response.getBody() == null) {
                 throw new IllegalStateException("토스 페이먼츠에서 환불 응답을 받지 못했습니다.");
@@ -112,4 +110,3 @@ public class TossPaymentsClient implements PaymentGateway {
         return headers;
     }
 }
-

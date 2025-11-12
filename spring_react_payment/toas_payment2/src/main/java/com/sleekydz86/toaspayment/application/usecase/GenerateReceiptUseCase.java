@@ -26,6 +26,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -72,6 +77,7 @@ public class GenerateReceiptUseCase {
             Document document = new Document(pdf);
 
             PdfFont koreanFont = createKoreanFont();
+            log.info("PDF 생성 시작 - 폰트 로드 완료");
 
             Paragraph title = new Paragraph("결제 영수증")
                     .setFont(koreanFont)
@@ -141,33 +147,183 @@ public class GenerateReceiptUseCase {
 
     private PdfFont createKoreanFont() {
         try {
-            String[] fontNames = {
-                    "Malgun Gothic",
-                    "AppleGothic",
-                    "Noto Sans CJK KR",
-                    "NanumGothic",
-                    "Gulim"
-            };
+            String osName = System.getProperty("os.name").toLowerCase();
+            log.info("OS 감지: {}", osName);
 
-            for (String fontName : fontNames) {
-                try {
-                    FontProgram fontProgram = FontProgramFactory.createFont(fontName);
-                    return PdfFontFactory.createFont(fontProgram, "Identity-H");
-                } catch (Exception e) {
-                    log.debug("폰트 로드 실패: {}, 다음 폰트 시도", fontName);
+            if (osName.contains("win")) {
+                PdfFont font = findWindowsKoreanFont();
+                if (font != null) {
+                    return font;
+                }
+            } else if (osName.contains("mac")) {
+                PdfFont font = findMacKoreanFont();
+                if (font != null) {
+                    return font;
+                }
+            } else {
+                PdfFont font = findLinuxKoreanFont();
+                if (font != null) {
+                    return font;
                 }
             }
 
-            log.warn("한글 폰트를 찾을 수 없어 기본 폰트를 사용합니다.");
-            return PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            PdfFont font = trySystemFontNames();
+            if (font != null) {
+                return font;
+            }
+
+            log.warn("한글 폰트를 찾을 수 없어 기본 폰트를 사용합니다. 한글이 깨질 수 있습니다.");
+            try {
+                return PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            } catch (IOException e) {
+                log.error("기본 폰트 생성 실패: {}", e.getMessage(), e);
+                throw new BadRequestException("PDF 폰트 생성에 실패했습니다.");
+            }
         } catch (Exception e) {
             log.error("폰트 생성 실패: {}", e.getMessage(), e);
             try {
                 return PdfFontFactory.createFont(StandardFonts.HELVETICA);
-            } catch (Exception ex) {
+            } catch (IOException ioException) {
+                log.error("기본 폰트 생성도 실패: {}", ioException.getMessage(), ioException);
                 throw new BadRequestException("PDF 폰트 생성에 실패했습니다.");
             }
         }
+    }
+
+    private PdfFont findWindowsKoreanFont() {
+        try {
+            String windowsFontDir = System.getenv("WINDIR");
+            if (windowsFontDir == null) {
+                windowsFontDir = "C:\\Windows";
+            }
+            Path fontsDir = Paths.get(windowsFontDir, "Fonts");
+            log.info("Windows 폰트 디렉토리: {}", fontsDir);
+
+            if (!Files.exists(fontsDir)) {
+                log.warn("폰트 디렉토리가 존재하지 않습니다: {}", fontsDir);
+                return null;
+            }
+
+            String[] preferredFonts = {
+                    "malgun.ttf", "malgunbd.ttf", "malgunsl.ttf",
+                    "gulim.ttc", "gulimche.ttc",
+                    "batang.ttc", "batangche.ttc",
+                    "gungsuh.ttc", "gungsuhche.ttc",
+                    "NanumGothic.ttf", "NanumBarunGothic.ttf",
+                    "NanumGothicBold.ttf", "NanumBarunGothicBold.ttf"
+            };
+
+            for (String fontFile : preferredFonts) {
+                Path fontPath = fontsDir.resolve(fontFile);
+                if (Files.exists(fontPath)) {
+                    try {
+                        log.info("폰트 파일 발견: {}", fontPath);
+                        FontProgram fontProgram = FontProgramFactory.createFont(fontPath.toString());
+                        PdfFont font = PdfFontFactory.createFont(fontProgram, "Identity-H");
+                        log.info("폰트 로드 성공: {}", fontPath);
+                        return font;
+                    } catch (Exception e) {
+                        log.warn("폰트 로드 실패: {}, 오류: {}", fontPath, e.getMessage());
+                    }
+                }
+            }
+
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(fontsDir, "*.{ttf,ttc,otf}")) {
+                for (Path fontPath : stream) {
+                    String fileName = fontPath.getFileName().toString().toLowerCase();
+                    if (fileName.contains("malgun") || fileName.contains("gulim") ||
+                            fileName.contains("batang") || fileName.contains("gungsuh") ||
+                            fileName.contains("nanum")) {
+                        try {
+                            log.info("한글 폰트 파일 발견: {}", fontPath);
+                            FontProgram fontProgram = FontProgramFactory.createFont(fontPath.toString());
+                            PdfFont font = PdfFontFactory.createFont(fontProgram, "Identity-H");
+                            log.info("폰트 로드 성공: {}", fontPath);
+                            return font;
+                        } catch (Exception e) {
+                            log.debug("폰트 로드 실패: {}, 오류: {}", fontPath, e.getMessage());
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                log.warn("폰트 디렉토리 스캔 실패: {}", e.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("Windows 폰트 검색 실패: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    private PdfFont findMacKoreanFont() {
+        String[] fontPaths = {
+                "/System/Library/Fonts/AppleGothic.ttf",
+                "/Library/Fonts/AppleGothic.ttf",
+                "/System/Library/Fonts/Supplemental/AppleGothic.ttf"
+        };
+
+        for (String fontPath : fontPaths) {
+            try {
+                Path path = Paths.get(fontPath);
+                if (Files.exists(path)) {
+                    log.info("폰트 파일 발견: {}", fontPath);
+                    FontProgram fontProgram = FontProgramFactory.createFont(fontPath);
+                    PdfFont font = PdfFontFactory.createFont(fontProgram, "Identity-H");
+                    log.info("폰트 로드 성공: {}", fontPath);
+                    return font;
+                }
+            } catch (Exception e) {
+                log.debug("폰트 로드 실패: {}, 오류: {}", fontPath, e.getMessage());
+            }
+        }
+        return null;
+    }
+
+    private PdfFont findLinuxKoreanFont() {
+        String[] fontPaths = {
+                "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+                "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.otf"
+        };
+
+        for (String fontPath : fontPaths) {
+            try {
+                Path path = Paths.get(fontPath);
+                if (Files.exists(path)) {
+                    log.info("폰트 파일 발견: {}", fontPath);
+                    FontProgram fontProgram = FontProgramFactory.createFont(fontPath);
+                    PdfFont font = PdfFontFactory.createFont(fontProgram, "Identity-H");
+                    log.info("폰트 로드 성공: {}", fontPath);
+                    return font;
+                }
+            } catch (Exception e) {
+                log.debug("폰트 로드 실패: {}, 오류: {}", fontPath, e.getMessage());
+            }
+        }
+        return null;
+    }
+
+    private PdfFont trySystemFontNames() {
+        String[] fontNames = {
+                "Malgun Gothic",
+                "맑은 고딕",
+                "AppleGothic",
+                "Noto Sans CJK KR",
+                "NanumGothic",
+                "Gulim"
+        };
+
+        for (String fontName : fontNames) {
+            try {
+                log.debug("폰트 이름으로 로드 시도: {}", fontName);
+                FontProgram fontProgram = FontProgramFactory.createFont(fontName);
+                PdfFont font = PdfFontFactory.createFont(fontProgram, "Identity-H");
+                log.info("폰트 로드 성공 (이름): {}", fontName);
+                return font;
+            } catch (Exception e) {
+                log.debug("폰트 로드 실패 (이름): {}, 오류: {}", fontName, e.getMessage());
+            }
+        }
+        return null;
     }
 
     private com.itextpdf.layout.element.Cell createCell(String text, boolean isHeader, PdfFont font) {
