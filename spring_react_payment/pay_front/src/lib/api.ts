@@ -23,6 +23,9 @@ api.interceptors.request.use(
       const token = localStorage.getItem('token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.debug('토큰이 요청 헤더에 추가되었습니다:', config.url);
+      } else {
+        console.warn('토큰이 없습니다. 요청 URL:', config.url);
       }
     } catch (error) {
       console.error('토큰 조회 중 오류 발생:', error);
@@ -37,7 +40,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.warn('인증 실패 (401/403). 토큰을 제거하고 로그인 페이지로 이동합니다.');
       try {
         localStorage.removeItem('token');
         localStorage.removeItem('auth-storage');
