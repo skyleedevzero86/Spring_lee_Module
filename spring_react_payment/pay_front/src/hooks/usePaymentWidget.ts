@@ -8,11 +8,11 @@ import { nanoid } from 'nanoid';
 import { AxiosError } from 'axios';
 import { paymentService } from '@/lib/services/paymentService';
 
-const CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY;
+const CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq';
 const CUSTOMER_KEY = import.meta.env.VITE_TOSS_CUSTOMER_KEY || ANONYMOUS;
 
-if (!CLIENT_KEY) {
-  throw new Error('VITE_TOSS_CLIENT_KEY 환경 변수가 설정되지 않았습니다.');
+if (!import.meta.env.VITE_TOSS_CLIENT_KEY) {
+  console.warn('VITE_TOSS_CLIENT_KEY 환경 변수가 설정되지 않았습니다. 테스트 키를 사용합니다.');
 }
 
 export const usePaymentWidget = () => {
