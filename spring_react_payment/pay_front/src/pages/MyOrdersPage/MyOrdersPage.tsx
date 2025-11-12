@@ -8,6 +8,7 @@ export default function MyOrdersPage() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
 
   useEffect(() => {
     loadOrders();
@@ -16,10 +17,16 @@ export default function MyOrdersPage() {
   const loadOrders = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await paymentService.getUserOrders();
       setOrders(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || '주문 목록을 불러오는데 실패했습니다.');
+    } catch (err: unknown) {
+      let errorMessage = '주문 목록을 불러오는데 실패했습니다.';
+      if (err instanceof Error && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        errorMessage = axiosError.response?.data?.message || errorMessage;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -27,9 +34,15 @@ export default function MyOrdersPage() {
 
   const handleDownloadReceipt = async (orderId: string) => {
     try {
+      setReceiptError(null);
       await downloadReceipt(orderId);
-    } catch (err: any) {
-      alert(err.response?.data?.message || '영수증 다운로드에 실패했습니다.');
+    } catch (err: unknown) {
+      let errorMessage = '영수증 다운로드에 실패했습니다.';
+      if (err instanceof Error && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        errorMessage = axiosError.response?.data?.message || errorMessage;
+      }
+      setReceiptError(errorMessage);
     }
   };
 
@@ -44,6 +57,9 @@ export default function MyOrdersPage() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>내 결제 내역</h1>
+      {receiptError && (
+        <div className={styles.errorContainer}>{receiptError}</div>
+      )}
       {orders.length === 0 ? (
         <p className={styles.emptyMessage}>결제 내역이 없습니다.</p>
       ) : (

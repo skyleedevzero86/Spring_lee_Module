@@ -21,12 +21,11 @@ export const paymentService = {
 
   async confirmPurchase(
     request: PurchaseConfirmRequest
-  ): Promise<{ success: boolean }> {
-    const response = await api.post(
+  ): Promise<void> {
+    await api.post(
       `${PAYMENT_BASE_URL}/confirm`,
       request
     );
-    return { success: response.status === 200 };
   },
 
   async getUserOrders(): Promise<OrderResponse[]> {

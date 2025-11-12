@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
@@ -10,11 +11,22 @@ import FailPage from './pages/FailPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 
-function App() {
+function AppRoutes() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleRedirect = (event: CustomEvent<{ path: string }>) => {
+      navigate(event.detail.path, { replace: true });
+    };
+
+    window.addEventListener('auth:redirect', handleRedirect as EventListener);
+    return () => {
+      window.removeEventListener('auth:redirect', handleRedirect as EventListener);
+    };
+  }, [navigate]);
+
   return (
-    <BrowserRouter>
-      <Header />
-      <Routes>
+    <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -51,7 +63,15 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Header />
+      <AppRoutes />
     </BrowserRouter>
   );
 }

@@ -44,11 +44,19 @@ public class TossPaymentsClient implements PaymentGateway {
 
             return response.getBody();
         } catch (HttpClientErrorException e) {
-            log.error("토스 페이먼츠 결제 승인 4xx 오류 - 응답: {}", e.getResponseBodyAsString());
+            String responseBody = e.getResponseBodyAsString();
+            log.error("토스 페이먼츠 결제 승인 4xx 오류 - 상태: {}, 응답: {}", e.getStatusCode(), responseBody);
             throw new TossPaymentException("결제 승인에 실패했습니다: " + e.getMessage(), e.getStatusCode().value());
         } catch (HttpServerErrorException e) {
-            log.error("토스 페이먼츠 결제 승인 5xx 오류 - 응답: {}", e.getResponseBodyAsString());
+            String responseBody = e.getResponseBodyAsString();
+            log.error("토스 페이먼츠 결제 승인 5xx 오류 - 상태: {}, 응답: {}", e.getStatusCode(), responseBody);
             throw new TossPaymentException("결제 승인 중 서버 오류가 발생했습니다: " + e.getMessage(), e.getStatusCode().value());
+        } catch (org.springframework.web.client.ResourceAccessException e) {
+            log.error("토스 페이먼츠 결제 승인 네트워크 오류 - {}", e.getMessage());
+            throw new TossPaymentException("토스 페이먼츠 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.", 503);
+        } catch (Exception e) {
+            log.error("토스 페이먼츠 결제 승인 예상치 못한 오류 - {}", e.getMessage(), e);
+            throw new TossPaymentException("결제 처리 중 오류가 발생했습니다.", 500);
         }
     }
 
@@ -75,11 +83,19 @@ public class TossPaymentsClient implements PaymentGateway {
 
             return response.getBody();
         } catch (HttpClientErrorException e) {
-            log.error("토스 페이먼츠 환불 4xx 오류 - 응답: {}", e.getResponseBodyAsString());
+            String responseBody = e.getResponseBodyAsString();
+            log.error("토스 페이먼츠 환불 4xx 오류 - 상태: {}, 응답: {}", e.getStatusCode(), responseBody);
             throw new TossPaymentException("환불 처리에 실패했습니다: " + e.getMessage(), e.getStatusCode().value());
         } catch (HttpServerErrorException e) {
-            log.error("토스 페이먼츠 환불 5xx 오류 - 응답: {}", e.getResponseBodyAsString());
+            String responseBody = e.getResponseBodyAsString();
+            log.error("토스 페이먼츠 환불 5xx 오류 - 상태: {}, 응답: {}", e.getStatusCode(), responseBody);
             throw new TossPaymentException("환불 처리 중 서버 오류가 발생했습니다: " + e.getMessage(), e.getStatusCode().value());
+        } catch (org.springframework.web.client.ResourceAccessException e) {
+            log.error("토스 페이먼츠 환불 네트워크 오류 - {}", e.getMessage());
+            throw new TossPaymentException("토스 페이먼츠 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.", 503);
+        } catch (Exception e) {
+            log.error("토스 페이먼츠 환불 예상치 못한 오류 - {}", e.getMessage(), e);
+            throw new TossPaymentException("환불 처리 중 오류가 발생했습니다.", 500);
         }
     }
 

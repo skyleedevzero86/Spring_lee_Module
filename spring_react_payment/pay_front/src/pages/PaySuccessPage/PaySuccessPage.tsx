@@ -12,17 +12,23 @@ export default function PaySuccessPage() {
 
   const confirmPayment = useCallback(
     async (paymentKey: string, orderId: string, amount: number) => {
+      if (!paymentKey?.trim() || !orderId?.trim() || amount <= 0) {
+        const errorMessage = '결제 정보가 올바르지 않습니다.';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
+
       try {
-        const result = await paymentService.confirmPurchase({
+        await paymentService.confirmPurchase({
           paymentKey,
           orderId,
           orderName: '티켓 예매',
           amount,
         });
-        return result;
-      } catch (err: any) {
+      } catch (err: unknown) {
         const errorMessage =
-          err.response?.data?.message || '결제 승인에 실패했습니다.';
+          (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 
+          '결제 승인에 실패했습니다.';
         setError(errorMessage);
         throw err;
       }
@@ -33,17 +39,24 @@ export default function PaySuccessPage() {
   useEffect(() => {
     const paymentKey = searchParams.get('paymentKey');
     const orderId = searchParams.get('orderId');
-    const amount = searchParams.get('amount');
+    const amountStr = searchParams.get('amount');
 
-    if (!paymentKey || !orderId || !amount) {
+    if (!paymentKey || !orderId || !amountStr) {
       setStatus('error');
       setError('필수 결제 정보가 누락되었습니다.');
       return;
     }
 
+    const amount = Number.parseInt(amountStr, 10);
+    if (Number.isNaN(amount) || amount <= 0) {
+      setStatus('error');
+      setError('결제 금액이 올바르지 않습니다.');
+      return;
+    }
+
     const confirm = async () => {
       try {
-        await confirmPayment(paymentKey, orderId, parseInt(amount));
+        await confirmPayment(paymentKey, orderId, amount);
         setStatus('success');
       } catch (err) {
         setStatus('error');

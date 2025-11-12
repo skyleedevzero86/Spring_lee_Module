@@ -20,6 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.util.List;
+
 @Tag(name = "결제", description = "결제 관련 API")
 @RestController
 @RequestMapping("/api/v1/purchase")
@@ -34,8 +37,10 @@ public class PaymentController {
     @Operation(summary = "결제 초기화", description = "결제를 시작하기 전 주문을 초기화합니다.")
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/init")
-    public ResponseEntity<PurchaseInitResponse> initPurchase(@Valid @RequestBody PurchaseInitRequest request) {
-        PurchaseInitResponse response = initPurchaseUseCase.execute(request);
+    public ResponseEntity<PurchaseInitResponse> initPurchase(
+            @Valid @RequestBody PurchaseInitRequest request,
+            Principal principal) {
+        PurchaseInitResponse response = initPurchaseUseCase.execute(request, principal);
         return ResponseEntity.ok(response);
     }
 
@@ -73,8 +78,8 @@ public class PaymentController {
     @Operation(summary = "사용자 결제 기록 조회", description = "사용자가 자신의 결제 기록을 조회합니다.")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/orders")
-    public ResponseEntity<List<OrderResponse>> getUserOrders() {
-        List<OrderResponse> orders = getUserOrdersUseCase.execute();
+    public ResponseEntity<List<OrderResponse>> getUserOrders(Principal principal) {
+        List<OrderResponse> orders = getUserOrdersUseCase.execute(principal);
         return ResponseEntity.ok(orders);
     }
 }

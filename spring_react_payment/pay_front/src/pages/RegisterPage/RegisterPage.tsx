@@ -1,30 +1,33 @@
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { authService } from '@/lib/services/authService';
-import type { RegisterRequest } from '@/types/api';
+import { registerSchema, type RegisterFormData } from '@/lib/validations';
+import { handleApiError } from '@/lib/errorHandler';
 import styles from './RegisterPage.module.css';
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
 
-  const handleRegister = async (e: FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
     setError(null);
 
     try {
-      const request: RegisterRequest = { email, password, name };
-      await authService.register(request);
+      await authService.register(data);
       navigate('/login');
-    } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message || '회원가입에 실패했습니다.';
-      setError(errorMessage);
+    } catch (err: unknown) {
+      setError(handleApiError(err));
     } finally {
       setLoading(false);
     }
@@ -33,40 +36,42 @@ export default function RegisterPage() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>회원가입</h1>
-      <form onSubmit={handleRegister} className={styles.form}>
+      <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
         <div className={styles.field}>
           <label className={styles.label}>이름</label>
           <input
             type="text"
             className={styles.input}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
+            {...register('name')}
             disabled={loading}
           />
+          {errors.name && (
+            <p className={styles.error}>{errors.name.message}</p>
+          )}
         </div>
         <div className={styles.field}>
           <label className={styles.label}>이메일</label>
           <input
             type="email"
             className={styles.input}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            {...register('email')}
             disabled={loading}
           />
+          {errors.email && (
+            <p className={styles.error}>{errors.email.message}</p>
+          )}
         </div>
         <div className={styles.field}>
           <label className={styles.label}>비밀번호</label>
           <input
             type="password"
             className={styles.input}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
+            {...register('password')}
             disabled={loading}
           />
+          {errors.password && (
+            <p className={styles.error}>{errors.password.message}</p>
+          )}
           <p className={styles.hint}>비밀번호는 최소 8자 이상이어야 합니다.</p>
         </div>
         {error && <p className={styles.error}>{error}</p>}

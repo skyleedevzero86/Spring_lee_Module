@@ -11,10 +11,10 @@ import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogRepository;
 import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.Principal;
 
 @Slf4j
 @Service
@@ -24,9 +24,18 @@ public class InitPurchaseUseCase {
     private final PaymentLogRepository paymentLogRepository;
 
     @Transactional
-    public PurchaseInitResponse execute(PurchaseInitRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long memberId = Long.parseLong(authentication.getName());
+    public PurchaseInitResponse execute(PurchaseInitRequest request, Principal principal) {
+        if (principal == null || principal.getName() == null) {
+            throw new com.sleekydz86.toaspayment.exception.BadRequestException("인증 정보가 없습니다.");
+        }
+
+        Long memberId;
+        try {
+            memberId = Long.parseLong(principal.getName());
+        } catch (NumberFormatException e) {
+            log.error("사용자 ID 파싱 실패 - principal name: {}", principal.getName());
+            throw new com.sleekydz86.toaspayment.exception.BadRequestException("유효하지 않은 사용자 정보입니다.");
+        }
 
         OrderId orderId = OrderId.generate();
         Money amount = Money.of(request.amount());

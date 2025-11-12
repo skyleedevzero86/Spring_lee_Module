@@ -1,8 +1,14 @@
 import { useState, useCallback } from 'react';
 import { loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { paymentService } from '@/lib/services/paymentService';
+import { handleApiError } from '@/lib/errorHandler';
 
-const TOSS_CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY || 'test_ck_Z61JOxRQVEY6lZeGL4zgVW0X9bAq';
+const TOSS_CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY;
+const TOSS_CUSTOMER_KEY = import.meta.env.VITE_TOSS_CUSTOMER_KEY;
+
+if (!TOSS_CLIENT_KEY) {
+  throw new Error('VITE_TOSS_CLIENT_KEY 환경 변수가 설정되지 않았습니다.');
+}
 
 export const usePayment = () => {
   const [loading, setLoading] = useState(false);
@@ -27,11 +33,15 @@ export const usePayment = () => {
           amount,
         });
 
+        if (!initResponse?.data?.purchaseUUID) {
+          throw new Error('주문 초기화 응답이 올바르지 않습니다.');
+        }
+
         const purchaseId = initResponse.data.purchaseUUID;
 
         const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY);
         const payment = tossPayments.payment({
-          customerKey: 'tvivarepublica',
+          customerKey: TOSS_CUSTOMER_KEY || 'anonymous',
         });
 
         const paymentParams = {
@@ -46,24 +56,14 @@ export const usePayment = () => {
           customerMobilePhone: customerInfo.mobilePhone,
         };
 
-      await payment.requestPayment(paymentParams);
-    } catch (err: any) {
-      let errorMessage = '결제를 시작할 수 없습니다.';
-      
-      if (err.response) {
-        errorMessage = err.response.data?.message || 
-          `서버 오류: ${err.response.status} ${err.response.statusText}`;
-      } else if (err.request) {
-        errorMessage = '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.';
-      } else {
-        errorMessage = err.message || '결제 요청 중 오류가 발생했습니다.';
+        await payment.requestPayment(paymentParams);
+      } catch (err: unknown) {
+        const errorMessage = handleApiError(err) || '결제를 시작할 수 없습니다.';
+        setError(errorMessage);
+        return;
+      } finally {
+        setLoading(false);
       }
-      
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
     },
     []
   );
@@ -74,18 +74,16 @@ export const usePayment = () => {
       setError(null);
 
       try {
-        const result = await paymentService.confirmPurchase({
+        await paymentService.confirmPurchase({
           paymentKey,
           orderId,
           orderName: '티켓 예매',
           amount,
         });
-        return result;
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message || '결제 승인에 실패했습니다.';
+      } catch (err: unknown) {
+        const errorMessage = handleApiError(err) || '결제 승인에 실패했습니다.';
         setError(errorMessage);
-        throw err;
+        return;
       } finally {
         setLoading(false);
       }

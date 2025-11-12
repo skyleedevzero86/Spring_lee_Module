@@ -37,64 +37,75 @@ public class ConfirmPurchaseUseCase {
             throw new BadRequestException("결제 금액이 일치하지 않습니다.");
         }
 
+        TossPaymentResponse response;
         try {
-            TossPaymentResponse response = paymentGateway.confirmPayment(
+            response = paymentGateway.confirmPayment(
                     request.paymentKey(),
                     request.orderId(),
                     request.amount()
             );
-
-            validatePaymentResponse(response, requestAmount);
-
-            PaymentMethod paymentMethod = mapPaymentMethod(response.method());
-            order.completePayment(request.paymentKey(), paymentMethod);
-            orderRepository.save(order);
-
-            PaymentLog successLog = PaymentLog.create(
-                    orderId.toString(),
-                    order.getMemberId(),
-                    PaymentLogType.PAYMENT_SUCCESS,
-                    "결제 성공 - 금액: " + requestAmount.toInteger() + "원, 결제수단: " + paymentMethod
-            );
-            paymentLogRepository.save(successLog);
-
-            log.info("결제 승인 완료 - 주문 ID: {}", orderId);
         } catch (TossPaymentException e) {
-            log.error("토스 페이먼츠 결제 승인 실패 - 주문 ID: {}, 오류: {}", orderId, e.getMessage());
-            order.abort();
-            orderRepository.save(order);
-
-            PaymentLog failLog = PaymentLog.create(
-                    orderId.toString(),
-                    order.getMemberId(),
-                    PaymentLogType.PAYMENT_FAILED,
-                    "토스 페이먼츠 결제 실패: " + e.getMessage(),
-                    "상태 코드: " + e.getStatusCode()
-            );
-            paymentLogRepository.save(failLog);
-
+            handlePaymentFailure(order, orderId, requestAmount, e);
             throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
                     "결제 승인에 실패했습니다: " + e.getMessage(),
                     org.springframework.http.HttpStatus.valueOf(e.getStatusCode())
             );
         } catch (Exception e) {
-            log.error("결제 승인 처리 중 예상치 못한 오류 발생 - 주문 ID: {}, 오류: {}", orderId, e.getMessage(), e);
-            order.abort();
-            orderRepository.save(order);
-
-            PaymentLog errorLog = PaymentLog.create(
-                    orderId.toString(),
-                    order.getMemberId(),
-                    PaymentLogType.PAYMENT_ERROR,
-                    "결제 처리 중 오류 발생: " + e.getMessage()
-            );
-            paymentLogRepository.save(errorLog);
-
+            handlePaymentError(order, orderId, requestAmount, e);
             throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
                     "결제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
                     org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
+
+        validatePaymentResponse(response, requestAmount);
+        savePaymentSuccess(order, orderId, request, response);
+    }
+
+    private void savePaymentSuccess(Order order, OrderId orderId, PurchaseConfirmRequest request, TossPaymentResponse response) {
+        PaymentMethod paymentMethod = mapPaymentMethod(response.method());
+        order.completePayment(request.paymentKey(), paymentMethod);
+        orderRepository.save(order);
+
+        Money requestAmount = Money.of(request.amount());
+        PaymentLog successLog = PaymentLog.create(
+                orderId.toString(),
+                order.getMemberId(),
+                PaymentLogType.PAYMENT_SUCCESS,
+                "결제 성공 - 금액: " + requestAmount.toInteger() + "원, 결제수단: " + paymentMethod
+        );
+        paymentLogRepository.save(successLog);
+
+        log.info("결제 승인 완료 - 주문 ID: {}", orderId);
+    }
+
+    private void handlePaymentFailure(Order order, OrderId orderId, Money requestAmount, TossPaymentException e) {
+        log.error("토스 페이먼츠 결제 승인 실패 - 주문 ID: {}, 오류: {}", orderId, e.getMessage());
+        order.abort();
+        orderRepository.save(order);
+
+        PaymentLog failLog = PaymentLog.create(
+                orderId.toString(),
+                order.getMemberId(),
+                PaymentLogType.PAYMENT_FAILED,
+                "토스 페이먼츠 결제 실패: " + e.getMessage(),
+                "상태 코드: " + e.getStatusCode()
+        );
+        paymentLogRepository.save(failLog);
+    }
+
+    private void handlePaymentError(Order order, OrderId orderId, Money requestAmount, Exception e) {
+        log.error("결제 승인 처리 중 예상치 못한 오류 발생 - 주문 ID: {}, 오류: {}", orderId, e.getMessage(), e);
+        order.abort();
+        orderRepository.save(order);
+
+        PaymentLog errorLog = PaymentLog.create(
+                orderId.toString(),
+                order.getMemberId(),
+                PaymentLogType.PAYMENT_ERROR,
+                "결제 처리 중 오류 발생: " + e.getMessage()
+        );
+        paymentLogRepository.save(errorLog);
     }
 
     private void validatePaymentResponse(TossPaymentResponse response, Money expectedAmount) {

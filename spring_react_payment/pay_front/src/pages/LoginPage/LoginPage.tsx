@@ -1,45 +1,50 @@
-import { useState, FormEvent } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/useAuth';
+import { loginSchema, type LoginFormData } from '@/lib/validations';
 import styles from './LoginPage.module.css';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const { login, loading, error } = useAuth();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    try {
-      await login({ email, password });
-    } catch (err) {
-    }
+  const onSubmit = async (data: LoginFormData) => {
+    await login(data);
   };
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>로그인</h1>
-      <form onSubmit={handleLogin} className={styles.form}>
+      <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
         <div className={styles.field}>
           <label className={styles.label}>이메일</label>
           <input
             type="email"
             className={styles.input}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            {...register('email')}
             disabled={loading}
           />
+          {errors.email && (
+            <p className={styles.error}>{errors.email.message}</p>
+          )}
         </div>
         <div className={styles.field}>
           <label className={styles.label}>비밀번호</label>
           <input
             type="password"
             className={styles.input}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            {...register('password')}
             disabled={loading}
           />
+          {errors.password && (
+            <p className={styles.error}>{errors.password.message}</p>
+          )}
         </div>
         {error && <p className={styles.error}>{error}</p>}
         <button

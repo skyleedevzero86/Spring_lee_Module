@@ -5,10 +5,15 @@ import {
   ANONYMOUS,
 } from '@tosspayments/payment-widget-sdk';
 import { nanoid } from 'nanoid';
+import { AxiosError } from 'axios';
 import { paymentService } from '@/lib/services/paymentService';
 
-const CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq';
-const CUSTOMER_KEY = ANONYMOUS;
+const CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY;
+const CUSTOMER_KEY = import.meta.env.VITE_TOSS_CUSTOMER_KEY || ANONYMOUS;
+
+if (!CLIENT_KEY) {
+  throw new Error('VITE_TOSS_CLIENT_KEY 환경 변수가 설정되지 않았습니다.');
+}
 
 export const usePaymentWidget = () => {
   const paymentWidgetRef = useRef<PaymentWidgetInstance | null>(null);
@@ -39,16 +44,17 @@ export const usePaymentWidget = () => {
         paymentMethodsWidgetRef.current = paymentMethodsWidget;
         setIsWidgetReady(true);
         setError(null);
-          } catch (err: any) {
-        
+      } catch (err: unknown) {
         let errorMessage = '결제위젯을 불러올 수 없습니다.';
         
-        if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
-          errorMessage = '인증에 실패했습니다. 클라이언트 키를 확인해주세요.';
-        } else if (err.message?.includes('Network')) {
-          errorMessage = '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.';
-        } else if (err.message) {
-          errorMessage = `결제위젯 오류: ${err.message}`;
+        if (err instanceof Error) {
+          if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
+            errorMessage = '인증에 실패했습니다. 클라이언트 키를 확인해주세요.';
+          } else if (err.message?.includes('Network')) {
+            errorMessage = '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.';
+          } else {
+            errorMessage = `결제위젯 오류: ${err.message}`;
+          }
         }
         
         setError(errorMessage);
@@ -111,21 +117,18 @@ export const usePaymentWidget = () => {
           successUrl: `${window.location.origin}/success?paymentUUID=${purchaseId}&orderId=${orderId}`,
           failUrl: `${window.location.origin}/pay/fail`,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         let errorMessage = '결제를 시작할 수 없습니다.';
 
-            if (err.response) {
-              errorMessage =
-                err.response.data?.message ||
-                `서버 오류: ${err.response.status} ${err.response.statusText}`;
-            } else if (err.request) {
-              errorMessage =
-                '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.';
-            } else {
-              errorMessage = err.message || '결제 요청 중 오류가 발생했습니다.';
-            }
+        if (err instanceof AxiosError) {
+          errorMessage =
+            err.response?.data?.message ||
+            `서버 오류: ${err.response?.status} ${err.response?.statusText}`;
+        } else if (err instanceof Error) {
+          errorMessage = err.message || '결제 요청 중 오류가 발생했습니다.';
+        }
 
-            setError(errorMessage);
+        setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
