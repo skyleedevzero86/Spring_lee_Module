@@ -4,11 +4,14 @@ import './index.css'
 import App from './App.tsx'
 
 const isTossPaymentsError = (url: string) => {
+  if (typeof url !== 'string') return false;
   return url.includes('payment-gateway-sandbox.tosspayments.com') || 
          url.includes('payment-gateway.tosspayments.com') ||
          url.includes('tosspayments.com/_next/data') ||
          url.includes('tosspayments.com/_next/') ||
-         url.includes('tosspayments.com/static/');
+         url.includes('tosspayments.com/static/') ||
+         url.includes('/_next/data/') ||
+         url.includes('/_next/static/');
 };
 
 const originalConsoleError = console.error;
@@ -40,11 +43,18 @@ window.addEventListener('error', (event) => {
 
 const originalFetch = window.fetch;
 window.fetch = async (...args) => {
-  const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+  const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
   if (url && isTossPaymentsError(url)) {
     try {
-      return await originalFetch.apply(window, args);
+      const response = await originalFetch.apply(window, args);
+      if (!response.ok && response.status === 404) {
+        return response;
+      }
+      return response;
     } catch (error) {
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        return new Response(null, { status: 404, statusText: 'Not Found' });
+      }
       return Promise.reject(error);
     }
   }
@@ -55,17 +65,18 @@ const originalXHROpen = XMLHttpRequest.prototype.open;
 const originalXHRSend = XMLHttpRequest.prototype.send;
 
 XMLHttpRequest.prototype.open = function(method: string, url: string | URL, ...rest: unknown[]) {
-  this._url = typeof url === 'string' ? url : url.toString();
-  return originalXHROpen.apply(this, [method, url, ...rest]);
+  (this as any)._url = typeof url === 'string' ? url : url.toString();
+  return originalXHROpen.apply(this, [method, url, ...rest] as any);
 };
 
 XMLHttpRequest.prototype.send = function(...args: unknown[]) {
-  if (this._url && isTossPaymentsError(this._url)) {
-    this.addEventListener('error', (event) => {
+  const xhr = this as any;
+  if (xhr._url && isTossPaymentsError(xhr._url)) {
+    xhr.addEventListener('error', (event: Event) => {
       event.stopPropagation();
     });
-    this.addEventListener('loadend', () => {
-      if (this.status === 404 && this._url && isTossPaymentsError(this._url)) {
+    xhr.addEventListener('loadend', () => {
+      if (xhr.status === 404 && xhr._url && isTossPaymentsError(xhr._url)) {
         return;
       }
     });
@@ -74,17 +85,27 @@ XMLHttpRequest.prototype.send = function(...args: unknown[]) {
 };
 
 window.addEventListener('unhandledrejection', (event) => {
-  if (event.reason && typeof event.reason === 'string' && isTossPaymentsError(event.reason)) {
+  const reason = event.reason;
+  if (!reason) return;
+  
+  if (typeof reason === 'string' && isTossPaymentsError(reason)) {
     event.preventDefault();
     return false;
   }
-  if (event.reason && event.reason.message && isTossPaymentsError(event.reason.message)) {
-    event.preventDefault();
-    return false;
-  }
-  if (event.reason && event.reason.url && isTossPaymentsError(event.reason.url)) {
-    event.preventDefault();
-    return false;
+  
+  if (reason && typeof reason === 'object') {
+    if ('message' in reason && typeof reason.message === 'string' && isTossPaymentsError(reason.message)) {
+      event.preventDefault();
+      return false;
+    }
+    if ('url' in reason && typeof reason.url === 'string' && isTossPaymentsError(reason.url)) {
+      event.preventDefault();
+      return false;
+    }
+    if ('stack' in reason && typeof reason.stack === 'string' && isTossPaymentsError(reason.stack)) {
+      event.preventDefault();
+      return false;
+    }
   }
 });
 

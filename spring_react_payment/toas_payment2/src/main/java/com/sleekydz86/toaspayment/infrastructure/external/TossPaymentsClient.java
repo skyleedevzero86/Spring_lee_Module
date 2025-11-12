@@ -42,7 +42,12 @@ public class TossPaymentsClient implements PaymentGateway {
                 throw new IllegalStateException("토스 페이먼츠에서 응답을 받지 못했습니다.");
             }
 
-            return response.getBody();
+            TossPaymentResponse responseBody = response.getBody();
+            log.info("토스 페이먼츠 응답 전체 - paymentKey: {}, orderId: {}, status: {}, method: {}, totalAmount: {}", 
+                responseBody.paymentKey(), responseBody.orderId(), responseBody.status(), 
+                responseBody.method(), responseBody.totalAmount());
+
+            return responseBody;
         } catch (HttpClientErrorException e) {
             String responseBody = e.getResponseBodyAsString();
             log.error("토스 페이먼츠 결제 승인 4xx 오류 - 상태: {}, 응답: {}", e.getStatusCode(), responseBody);

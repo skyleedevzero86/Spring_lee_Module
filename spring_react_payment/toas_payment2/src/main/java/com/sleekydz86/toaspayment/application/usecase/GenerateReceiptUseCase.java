@@ -1,6 +1,11 @@
 package com.sleekydz86.toaspayment.application.usecase;
 
+import com.itextpdf.io.font.FontProgram;
+import com.itextpdf.io.font.FontProgramFactory;
+import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -66,7 +71,10 @@ public class GenerateReceiptUseCase {
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
 
+            PdfFont koreanFont = createKoreanFont();
+
             Paragraph title = new Paragraph("결제 영수증")
+                    .setFont(koreanFont)
                     .setFontSize(24)
                     .setBold()
                     .setTextAlignment(TextAlignment.CENTER)
@@ -74,41 +82,50 @@ public class GenerateReceiptUseCase {
             document.add(title);
 
             Paragraph companyInfo = new Paragraph("토스 페이먼츠 결제 시스템")
+                    .setFont(koreanFont)
                     .setFontSize(12)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(30);
             document.add(companyInfo);
 
-            float[] columnWidths = {2, 5};
+            float[] columnWidths = { 2, 5 };
             Table table = new Table(UnitValue.createPercentArray(columnWidths)).useAllAvailableWidth();
 
-            table.addCell(createCell("주문번호", true));
-            table.addCell(createCell(order.getOrderId().toString(), false));
+            table.addCell(createCell("주문번호", true, koreanFont));
+            table.addCell(createCell(order.getOrderId().toString(), false, koreanFont));
 
-            table.addCell(createCell("주문명", true));
-            table.addCell(createCell(order.getOrderName(), false));
+            if (order.getOriginalOrderId() != null && !order.getOriginalOrderId().isBlank()) {
+                table.addCell(createCell("원본 주문번호", true, koreanFont));
+                table.addCell(createCell(order.getOriginalOrderId(), false, koreanFont));
+            }
 
-            table.addCell(createCell("결제금액", true));
-            table.addCell(createCell(String.format("%,d원", order.getFinalAmount().toInteger()), false));
+            table.addCell(createCell("주문명", true, koreanFont));
+            table.addCell(createCell(order.getOrderName(), false, koreanFont));
 
-            table.addCell(createCell("결제수단", true));
-            table.addCell(createCell(order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "카드", false));
+            table.addCell(createCell("결제금액", true, koreanFont));
+            table.addCell(createCell(String.format("%,d원", order.getFinalAmount().toInteger()), false, koreanFont));
 
-            table.addCell(createCell("결제상태", true));
-            table.addCell(createCell(order.getStatus().name(), false));
+            table.addCell(createCell("결제수단", true, koreanFont));
+            table.addCell(createCell(order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "카드", false,
+                    koreanFont));
 
-            table.addCell(createCell("결제일시", true));
-            table.addCell(createCell(order.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), false));
+            table.addCell(createCell("결제상태", true, koreanFont));
+            table.addCell(createCell(order.getStatus().name(), false, koreanFont));
 
-            table.addCell(createCell("구매자명", true));
-            table.addCell(createCell(user.getName(), false));
+            table.addCell(createCell("결제일시", true, koreanFont));
+            table.addCell(createCell(order.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                    false, koreanFont));
 
-            table.addCell(createCell("구매자 이메일", true));
-            table.addCell(createCell(user.getEmail(), false));
+            table.addCell(createCell("구매자명", true, koreanFont));
+            table.addCell(createCell(user.getName(), false, koreanFont));
+
+            table.addCell(createCell("구매자 이메일", true, koreanFont));
+            table.addCell(createCell(user.getEmail(), false, koreanFont));
 
             document.add(table);
 
             Paragraph notice = new Paragraph("\n※ 본 영수증은 결제일로부터 14일간 발급 가능합니다.")
+                    .setFont(koreanFont)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginTop(30);
@@ -122,9 +139,40 @@ public class GenerateReceiptUseCase {
         }
     }
 
-    private com.itextpdf.layout.element.Cell createCell(String text, boolean isHeader) {
+    private PdfFont createKoreanFont() {
+        try {
+            String[] fontNames = {
+                    "Malgun Gothic",
+                    "AppleGothic",
+                    "Noto Sans CJK KR",
+                    "NanumGothic",
+                    "Gulim"
+            };
+
+            for (String fontName : fontNames) {
+                try {
+                    FontProgram fontProgram = FontProgramFactory.createFont(fontName);
+                    return PdfFontFactory.createFont(fontProgram, "Identity-H");
+                } catch (Exception e) {
+                    log.debug("폰트 로드 실패: {}, 다음 폰트 시도", fontName);
+                }
+            }
+
+            log.warn("한글 폰트를 찾을 수 없어 기본 폰트를 사용합니다.");
+            return PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        } catch (Exception e) {
+            log.error("폰트 생성 실패: {}", e.getMessage(), e);
+            try {
+                return PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            } catch (Exception ex) {
+                throw new BadRequestException("PDF 폰트 생성에 실패했습니다.");
+            }
+        }
+    }
+
+    private com.itextpdf.layout.element.Cell createCell(String text, boolean isHeader, PdfFont font) {
         com.itextpdf.layout.element.Cell cell = new com.itextpdf.layout.element.Cell()
-                .add(new Paragraph(text))
+                .add(new Paragraph(text).setFont(font))
                 .setPadding(10);
         if (isHeader) {
             cell.setBackgroundColor(ColorConstants.LIGHT_GRAY)
@@ -133,4 +181,3 @@ public class GenerateReceiptUseCase {
         return cell;
     }
 }
-

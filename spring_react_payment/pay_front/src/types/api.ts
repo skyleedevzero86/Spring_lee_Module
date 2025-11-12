@@ -38,10 +38,18 @@ export interface OrderResponse {
   amount: number;
   paymentMethod: string | null;
   paymentMethodDisplay: string;
+  paymentKey: string | null;
   status: string;
   statusDisplay: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RefundRequest {
+  paymentKey: string;
+  orderId: string;
+  refundReason: string;
+  paidAmount: number;
 }
 
 export interface PurchaseInitRequest {

@@ -63,19 +63,23 @@ public class ConfirmPurchaseUseCase {
     }
 
     private void savePaymentSuccess(Order order, OrderId orderId, PurchaseConfirmRequest request, TossPaymentResponse response) {
-        PaymentMethod paymentMethod = mapPaymentMethod(response.method());
-        String paymentKeyFromResponse = response.paymentKey();
-        String originalOrderId = paymentKeyFromResponse != null && !paymentKeyFromResponse.isBlank() 
-            ? paymentKeyFromResponse 
-            : null;
+        String requestPaymentKey = request.paymentKey();
+        String responseMethod = response.method();
         
-        log.info("토스 응답 정보 - paymentKey: {}, orderId: {}, originalOrderId 저장값: {}", 
-            paymentKeyFromResponse, response.orderId(), originalOrderId);
+        PaymentMethod paymentMethod = mapPaymentMethod(responseMethod);
+        String originalOrderId = orderId.toString();
         
-        order.completePayment(request.paymentKey(), paymentMethod, originalOrderId);
-        orderRepository.save(order);
+        log.info("결제 승인 저장 시작 - orderId: {}, originalOrderId: {}, paymentKey: {}, paymentMethod: {}", 
+            orderId, originalOrderId, requestPaymentKey, paymentMethod);
         
-        log.info("결제 승인 완료 - 주문 ID: {}, 원본 주문번호: {}", orderId, originalOrderId);
+        order.completePayment(requestPaymentKey, paymentMethod, originalOrderId);
+        
+        log.info("completePayment 호출 후 - 저장 전 originalOrderId: {}", order.getOriginalOrderId());
+        
+        Order savedOrder = orderRepository.save(order);
+        
+        log.info("저장 완료 - 저장된 orderId: {}, 저장된 originalOrderId: {}, 저장된 paymentKey: {}, 저장된 paymentMethod: {}", 
+            savedOrder.getOrderId(), savedOrder.getOriginalOrderId(), savedOrder.getPaymentKey(), savedOrder.getPaymentMethod());
 
         Money requestAmount = Money.of(request.amount());
         PaymentLog successLog = PaymentLog.create(

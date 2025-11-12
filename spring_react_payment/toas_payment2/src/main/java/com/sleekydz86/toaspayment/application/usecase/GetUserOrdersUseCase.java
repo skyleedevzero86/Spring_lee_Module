@@ -70,6 +70,7 @@ public class GetUserOrdersUseCase {
                             order.getFinalAmount().toInteger(),
                             order.getPaymentMethod() != null ? order.getPaymentMethod().name() : null,
                             OrderDisplayUtil.getPaymentMethodDisplayName(order.getPaymentMethod()),
+                            order.getPaymentKey(),
                             order.getStatus().name(),
                             OrderDisplayUtil.getStatusDisplayName(order.getStatus()),
                             order.getCreatedAt(),

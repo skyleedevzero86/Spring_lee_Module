@@ -4,6 +4,7 @@ import type {
   PurchaseInitResponse,
   PurchaseConfirmRequest,
   OrderResponse,
+  RefundRequest,
 } from '@/types/api';
 
 const PAYMENT_BASE_URL = '/api/v1/purchase';
@@ -41,6 +42,10 @@ export const paymentService = {
       { responseType: 'blob' }
     );
     return response.data;
+  },
+
+  async refundOrder(request: RefundRequest): Promise<void> {
+    await api.post(`${PAYMENT_BASE_URL}/refund`, request);
   },
 };
 

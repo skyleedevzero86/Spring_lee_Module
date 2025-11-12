@@ -15,11 +15,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.List;
 
@@ -66,9 +68,14 @@ public class PaymentController {
     public ResponseEntity<byte[]> downloadReceipt(@PathVariable String orderId) {
         byte[] pdfBytes = generateReceiptUseCase.execute(orderId);
         
+        String filename = "영수증_" + orderId + ".pdf";
+        ContentDisposition contentDisposition = ContentDisposition.attachment()
+                .filename(filename, StandardCharsets.UTF_8)
+                .build();
+        
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "영수증_" + orderId + ".pdf");
+        headers.setContentDisposition(contentDisposition);
         
         return ResponseEntity.ok()
                 .headers(headers)

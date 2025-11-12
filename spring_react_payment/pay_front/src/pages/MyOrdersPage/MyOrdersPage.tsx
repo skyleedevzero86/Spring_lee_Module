@@ -11,6 +11,8 @@ export default function MyOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [receiptError, setReceiptError] = useState<string | null>(null);
+  const [refundError, setRefundError] = useState<string | null>(null);
+  const [refundingOrderId, setRefundingOrderId] = useState<string | null>(null);
   const isUserAdmin = isAdmin();
 
   useEffect(() => {
@@ -49,6 +51,39 @@ export default function MyOrdersPage() {
     }
   };
 
+  const handleRefund = async (order: OrderResponse) => {
+    if (!order.paymentKey || !order.orderId) {
+      setRefundError('환불 정보가 없습니다.');
+      return;
+    }
+
+    if (!confirm('정말 환불하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      setRefundError(null);
+      setRefundingOrderId(order.orderId);
+      await paymentService.refundOrder({
+        paymentKey: order.paymentKey,
+        orderId: order.orderId,
+        refundReason: '고객 요청',
+        paidAmount: order.amount,
+      });
+      await loadOrders();
+      alert('환불이 완료되었습니다.');
+    } catch (err: unknown) {
+      let errorMessage = '환불 처리에 실패했습니다.';
+      if (err instanceof Error && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        errorMessage = axiosError.response?.data?.message || errorMessage;
+      }
+      setRefundError(errorMessage);
+    } finally {
+      setRefundingOrderId(null);
+    }
+  };
+
   if (loading) {
     return <div className={styles.loadingContainer}>로딩 중...</div>;
   }
@@ -62,6 +97,9 @@ export default function MyOrdersPage() {
       <h1 className={styles.title}>내 결제 내역</h1>
       {receiptError && (
         <div className={styles.errorContainer}>{receiptError}</div>
+      )}
+      {refundError && (
+        <div className={styles.errorContainer}>{refundError}</div>
       )}
       {orders.length === 0 ? (
         <p className={styles.emptyMessage}>결제 내역이 없습니다.</p>
@@ -77,7 +115,7 @@ export default function MyOrdersPage() {
                 <th>결제수단</th>
                 <th>상태</th>
                 <th>결제일시</th>
-                <th>작업</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -91,14 +129,25 @@ export default function MyOrdersPage() {
                   <td>{order.statusDisplay}</td>
                   <td>{new Date(order.createdAt).toLocaleString('ko-KR')}</td>
                   <td>
-                    {order.status === 'DONE' && (
-                      <button
-                        onClick={() => handleDownloadReceipt(order.orderId || order.originalOrderId || '')}
-                        className={styles.downloadButton}
-                      >
-                        영수증 다운로드
-                      </button>
-                    )}
+                    <div className={styles.actionButtons}>
+                      {order.status === 'DONE' && (
+                        <>
+                          <button
+                            onClick={() => handleDownloadReceipt(order.orderId || order.originalOrderId || '')}
+                            className={styles.downloadButton}
+                          >
+                            영수증
+                          </button>
+                          <button
+                            onClick={() => handleRefund(order)}
+                            className={styles.refundButton}
+                            disabled={refundingOrderId === order.orderId}
+                          >
+                            {refundingOrderId === order.orderId ? '처리중...' : '환불'}
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -1,11 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { redirectToLogin } from './navigation';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9000';
-
-if (!baseURL) {
-  console.error('VITE_API_BASE_URL 환경 변수가 설정되지 않았습니다. 기본값을 사용합니다.');
-}
+const baseURL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? '' : 'http://localhost:9000');
 
 const api = axios.create({
   baseURL,

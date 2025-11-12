@@ -11,6 +11,7 @@ public record OrderResponse(
         Integer amount,
         String paymentMethod,
         String paymentMethodDisplay,
+        String paymentKey,
         String status,
         String statusDisplay,
         LocalDateTime createdAt,
