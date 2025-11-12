@@ -33,10 +33,10 @@ class UserTest {
     @Test
     @DisplayName("User 생성 성공")
     void createUser_success() {
-        //given & when
+        // given & when
         User user = User.create(email, encodedPassword, name);
 
-        //then
+        // then
         assertThat(user.getEmail()).isEqualTo(email);
         assertThat(user.getPassword()).isEqualTo(encodedPassword);
         assertThat(user.getName()).isEqualTo(name);
@@ -45,29 +45,28 @@ class UserTest {
     @Test
     @DisplayName("비밀번호 일치 확인 성공")
     void matchesPassword_success() {
-        //given
+        // given
         User user = User.create(email, encodedPassword, name);
         when(passwordEncoder.matches(rawPassword, encodedPassword)).thenReturn(true);
 
-        //when
+        // when
         boolean result = user.matchesPassword(rawPassword, passwordEncoder);
 
-        //then
+        // then
         assertThat(result).isTrue();
     }
 
     @Test
     @DisplayName("비밀번호 불일치 확인")
     void matchesPassword_fail() {
-        //given
+        // given
         User user = User.create(email, encodedPassword, name);
         when(passwordEncoder.matches(rawPassword, encodedPassword)).thenReturn(false);
 
-        //when
+        // when
         boolean result = user.matchesPassword(rawPassword, passwordEncoder);
 
-        //then
+        // then
         assertThat(result).isFalse();
     }
 }
-

@@ -34,19 +34,18 @@ class AuthControllerTest {
     @Test
     @DisplayName("로그인 성공")
     void login_success() {
-        //given
+        // given
         LoginRequest request = new LoginRequest("test@example.com", "password123");
         LoginResponse expectedResponse = new LoginResponse(
                 "로그인 성공",
-                new LoginResponse.LoginData(1L, "test@example.com", "테스트 사용자", "jwt_token")
-        );
+                new LoginResponse.LoginData(1L, "test@example.com", "테스트 사용자", "jwt_token"));
 
         when(loginUseCase.execute(request)).thenReturn(expectedResponse);
 
-        //when
+        // when
         ResponseEntity<LoginResponse> response = authController.login(request);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("로그인 성공");
@@ -57,27 +56,24 @@ class AuthControllerTest {
     @Test
     @DisplayName("회원가입 성공")
     void register_success() {
-        //given
+        // given
         RegisterRequest request = new RegisterRequest(
                 "newuser@example.com",
                 "password123",
-                "새로운 사용자"
-        );
+                "새로운 사용자");
         RegisterResponse expectedResponse = new RegisterResponse(
                 "회원가입 성공",
-                new RegisterResponse.RegisterData(1L, "newuser@example.com", "새로운 사용자")
-        );
+                new RegisterResponse.RegisterData(1L, "newuser@example.com", "새로운 사용자"));
 
         when(registerUseCase.execute(request)).thenReturn(expectedResponse);
 
-        //when
+        // when
         ResponseEntity<RegisterResponse> response = authController.register(request);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("회원가입 성공");
         assertThat(response.getBody().data().email()).isEqualTo("newuser@example.com");
     }
 }
-

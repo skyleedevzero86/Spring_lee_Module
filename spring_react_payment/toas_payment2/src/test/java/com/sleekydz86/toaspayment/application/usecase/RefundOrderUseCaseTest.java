@@ -58,13 +58,12 @@ class RefundOrderUseCaseTest {
     @Test
     @DisplayName("환불 성공")
     void refundOrder_success() {
-        //given
+        // given
         RefundRequest request = new RefundRequest(
                 paymentKey,
                 orderId.toString(),
                 "구매자 환불 요청",
-                50000
-        );
+                50000);
 
         List<TossPaymentResponse.CancelDto> cancels = new ArrayList<>();
         cancels.add(new TossPaymentResponse.CancelDto(
@@ -79,8 +78,7 @@ class RefundOrderUseCaseTest {
                 "transaction_key",
                 "receipt_key",
                 "DONE",
-                null
-        ));
+                null));
 
         TossPaymentResponse response = new TossPaymentResponse(
                 "tosspayments",
@@ -105,17 +103,16 @@ class RefundOrderUseCaseTest {
                 0,
                 0,
                 "카드",
-                cancels
-        );
+                cancels);
 
         when(orderRepository.findByOrderId(orderId)).thenReturn(Optional.of(testOrder));
         when(paymentGateway.refundPayment(paymentKey, "구매자 환불 요청")).thenReturn(response);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        //when
+        // when
         refundOrderUseCase.execute(request);
 
-        //then
+        // then
         verify(orderRepository, times(1)).findByOrderId(orderId);
         verify(paymentGateway, times(1)).refundPayment(paymentKey, "구매자 환불 요청");
         verify(orderRepository, times(2)).save(any(Order.class));
@@ -125,17 +122,16 @@ class RefundOrderUseCaseTest {
     @Test
     @DisplayName("주문을 찾을 수 없는 경우")
     void refundOrder_orderNotFound() {
-        //given
+        // given
         RefundRequest request = new RefundRequest(
                 paymentKey,
                 orderId.toString(),
                 "구매자 환불 요청",
-                50000
-        );
+                50000);
 
         when(orderRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
-        //when & then
+        // when & then
         assertThatThrownBy(() -> refundOrderUseCase.execute(request))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("주문을 찾을 수 없습니다.");
@@ -144,18 +140,17 @@ class RefundOrderUseCaseTest {
     @Test
     @DisplayName("환불 가능한 주문이 아닌 경우")
     void refundOrder_notRefundable() {
-        //given
+        // given
         RefundRequest request = new RefundRequest(
                 paymentKey,
                 orderId.toString(),
                 "구매자 환불 요청",
-                50000
-        );
+                50000);
 
         Order pendingOrder = Order.create(orderId, "예매 티켓", 1L, orderAmount);
         when(orderRepository.findByOrderId(orderId)).thenReturn(Optional.of(pendingOrder));
 
-        //when & then
+        // when & then
         assertThatThrownBy(() -> refundOrderUseCase.execute(request))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("환불 가능한 주문이 아닙니다.");
@@ -164,20 +159,19 @@ class RefundOrderUseCaseTest {
     @Test
     @DisplayName("토스 페이먼츠 환불 실패")
     void refundOrder_tossPaymentFailure() {
-        //given
+        // given
         RefundRequest request = new RefundRequest(
                 paymentKey,
                 orderId.toString(),
                 "구매자 환불 요청",
-                50000
-        );
+                50000);
 
         when(orderRepository.findByOrderId(orderId)).thenReturn(Optional.of(testOrder));
         when(paymentGateway.refundPayment(paymentKey, "구매자 환불 요청"))
                 .thenThrow(new TossPaymentException("환불 처리 실패", 400));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        //when & then
+        // when & then
         assertThatThrownBy(() -> refundOrderUseCase.execute(request))
                 .isInstanceOf(com.sleekydz86.toaspayment.exception.TossPaymentException.class)
                 .hasMessageContaining("환불 처리에 실패했습니다");
@@ -186,4 +180,3 @@ class RefundOrderUseCaseTest {
         assertThat(testOrder.getStatus()).isEqualTo(OrderStatus.REFUND_FAILED);
     }
 }
-

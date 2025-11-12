@@ -31,6 +31,7 @@ spring_react_payment/
 ## 기술 스택
 
 ### 프론트엔드 (pay_front)
+
 - **React 19** - UI 라이브러리
 - **TypeScript** - 타입 안정성
 - **Vite** - 빌드 도구
@@ -41,6 +42,7 @@ spring_react_payment/
 - **Toss Payments SDK** - 결제 연동
 
 ### 백엔드 (toas_payment2)
+
 - **Java 21** - 프로그래밍 언어
 - **Spring Boot 3.5.7** - 프레임워크
 - **Spring Security** - 인증 및 보안
@@ -54,6 +56,7 @@ spring_react_payment/
 ## 아키텍처
 
 ### 백엔드 아키텍처 (DDD)
+
 백엔드는 Domain-Driven Design 원칙을 따릅니다:
 
 - **Domain Layer**: 비즈니스 로직 및 도메인 모델
@@ -62,6 +65,7 @@ spring_react_payment/
 - **Presentation Layer**: REST API 컨트롤러
 
 ### 프론트엔드 아키텍처
+
 - **Pages**: 라우트별 페이지 컴포넌트
 - **Components**: 재사용 가능한 UI 컴포넌트
 - **Hooks**: 비즈니스 로직을 캡슐화한 Custom Hooks
@@ -73,6 +77,7 @@ spring_react_payment/
 ### 필수 요구사항
 
 - **프론트엔드**
+
   - Node.js 18 이상
   - pnpm 9 이상
 
@@ -156,6 +161,7 @@ jwt:
 - `POST /api/v1/purchase/refund` - 환불
 
 자세한 API 문서는 Swagger UI에서 확인할 수 있습니다:
+
 ```
 http://localhost:9000/swagger-ui.html
 ```
@@ -216,4 +222,3 @@ pnpm build
 ## 라이선스
 
 이 프로젝트는 개인 프로젝트입니다.
-
