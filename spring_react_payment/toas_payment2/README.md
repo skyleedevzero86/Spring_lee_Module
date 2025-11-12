@@ -64,6 +64,26 @@ presentation/        # 프레젠테이션 계층
 
 ## 환경 설정
 
+### application.yml
+
+`src/main/resources/application.yml` 파일에서 설정을 관리합니다.
+
+주요 설정:
+
+- 서버 포트: 9000
+- 데이터베이스: H2 (인메모리)
+- JWT 시크릿 키 및 만료 시간
+- 토스 페이먼츠 API 키
+
+### 환경 변수
+
+환경 변수를 사용하여 설정을 오버라이드할 수 있습니다:
+
+```bash
+export SERVER_PORT=9000
+export JWT_SECRET=your_secret_key
+export TOSS_SECRET_API_KEY=your_toss_secret_key
+```
 
 서버는 기본적으로 `http://localhost:9000`에서 실행됩니다.
 
@@ -72,6 +92,7 @@ presentation/        # 프레젠테이션 계층
 ### 인증 API
 
 #### 회원가입
+
 ```
 POST /api/v1/users/register
 Content-Type: application/json
@@ -84,6 +105,7 @@ Content-Type: application/json
 ```
 
 #### 로그인
+
 ```
 POST /api/v1/users/login
 Content-Type: application/json
@@ -110,11 +132,13 @@ Response:
 모든 결제 API는 JWT 토큰 인증이 필요합니다.
 
 요청 헤더에 토큰을 포함하세요:
+
 ```
 Authorization: Bearer {jwt_token}
 ```
 
 #### 결제 초기화
+
 ```
 POST /api/v1/purchase/init
 Authorization: Bearer {token}
@@ -127,6 +151,7 @@ Content-Type: application/json
 ```
 
 #### 결제 승인
+
 ```
 POST /api/v1/purchase/confirm
 Authorization: Bearer {token}
@@ -141,6 +166,7 @@ Content-Type: application/json
 ```
 
 #### 환불
+
 ```
 POST /api/v1/purchase/refund
 Authorization: Bearer {token}
@@ -196,19 +222,70 @@ toas_payment2/
 ## 도메인 모델
 
 ### Order (주문)
+
 - 주문 생성 및 상태 관리
 - 결제 완료 처리
 - 환불 처리
 
 ### User (사용자)
+
 - 회원가입 및 로그인
 - 비밀번호 암호화
 
 ### Value Objects
+
 - `OrderId`: 주문 ID 캡슐화
 - `Money`: 금액 검증 및 연산
+
+## 실행 방법
+
+### Gradle Wrapper 사용
+
+```bash
+./gradlew bootRun
+```
+
+### 빌드
+
+```bash
+./gradlew build
+```
+
+### 테스트 실행
+
+```bash
+./gradlew test
+```
+
+## 데이터베이스
+
+기본적으로 H2 인메모리 데이터베이스를 사용합니다.
+
+H2 콘솔 접속:
+
+```
+http://localhost:9000/h2-console
+```
+
+JDBC URL: `jdbc:h2:mem:testdb`
+사용자명: `sa`
+비밀번호: (비어있음)
+
+## 보안
+
+- JWT 토큰 기반 인증
+- BCrypt 비밀번호 암호화
+- Spring Security를 통한 엔드포인트 보호
+- CORS 설정 (프론트엔드: http://localhost:3000)
+
+## 예외 처리
+
+모든 예외는 `GlobalExceptionHandler`에서 처리되며, 한국어 메시지를 반환합니다.
+
+## 로깅
+
+모든 로그 메시지는 한국어로 작성되었습니다.
 
 ## 라이선스
 
 이 프로젝트는 개인 프로젝트입니다.
-
