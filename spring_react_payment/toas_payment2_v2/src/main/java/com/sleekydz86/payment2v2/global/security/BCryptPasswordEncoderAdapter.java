@@ -1,4 +1,4 @@
-package com.sleekydz86.payment2v2.domain.member.adapter.out.security;
+package com.sleekydz86.payment2v2.global.security;
 
 import com.sleekydz86.payment2v2.domain.member.port.out.PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,4 +18,3 @@ public class BCryptPasswordEncoderAdapter implements PasswordEncoder {
         return encoder.matches(rawPassword, encodedPassword);
     }
 }
-
