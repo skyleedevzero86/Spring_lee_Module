@@ -5,7 +5,8 @@ import com.sleekydz86.toaspayment.application.dto.RegisterResponse;
 import com.sleekydz86.toaspayment.domain.user.PasswordEncoder;
 import com.sleekydz86.toaspayment.domain.user.User;
 import com.sleekydz86.toaspayment.domain.user.UserRepository;
-import com.sleekydz86.toaspayment.exception.BadRequestException;
+import com.sleekydz86.toaspayment.global.exception.BadRequestException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,15 +53,15 @@ class RegisterUseCaseTest {
     @Test
     @DisplayName("정상적인 회원가입 성공")
     void registerSuccess() {
-        //given
+        // given
         when(userRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
         when(passwordEncoder.encode(testPassword)).thenReturn(encodedPassword);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        //when
+        // when
         RegisterResponse response = registerUseCase.execute(request);
 
-        //then
+        // then
         assertThat(response.message()).isEqualTo("회원가입이 완료되었습니다.");
         assertThat(response.data().email()).isEqualTo(testEmail);
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -72,14 +73,13 @@ class RegisterUseCaseTest {
     @Test
     @DisplayName("이미 존재하는 이메일로 회원가입 시도")
     void registerWithExistingEmail() {
-        //given
+        // given
         User existingUser = User.create(testEmail, encodedPassword, "기존 사용자");
         when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(existingUser));
 
-        //when & then
+        // when & then
         assertThatThrownBy(() -> registerUseCase.execute(request))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("이미 사용 중인 이메일입니다.");
     }
 }
-

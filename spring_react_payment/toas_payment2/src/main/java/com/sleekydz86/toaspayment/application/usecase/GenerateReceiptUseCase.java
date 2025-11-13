@@ -18,7 +18,8 @@ import com.sleekydz86.toaspayment.domain.order.OrderRepository;
 import com.sleekydz86.toaspayment.domain.order.valueobject.OrderId;
 import com.sleekydz86.toaspayment.domain.user.User;
 import com.sleekydz86.toaspayment.domain.user.UserRepository;
-import com.sleekydz86.toaspayment.exception.BadRequestException;
+import com.sleekydz86.toaspayment.global.exception.BadRequestException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;

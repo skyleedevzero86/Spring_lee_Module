@@ -26,7 +26,7 @@ public class InitPurchaseUseCase {
     @Transactional
     public PurchaseInitResponse execute(PurchaseInitRequest request, Principal principal) {
         if (principal == null || principal.getName() == null) {
-            throw new com.sleekydz86.toaspayment.exception.BadRequestException("인증 정보가 없습니다.");
+            throw new com.sleekydz86.toaspayment.global.exception.BadRequestException("인증 정보가 없습니다.");
         }
 
         Long memberId;
@@ -34,7 +34,7 @@ public class InitPurchaseUseCase {
             memberId = Long.parseLong(principal.getName());
         } catch (NumberFormatException e) {
             log.error("사용자 ID 파싱 실패 - principal name: {}", principal.getName());
-            throw new com.sleekydz86.toaspayment.exception.BadRequestException("유효하지 않은 사용자 정보입니다.");
+            throw new com.sleekydz86.toaspayment.global.exception.BadRequestException("유효하지 않은 사용자 정보입니다.");
         }
 
         OrderId orderId = OrderId.generate();
@@ -47,15 +47,12 @@ public class InitPurchaseUseCase {
                 orderId.toString(),
                 memberId,
                 PaymentLogType.PAYMENT_INIT,
-                "결제 초기화 - 금액: " + amount.toInteger() + "원"
-        );
+                "결제 초기화 - 금액: " + amount.toInteger() + "원");
         paymentLogRepository.save(paymentLog);
 
         log.info("결제 초기화 완료 - 주문 ID: {}, 사용자 ID: {}, 금액: {}원", orderId, memberId, amount.toInteger());
 
         return new PurchaseInitResponse(
-                new PurchaseInitResponse.PurchaseInitData(orderId.toString())
-        );
+                new PurchaseInitResponse.PurchaseInitData(orderId.toString()));
     }
 }
-

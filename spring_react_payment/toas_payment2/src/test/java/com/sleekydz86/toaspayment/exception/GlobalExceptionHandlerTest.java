@@ -14,6 +14,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import com.sleekydz86.toaspayment.global.exception.BadRequestException;
+import com.sleekydz86.toaspayment.global.exception.GlobalExceptionHandler;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,13 +35,13 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("BadRequestException 처리")
     void handleBadRequestException() {
-        //given
+        // given
         BadRequestException exception = new BadRequestException("잘못된 요청입니다");
 
-        //when
+        // when
         ResponseEntity<Map<String, Object>> response = globalExceptionHandler.handleBadRequestException(exception);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().get("status")).isEqualTo(400);
@@ -49,16 +52,15 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("TossPaymentException 처리")
     void handleTossPaymentException() {
-        //given
-        com.sleekydz86.toaspayment.exception.TossPaymentException exception = new com.sleekydz86.toaspayment.exception.TossPaymentException(
+        // given
+        com.sleekydz86.toaspayment.global.exception.TossPaymentException exception = new com.sleekydz86.toaspayment.global.exception.TossPaymentException(
                 "결제 처리 실패",
-                HttpStatus.BAD_REQUEST
-        );
+                HttpStatus.BAD_REQUEST);
 
-        //when
+        // when
         ResponseEntity<Map<String, Object>> response = globalExceptionHandler.handleTossPaymentException(exception);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().get("status")).isEqualTo(400);
@@ -69,13 +71,15 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Infrastructure TossPaymentException 처리")
     void handleInfrastructureTossPaymentException() {
-        //given
-        com.sleekydz86.toaspayment.infrastructure.external.TossPaymentException exception = new com.sleekydz86.toaspayment.infrastructure.external.TossPaymentException("결제 승인 실패", 400);
+        // given
+        com.sleekydz86.toaspayment.infrastructure.external.TossPaymentException exception = new com.sleekydz86.toaspayment.infrastructure.external.TossPaymentException(
+                "결제 승인 실패", 400);
 
-        //when
-        ResponseEntity<Map<String, Object>> response = globalExceptionHandler.handleInfrastructureTossPaymentException(exception);
+        // when
+        ResponseEntity<Map<String, Object>> response = globalExceptionHandler
+                .handleInfrastructureTossPaymentException(exception);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().get("status")).isEqualTo(400);
@@ -85,7 +89,7 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("MethodArgumentNotValidException 처리")
     void handleValidationException() {
-        //given
+        // given
         MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
         BindingResult bindingResult = mock(BindingResult.class);
         FieldError fieldError = new FieldError("request", "email", "이메일은 필수 입력값입니다.");
@@ -93,10 +97,10 @@ class GlobalExceptionHandlerTest {
         when(exception.getBindingResult()).thenReturn(bindingResult);
         when(bindingResult.getFieldErrors()).thenReturn(java.util.Collections.singletonList(fieldError));
 
-        //when
+        // when
         ResponseEntity<Map<String, Object>> response = globalExceptionHandler.handleValidationException(exception);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().get("status")).isEqualTo(400);
@@ -106,13 +110,14 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("ConstraintViolationException 처리")
     void handleConstraintViolationException() {
-        //given
+        // given
         ConstraintViolationException exception = new ConstraintViolationException("제약 조건 위반", new HashSet<>());
 
-        //when
-        ResponseEntity<Map<String, Object>> response = globalExceptionHandler.handleConstraintViolationException(exception);
+        // when
+        ResponseEntity<Map<String, Object>> response = globalExceptionHandler
+                .handleConstraintViolationException(exception);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().get("status")).isEqualTo(400);
@@ -122,13 +127,13 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("IllegalStateException 처리")
     void handleIllegalStateException() {
-        //given
+        // given
         IllegalStateException exception = new IllegalStateException("잘못된 상태입니다");
 
-        //when
+        // when
         ResponseEntity<Map<String, Object>> response = globalExceptionHandler.handleIllegalStateException(exception);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().get("status")).isEqualTo(400);
@@ -138,13 +143,13 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("AccessDeniedException 처리")
     void handleAccessDeniedException() {
-        //given
+        // given
         AccessDeniedException exception = new AccessDeniedException("접근 거부");
 
-        //when
+        // when
         ResponseEntity<Map<String, Object>> response = globalExceptionHandler.handleAccessDeniedException(exception);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().get("status")).isEqualTo(403);
@@ -154,13 +159,13 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("BadCredentialsException 처리")
     void handleBadCredentialsException() {
-        //given
+        // given
         BadCredentialsException exception = new BadCredentialsException("인증 실패");
 
-        //when
+        // when
         ResponseEntity<Map<String, Object>> response = globalExceptionHandler.handleBadCredentialsException(exception);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().get("status")).isEqualTo(401);
@@ -170,17 +175,16 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("일반 Exception 처리")
     void handleException() {
-        //given
+        // given
         Exception exception = new Exception("예상치 못한 오류");
 
-        //when
+        // when
         ResponseEntity<Map<String, Object>> response = globalExceptionHandler.handleException(exception);
 
-        //then
+        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().get("status")).isEqualTo(500);
         assertThat(response.getBody().get("error")).isEqualTo("서버 오류");
     }
 }
-

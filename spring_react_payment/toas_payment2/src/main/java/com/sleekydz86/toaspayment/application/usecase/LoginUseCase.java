@@ -5,7 +5,7 @@ import com.sleekydz86.toaspayment.application.dto.LoginResponse;
 import com.sleekydz86.toaspayment.domain.user.PasswordEncoder;
 import com.sleekydz86.toaspayment.domain.user.User;
 import com.sleekydz86.toaspayment.domain.user.UserRepository;
-import com.sleekydz86.toaspayment.exception.BadRequestException;
+import com.sleekydz86.toaspayment.global.exception.BadRequestException;
 import com.sleekydz86.toaspayment.infrastructure.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +33,7 @@ public class LoginUseCase {
 
         return new LoginResponse(
                 "로그인 성공",
-                new LoginResponse.LoginData(user.getId(), user.getEmail(), user.getName(), user.getRole().name(), token)
-        );
+                new LoginResponse.LoginData(user.getId(), user.getEmail(), user.getName(), user.getRole().name(),
+                        token));
     }
 }
-

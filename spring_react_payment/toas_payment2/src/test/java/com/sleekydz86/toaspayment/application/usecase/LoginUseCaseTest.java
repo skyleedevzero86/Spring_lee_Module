@@ -5,7 +5,7 @@ import com.sleekydz86.toaspayment.application.dto.LoginResponse;
 import com.sleekydz86.toaspayment.domain.user.PasswordEncoder;
 import com.sleekydz86.toaspayment.domain.user.User;
 import com.sleekydz86.toaspayment.domain.user.UserRepository;
-import com.sleekydz86.toaspayment.exception.BadRequestException;
+import com.sleekydz86.toaspayment.global.exception.BadRequestException;
 import com.sleekydz86.toaspayment.infrastructure.security.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,25 +49,25 @@ class LoginUseCaseTest {
         testEmail = "test@example.com";
         testPassword = "password123";
         encodedPassword = "$2a$10$encodedPasswordHash";
-        
+
         testUser = User.create(testEmail, encodedPassword, "테스트 사용자");
     }
 
     @Test
     @DisplayName("정상적인 로그인 성공")
     void loginSuccess() {
-        //given
+        // given
         LoginRequest request = new LoginRequest(testEmail, testPassword);
         String expectedToken = "test-jwt-token";
-        
+
         when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches(testPassword, encodedPassword)).thenReturn(true);
         when(jwtTokenProvider.generateToken(any(), anyString())).thenReturn(expectedToken);
 
-        //when
+        // when
         LoginResponse response = loginUseCase.execute(request);
 
-        //then
+        // then
         assertThat(response.message()).isEqualTo("로그인 성공");
         assertThat(response.data().email()).isEqualTo(testEmail);
         assertThat(response.data().token()).isEqualTo(expectedToken);
@@ -76,11 +76,11 @@ class LoginUseCaseTest {
     @Test
     @DisplayName("존재하지 않는 이메일로 로그인 시도")
     void loginWithNonExistentEmail() {
-        //given
+        // given
         LoginRequest request = new LoginRequest("nonexistent@example.com", testPassword);
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-        //when & then
+        // when & then
         assertThatThrownBy(() -> loginUseCase.execute(request))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("이메일 또는 비밀번호가 일치하지 않습니다.");
@@ -89,16 +89,14 @@ class LoginUseCaseTest {
     @Test
     @DisplayName("잘못된 비밀번호로 로그인 시도")
     void loginWithWrongPassword() {
-        //given
+        // given
         LoginRequest request = new LoginRequest(testEmail, "wrongPassword");
         when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("wrongPassword", encodedPassword)).thenReturn(false);
 
-        //when & then
+        // when & then
         assertThatThrownBy(() -> loginUseCase.execute(request))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("이메일 또는 비밀번호가 일치하지 않습니다.");
     }
 }
-
-

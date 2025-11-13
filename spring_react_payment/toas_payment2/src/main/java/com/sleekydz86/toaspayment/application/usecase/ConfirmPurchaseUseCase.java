@@ -10,7 +10,7 @@ import com.sleekydz86.toaspayment.domain.payment.PaymentGateway;
 import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLog;
 import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogRepository;
 import com.sleekydz86.toaspayment.domain.paymentlog.PaymentLogType;
-import com.sleekydz86.toaspayment.exception.BadRequestException;
+import com.sleekydz86.toaspayment.global.exception.BadRequestException;
 import com.sleekydz86.toaspayment.infrastructure.external.TossPaymentException;
 import com.sleekydz86.toaspayment.infrastructure.external.dto.TossPaymentResponse;
 import lombok.RequiredArgsConstructor;
@@ -42,52 +42,50 @@ public class ConfirmPurchaseUseCase {
             response = paymentGateway.confirmPayment(
                     request.paymentKey(),
                     request.orderId(),
-                    request.amount()
-            );
+                    request.amount());
         } catch (TossPaymentException e) {
             handlePaymentFailure(order, orderId, requestAmount, e);
-            throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
+            throw new com.sleekydz86.toaspayment.global.exception.TossPaymentException(
                     "결제 승인에 실패했습니다: " + e.getMessage(),
-                    org.springframework.http.HttpStatus.valueOf(e.getStatusCode())
-            );
+                    org.springframework.http.HttpStatus.valueOf(e.getStatusCode()));
         } catch (Exception e) {
             handlePaymentError(order, orderId, requestAmount, e);
-            throw new com.sleekydz86.toaspayment.exception.TossPaymentException(
+            throw new com.sleekydz86.toaspayment.global.exception.TossPaymentException(
                     "결제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
-            );
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         validatePaymentResponse(response, requestAmount);
         savePaymentSuccess(order, orderId, request, response);
     }
 
-    private void savePaymentSuccess(Order order, OrderId orderId, PurchaseConfirmRequest request, TossPaymentResponse response) {
+    private void savePaymentSuccess(Order order, OrderId orderId, PurchaseConfirmRequest request,
+            TossPaymentResponse response) {
         String requestPaymentKey = request.paymentKey();
         String responseMethod = response.method();
-        
+
         PaymentMethod paymentMethod = mapPaymentMethod(responseMethod);
         String originalOrderId = orderId.toString();
-        
-        log.info("결제 승인 저장 시작 - orderId: {}, originalOrderId: {}, paymentKey: {}, paymentMethod: {}", 
-            orderId, originalOrderId, requestPaymentKey, paymentMethod);
-        
+
+        log.info("결제 승인 저장 시작 - orderId: {}, originalOrderId: {}, paymentKey: {}, paymentMethod: {}",
+                orderId, originalOrderId, requestPaymentKey, paymentMethod);
+
         order.completePayment(requestPaymentKey, paymentMethod, originalOrderId);
-        
+
         log.info("completePayment 호출 후 - 저장 전 originalOrderId: {}", order.getOriginalOrderId());
-        
+
         Order savedOrder = orderRepository.save(order);
-        
-        log.info("저장 완료 - 저장된 orderId: {}, 저장된 originalOrderId: {}, 저장된 paymentKey: {}, 저장된 paymentMethod: {}", 
-            savedOrder.getOrderId(), savedOrder.getOriginalOrderId(), savedOrder.getPaymentKey(), savedOrder.getPaymentMethod());
+
+        log.info("저장 완료 - 저장된 orderId: {}, 저장된 originalOrderId: {}, 저장된 paymentKey: {}, 저장된 paymentMethod: {}",
+                savedOrder.getOrderId(), savedOrder.getOriginalOrderId(), savedOrder.getPaymentKey(),
+                savedOrder.getPaymentMethod());
 
         Money requestAmount = Money.of(request.amount());
         PaymentLog successLog = PaymentLog.create(
                 orderId.toString(),
                 order.getMemberId(),
                 PaymentLogType.PAYMENT_SUCCESS,
-                "결제 성공 - 금액: " + requestAmount.toInteger() + "원, 결제수단: " + paymentMethod
-        );
+                "결제 성공 - 금액: " + requestAmount.toInteger() + "원, 결제수단: " + paymentMethod);
         paymentLogRepository.save(successLog);
 
         log.info("결제 승인 완료 - 주문 ID: {}", orderId);
@@ -103,8 +101,7 @@ public class ConfirmPurchaseUseCase {
                 order.getMemberId(),
                 PaymentLogType.PAYMENT_FAILED,
                 "토스 페이먼츠 결제 실패: " + e.getMessage(),
-                "상태 코드: " + e.getStatusCode()
-        );
+                "상태 코드: " + e.getStatusCode());
         paymentLogRepository.save(failLog);
     }
 
@@ -117,8 +114,7 @@ public class ConfirmPurchaseUseCase {
                 orderId.toString(),
                 order.getMemberId(),
                 PaymentLogType.PAYMENT_ERROR,
-                "결제 처리 중 오류 발생: " + e.getMessage()
-        );
+                "결제 처리 중 오류 발생: " + e.getMessage());
         paymentLogRepository.save(errorLog);
     }
 
@@ -128,7 +124,8 @@ public class ConfirmPurchaseUseCase {
         }
 
         if (response.totalAmount() == null || !response.totalAmount().equals(expectedAmount.toInteger())) {
-            throw new BadRequestException("결제 금액이 일치하지 않습니다. 예상 금액: " + expectedAmount.toInteger() + "원, 실제 금액: " + response.totalAmount() + "원");
+            throw new BadRequestException("결제 금액이 일치하지 않습니다. 예상 금액: " + expectedAmount.toInteger() + "원, 실제 금액: "
+                    + response.totalAmount() + "원");
         }
     }
 
@@ -147,4 +144,3 @@ public class ConfirmPurchaseUseCase {
         };
     }
 }
-

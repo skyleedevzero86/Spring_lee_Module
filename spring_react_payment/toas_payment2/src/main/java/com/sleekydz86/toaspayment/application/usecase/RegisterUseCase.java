@@ -5,7 +5,8 @@ import com.sleekydz86.toaspayment.application.dto.RegisterResponse;
 import com.sleekydz86.toaspayment.domain.user.PasswordEncoder;
 import com.sleekydz86.toaspayment.domain.user.User;
 import com.sleekydz86.toaspayment.domain.user.UserRepository;
-import com.sleekydz86.toaspayment.exception.BadRequestException;
+import com.sleekydz86.toaspayment.global.exception.BadRequestException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,9 +33,6 @@ public class RegisterUseCase {
 
         return new RegisterResponse(
                 "회원가입이 완료되었습니다.",
-                new RegisterResponse.RegisterData(user.getId(), user.getEmail(), user.getName())
-        );
+                new RegisterResponse.RegisterData(user.getId(), user.getEmail(), user.getName()));
     }
 }
-
-

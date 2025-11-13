@@ -1,7 +1,7 @@
 package com.sleekydz86.toaspayment.infrastructure.external;
 
-import com.sleekydz86.toaspayment.config.TossPaymentsConfig;
 import com.sleekydz86.toaspayment.domain.payment.PaymentGateway;
+import com.sleekydz86.toaspayment.global.config.TossPaymentsConfig;
 import com.sleekydz86.toaspayment.infrastructure.external.dto.TossPaymentResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

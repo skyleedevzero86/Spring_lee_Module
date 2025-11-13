@@ -1,9 +1,10 @@
 package com.sleekydz86.toaspayment.application.usecase;
 
 import com.sleekydz86.toaspayment.application.dto.OrderResponse;
-import com.sleekydz86.toaspayment.application.util.OrderDisplayUtil;
 import com.sleekydz86.toaspayment.domain.order.Order;
 import com.sleekydz86.toaspayment.domain.order.OrderRepository;
+import com.sleekydz86.toaspayment.global.util.OrderDisplayUtil;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -23,7 +24,7 @@ public class GetUserOrdersUseCase {
 
     public List<OrderResponse> execute(Principal principal) {
         if (principal == null || principal.getName() == null) {
-            throw new com.sleekydz86.toaspayment.exception.BadRequestException("인증 정보가 없습니다.");
+            throw new com.sleekydz86.toaspayment.global.exception.BadRequestException("인증 정보가 없습니다.");
         }
 
         Long memberId;
@@ -31,7 +32,7 @@ public class GetUserOrdersUseCase {
             memberId = Long.parseLong(principal.getName());
         } catch (NumberFormatException e) {
             log.error("사용자 ID 파싱 실패 - principal name: {}", principal.getName());
-            throw new com.sleekydz86.toaspayment.exception.BadRequestException("유효하지 않은 사용자 정보입니다.");
+            throw new com.sleekydz86.toaspayment.global.exception.BadRequestException("유효하지 않은 사용자 정보입니다.");
         }
 
         boolean isAdmin = isAdminUser();
@@ -42,16 +43,16 @@ public class GetUserOrdersUseCase {
                     String orderIdValue = order.getOrderId().toString();
                     String displayOrderId;
                     String originalOrderId;
-                    
+
                     if (OrderDisplayUtil.isOrdersFormat(orderIdValue)) {
                         displayOrderId = orderIdValue;
                         originalOrderId = order.getOriginalOrderId();
                     } else if (OrderDisplayUtil.isUuidFormat(orderIdValue)) {
                         if (isAdmin) {
                             displayOrderId = null;
-                            originalOrderId = order.getOriginalOrderId() != null 
-                                ? order.getOriginalOrderId() 
-                                : orderIdValue;
+                            originalOrderId = order.getOriginalOrderId() != null
+                                    ? order.getOriginalOrderId()
+                                    : orderIdValue;
                         } else {
                             displayOrderId = null;
                             originalOrderId = null;
@@ -60,7 +61,7 @@ public class GetUserOrdersUseCase {
                         displayOrderId = orderIdValue;
                         originalOrderId = order.getOriginalOrderId();
                     }
-                    
+
                     return new OrderResponse(
                             order.getId(),
                             displayOrderId,
@@ -74,12 +75,11 @@ public class GetUserOrdersUseCase {
                             order.getStatus().name(),
                             OrderDisplayUtil.getStatusDisplayName(order.getStatus()),
                             order.getCreatedAt(),
-                            order.getUpdatedAt()
-                    );
+                            order.getUpdatedAt());
                 })
                 .collect(Collectors.toList());
     }
-    
+
     private boolean isAdminUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
@@ -90,4 +90,3 @@ public class GetUserOrdersUseCase {
                 .anyMatch(authority -> authority.equals("ROLE_ADMIN"));
     }
 }
-
