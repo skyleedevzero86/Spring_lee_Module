@@ -303,4 +303,59 @@ public class Payment {
     public String getOrderNoValue() {
         return orderNo != null ? orderNo.getValue() : null;
     }
+
+    public void validateForApproval() {
+        if (PaymentStatus.COMPLETED.equals(this.status)) {
+            throw new IllegalArgumentException(
+                    String.format("이미 완료된 결제입니다. orderNo: %s", this.getOrderNoValue()));
+        }
+
+        if (!PaymentStatus.PENDING.equals(this.status) && !PaymentStatus.APPROVED.equals(this.status)) {
+            throw new IllegalArgumentException(
+                    String.format("결제 승인 대기 상태가 아닙니다. 현재 상태: %s, orderNo: %s",
+                            this.status, this.getOrderNoValue()));
+        }
+    }
+
+    public void validatePayToken(String payToken) {
+        if (this.payToken != null && !this.payToken.equals(payToken)) {
+            throw new IllegalArgumentException(
+                    String.format("결제 토큰이 일치하지 않습니다. orderNo: %s", this.getOrderNoValue()));
+        }
+    }
+
+    public void validateForRefund() {
+        if (!canRefund()) {
+            throw new IllegalArgumentException(
+                    String.format("환불 가능한 상태가 아닙니다. 현재 상태: %s, orderNo: %s",
+                            this.status, this.getOrderNoValue()));
+        }
+
+        if (this.payToken == null || this.payToken.isBlank()) {
+            throw new IllegalArgumentException(
+                    String.format("결제 토큰이 없습니다. orderNo: %s", this.getOrderNoValue()));
+        }
+    }
+
+    public void validateRefundAmount(java.math.BigDecimal refundAmount) {
+        if (refundAmount == null) {
+            return;
+        }
+
+        if (this.amount == null) {
+            throw new IllegalStateException(
+                    String.format("결제 금액이 null입니다. paymentId: %d", this.id));
+        }
+
+        if (refundAmount.compareTo(this.amount) > 0) {
+            throw new IllegalArgumentException(
+                    String.format("환불 요청 금액이 결제 금액을 초과합니다. paymentId: %d, paymentAmount: %s, refundAmount: %s",
+                            this.id, this.amount, refundAmount));
+        }
+
+        if (refundAmount.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    String.format("환불 요청 금액은 0보다 커야 합니다. refundAmount: %s", refundAmount));
+        }
+    }
 }
