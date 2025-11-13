@@ -3,6 +3,8 @@ package com.sleekydz86.payment2v2.domain.payment.application.service;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.CardInfo;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.CreatePaymentCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentApprovalResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentDetailResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentHistoryResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentStatusResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.TransactionInfo;
@@ -10,15 +12,20 @@ import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.To
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentStatusResponse;
 import com.sleekydz86.payment2v2.domain.payment.model.Payment;
 import com.sleekydz86.payment2v2.global.config.TossPaymentProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Slf4j
 @Component
 public class PaymentMapper {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final RoundingMode AMOUNT_ROUNDING_MODE = RoundingMode.HALF_UP;
 
     private final String apiKey;
 
@@ -85,7 +92,7 @@ public class PaymentMapper {
     public PaymentResponse toResponse(Payment payment) {
         return PaymentResponse.builder()
                 .id(payment.getId())
-                .orderNo(payment.getOrderNo())
+                .orderNo(payment.getOrderNoValue())
                 .payToken(payment.getPayToken())
                 .checkoutPage(payment.getCheckoutPage())
                 .productDesc(payment.getProductDesc())
@@ -96,13 +103,13 @@ public class PaymentMapper {
     public PaymentApprovalResponse toApprovalResponse(Payment payment) {
         return PaymentApprovalResponse.builder()
                 .id(payment.getId())
-                .orderNo(payment.getOrderNo())
+                .orderNo(payment.getOrderNoValue())
                 .payToken(payment.getPayToken())
                 .status(payment.getStatus().name())
                 .mode(payment.getMode())
                 .approvalTime(payment.getApprovalTime())
                 .stateMsg(payment.getStateMsg())
-                .amount(payment.getAmount() != null ? payment.getAmount().intValue() : null)
+                .amount(payment.getAmount())
                 .discountedAmount(payment.getDiscountedAmount())
                 .paidAmount(payment.getPaidAmount())
                 .payMethod(payment.getPayMethod())
@@ -168,10 +175,84 @@ public class PaymentMapper {
         return builder.build();
     }
 
+    public PaymentHistoryResponse toHistoryResponse(Payment payment, boolean isAdmin) {
+        PaymentHistoryResponse.PaymentHistoryResponseBuilder builder = PaymentHistoryResponse.builder()
+                .id(payment.getId())
+                .orderNo(payment.getOrderNoValue())
+                .productDesc(payment.getProductDesc())
+                .amount(payment.getAmount())
+                .status(payment.getStatus().name())
+                .payMethod(payment.getPayMethod())
+                .createdAt(payment.getCreatedAt());
+        
+        if (isAdmin) {
+            builder.transactionId(payment.getTransactionId());
+        }
+        
+        if (payment.getPaidTs() != null && !payment.getPaidTs().isEmpty()) {
+            try {
+                builder.paidTs(LocalDateTime.parse(payment.getPaidTs(), DATE_TIME_FORMATTER));
+            } catch (Exception e) {
+                log.warn("paidTs 파싱 실패: paidTs={}, paymentId={}", payment.getPaidTs(), payment.getId(), e);
+            }
+        }
+        
+        return builder.build();
+    }
+
+    public PaymentDetailResponse toDetailResponse(Payment payment, boolean isAdmin) {
+        PaymentDetailResponse.PaymentDetailResponseBuilder builder = PaymentDetailResponse.builder()
+                .id(payment.getId())
+                .userId(payment.getUserId())
+                .orderNo(payment.getOrderNoValue())
+                .productDesc(payment.getProductDesc())
+                .amount(payment.getAmount())
+                .amountTaxFree(payment.getAmountTaxFree())
+                .amountTaxable(payment.getAmountTaxable())
+                .amountVat(payment.getAmountVat())
+                .amountServiceFee(payment.getAmountServiceFee())
+                .disposableCupDeposit(payment.getDisposableCupDeposit())
+                .status(payment.getStatus().name())
+                .payMethod(payment.getPayMethod())
+                .discountedAmount(payment.getDiscountedAmount())
+                .paidAmount(payment.getPaidAmount())
+                .paidTs(payment.getPaidTs())
+                .mode(payment.getMode())
+                .approvalTime(payment.getApprovalTime())
+                .stateMsg(payment.getStateMsg())
+                .accountBankCode(payment.getAccountBankCode())
+                .accountBankName(payment.getAccountBankName())
+                .accountNumber(payment.getAccountNumber())
+                .createdAt(payment.getCreatedAt())
+                .updatedAt(payment.getUpdatedAt())
+                .expiredTime(payment.getExpiredTime());
+        
+        if (isAdmin) {
+            builder.transactionId(payment.getTransactionId());
+        }
+        
+        if (payment.getCardCompanyName() != null || payment.getCardCompanyCode() != null) {
+            builder.card(CardInfo.builder()
+                    .cardCompanyName(payment.getCardCompanyName())
+                    .cardCompanyCode(payment.getCardCompanyCode())
+                    .cardAuthorizationNo(payment.getCardAuthorizationNo())
+                    .spreadOut(payment.getSpreadOut())
+                    .noInterest(payment.getNoInterest())
+                    .cardMethodType(payment.getCardMethodType())
+                    .cardUserType(payment.getCardUserType())
+                    .cardBinNumber(payment.getCardBinNumber())
+                    .cardNum4Print(payment.getCardNum4Print())
+                    .salesCheckLinkUrl(payment.getSalesCheckLinkUrl())
+                    .build());
+        }
+        
+        return builder.build();
+    }
+
     private Integer convertToInteger(BigDecimal value) {
         if (value == null) {
             return null;
         }
-        return value.intValue();
+        return value.setScale(0, AMOUNT_ROUNDING_MODE).intValue();
     }
 }

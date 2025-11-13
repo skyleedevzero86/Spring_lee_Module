@@ -7,6 +7,7 @@ import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.To
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentStatusRequest;
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentStatusResponse;
 import com.sleekydz86.payment2v2.global.config.TossPaymentProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @Component
 public class TossPaymentClient {
 
@@ -45,8 +47,15 @@ public class TossPaymentClient {
                     TossPaymentResponse.class
             );
 
-            return response.getBody();
+            TossPaymentResponse body = response.getBody();
+            if (body == null) {
+                log.error("토스페이먼츠 결제 생성 API 응답이 null입니다.");
+                throw new TossPaymentClientException("토스페이먼츠 결제 생성 API 응답이 null입니다.");
+            }
+
+            return body;
         } catch (RestClientException e) {
+            log.error("토스페이먼츠 API 호출 중 오류 발생", e);
             throw new TossPaymentClientException("토스페이먼츠 API 호출 중 오류가 발생했습니다.", e);
         }
     }
@@ -70,8 +79,15 @@ public class TossPaymentClient {
                     TossPaymentExecuteResponse.class
             );
 
-            return response.getBody();
+            TossPaymentExecuteResponse body = response.getBody();
+            if (body == null) {
+                log.error("토스페이먼츠 결제 승인 API 응답이 null입니다.");
+                throw new TossPaymentClientException("토스페이먼츠 결제 승인 API 응답이 null입니다.");
+            }
+
+            return body;
         } catch (RestClientException e) {
+            log.error("토스페이먼츠 결제 승인 API 호출 중 오류 발생", e);
             throw new TossPaymentClientException("토스페이먼츠 결제 승인 API 호출 중 오류가 발생했습니다.", e);
         }
     }
@@ -95,10 +111,16 @@ public class TossPaymentClient {
                     TossPaymentStatusResponse.class
             );
 
-            return response.getBody();
+            TossPaymentStatusResponse body = response.getBody();
+            if (body == null) {
+                log.error("토스페이먼츠 결제 상태 확인 API 응답이 null입니다.");
+                throw new TossPaymentClientException("토스페이먼츠 결제 상태 확인 API 응답이 null입니다.");
+            }
+
+            return body;
         } catch (RestClientException e) {
+            log.error("토스페이먼츠 결제 상태 확인 API 호출 중 오류 발생", e);
             throw new TossPaymentClientException("토스페이먼츠 결제 상태 확인 API 호출 중 오류가 발생했습니다.", e);
         }
     }
 }
-

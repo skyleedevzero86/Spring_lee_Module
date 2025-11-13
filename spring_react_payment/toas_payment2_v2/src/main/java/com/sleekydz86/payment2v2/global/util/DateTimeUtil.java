@@ -7,7 +7,7 @@ public class DateTimeUtil {
     private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private DateTimeUtil() {
-        throw new UnsupportedOperationException("Utility class");
+        throw new UnsupportedOperationException("유틸리티 클래스는 인스턴스화할 수 없습니다.");
     }
 
     public static String format(LocalDateTime dateTime) {

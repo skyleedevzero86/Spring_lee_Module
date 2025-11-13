@@ -1,5 +1,7 @@
 package com.sleekydz86.payment2v2.domain.payment.model;
 
+import com.sleekydz86.payment2v2.domain.payment.model.valueobject.OrderNo;
+import com.sleekydz86.payment2v2.global.constants.PaymentConstants;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -12,7 +14,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "payments", indexes = {
     @Index(name = "idx_order_no", columnList = "orderNo", unique = true),
-    @Index(name = "idx_pay_token", columnList = "payToken")
+    @Index(name = "idx_pay_token", columnList = "payToken"),
+    @Index(name = "idx_user_id", columnList = "userId"),
+    @Index(name = "idx_user_id_created_at", columnList = "userId,createdAt")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -22,8 +26,11 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String orderNo;
+    @Column(nullable = false)
+    private Long userId;
+
+    @Embedded
+    private OrderNo orderNo;
 
     @Column(length = 30)
     private String payToken;
@@ -31,18 +38,22 @@ public class Payment {
     @Column(nullable = false, length = 255)
     private String productDesc;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = PaymentConstants.AMOUNT_PRECISION, scale = PaymentConstants.AMOUNT_SCALE)
     private BigDecimal amount;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = PaymentConstants.AMOUNT_PRECISION, scale = PaymentConstants.AMOUNT_SCALE)
     private BigDecimal amountTaxFree;
 
+    @Column(precision = PaymentConstants.AMOUNT_PRECISION, scale = PaymentConstants.AMOUNT_SCALE)
     private BigDecimal amountTaxable;
 
+    @Column(precision = PaymentConstants.AMOUNT_PRECISION, scale = PaymentConstants.AMOUNT_SCALE)
     private BigDecimal amountVat;
 
+    @Column(precision = PaymentConstants.AMOUNT_PRECISION, scale = PaymentConstants.AMOUNT_SCALE)
     private BigDecimal amountServiceFee;
 
+    @Column(precision = PaymentConstants.AMOUNT_PRECISION, scale = PaymentConstants.AMOUNT_SCALE)
     private BigDecimal disposableCupDeposit;
 
     @Column(nullable = false, length = 255)
@@ -79,11 +90,11 @@ public class Payment {
     @Column(length = 10)
     private String payMethod;
 
-    @Column(length = 10)
-    private Integer discountedAmount;
+    @Column(precision = PaymentConstants.AMOUNT_PRECISION, scale = PaymentConstants.AMOUNT_SCALE)
+    private BigDecimal discountedAmount;
 
-    @Column(length = 10)
-    private Integer paidAmount;
+    @Column(precision = PaymentConstants.AMOUNT_PRECISION, scale = PaymentConstants.AMOUNT_SCALE)
+    private BigDecimal paidAmount;
 
     @Column(length = 20)
     private String paidTs;
@@ -97,8 +108,8 @@ public class Payment {
     @Column(length = 8)
     private String cardAuthorizationNo;
 
-    @Column(length = 8)
-    private String spreadOut;
+    @Column
+    private Integer spreadOut;
 
     private Boolean noInterest;
 
@@ -156,13 +167,14 @@ public class Payment {
     }
 
     @Builder
-    public Payment(String orderNo, String payToken, String productDesc, BigDecimal amount,
+    public Payment(Long userId, String orderNo, String payToken, String productDesc, BigDecimal amount,
                    BigDecimal amountTaxFree, BigDecimal amountTaxable, BigDecimal amountVat,
                    BigDecimal amountServiceFee, BigDecimal disposableCupDeposit,
                    String retUrl, String retCancelUrl, String retAppScheme,
                    String resultCallback, String callbackVersion, LocalDateTime expiredTime,
                    String checkoutPage) {
-        this.orderNo = orderNo;
+        this.userId = userId;
+        this.orderNo = OrderNo.of(orderNo);
         this.payToken = payToken;
         this.productDesc = productDesc;
         this.amount = amount;
@@ -182,12 +194,18 @@ public class Payment {
     }
 
     public void updateCheckoutInfo(String checkoutPage, String payToken) {
+        if (checkoutPage == null || payToken == null) {
+            throw new IllegalArgumentException("checkoutPage와 payToken은 필수입니다.");
+        }
         this.checkoutPage = checkoutPage;
         this.payToken = payToken;
     }
 
-    public void completePayment(String payMethod, Integer discountedAmount, Integer paidAmount,
+    public void completePayment(String payMethod, BigDecimal discountedAmount, BigDecimal paidAmount,
                                 String paidTs, String transactionId) {
+        if (payMethod == null || paidTs == null || transactionId == null) {
+            throw new IllegalArgumentException("payMethod, paidTs, transactionId는 필수입니다.");
+        }
         this.status = PaymentStatus.COMPLETED;
         this.payMethod = payMethod;
         this.discountedAmount = discountedAmount;
@@ -197,7 +215,7 @@ public class Payment {
     }
 
     public void updateCardInfo(Integer cardCompanyCode, String cardAuthorizationNo,
-                               String spreadOut, Boolean noInterest, String cardMethodType,
+                               Integer spreadOut, Boolean noInterest, String cardMethodType,
                                String cardUserType, String cardBinNumber, String cardNum4Print,
                                String salesCheckLinkUrl) {
         this.cardCompanyCode = cardCompanyCode;
@@ -222,8 +240,11 @@ public class Payment {
     }
 
     public void approvePayment(String mode, String approvalTime, String stateMsg, String payMethod,
-                              Integer discountedAmount, Integer paidAmount, String transactionId,
+                              BigDecimal discountedAmount, BigDecimal paidAmount, String transactionId,
                               String cashReceiptMgtKey) {
+        if (mode == null || approvalTime == null || stateMsg == null || payMethod == null || transactionId == null) {
+            throw new IllegalArgumentException("mode, approvalTime, stateMsg, payMethod, transactionId는 필수입니다.");
+        }
         this.status = PaymentStatus.COMPLETED;
         this.mode = mode;
         this.approvalTime = approvalTime;
@@ -244,7 +265,7 @@ public class Payment {
         this.cardCompanyName = cardCompanyName;
         this.cardCompanyCode = cardCompanyCode;
         this.cardAuthorizationNo = cardAuthorizationNo;
-        this.spreadOut = spreadOut != null ? String.valueOf(spreadOut) : null;
+        this.spreadOut = spreadOut;
         this.noInterest = noInterest;
         this.salesCheckLinkUrl = salesCheckLinkUrl;
         this.cardMethodType = cardMethodType;
@@ -264,6 +285,10 @@ public class Payment {
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiredTime);
+        return expiredTime != null && LocalDateTime.now().isAfter(expiredTime);
+    }
+
+    public String getOrderNoValue() {
+        return orderNo != null ? orderNo.getValue() : null;
     }
 }

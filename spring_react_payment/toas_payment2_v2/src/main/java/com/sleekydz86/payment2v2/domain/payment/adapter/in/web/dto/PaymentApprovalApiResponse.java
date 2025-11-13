@@ -3,6 +3,8 @@ package com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Builder
 public class PaymentApprovalApiResponse {
@@ -13,10 +15,9 @@ public class PaymentApprovalApiResponse {
     private String mode;
     private String approvalTime;
     private String stateMsg;
-    private Integer amount;
-    private Integer discountedAmount;
-    private Integer paidAmount;
+    private BigDecimal amount;
+    private BigDecimal discountedAmount;
+    private BigDecimal paidAmount;
     private String payMethod;
     private String transactionId;
 }
-

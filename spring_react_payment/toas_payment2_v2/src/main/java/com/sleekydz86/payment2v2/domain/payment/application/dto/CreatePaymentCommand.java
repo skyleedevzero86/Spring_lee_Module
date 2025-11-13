@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class CreatePaymentCommand {
+    private Long userId;
     private String orderNo;
     private String productDesc;
     private BigDecimal amount;

@@ -20,7 +20,11 @@ public enum ErrorCode {
     CALLBACK_INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "P011", "결제 금액이 일치하지 않습니다."),
     CALLBACK_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "P012", "결제 콜백 처리 중 오류가 발생했습니다."),
     PAYMENT_APPROVAL_INVALID_STATUS(HttpStatus.BAD_REQUEST, "P013", "결제 승인 가능한 상태가 아닙니다."),
-    PAYMENT_TOKEN_MISMATCH(HttpStatus.BAD_REQUEST, "P014", "결제 토큰이 일치하지 않습니다.");
+    PAYMENT_TOKEN_MISMATCH(HttpStatus.BAD_REQUEST, "P014", "결제 토큰이 일치하지 않습니다."),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "회원 정보를 찾을 수 없습니다."),
+    MEMBER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "M002", "이미 존재하는 이메일입니다."),
+    INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "M003", "비밀번호가 일치하지 않습니다."),
+    MEMBER_EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "M004", "해당 이메일로 등록된 회원을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;

@@ -6,12 +6,16 @@ import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.CreatePayment
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.GetPaymentStatusRequest;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentApprovalApiResponse;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentDetailApiResponse;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentHistoryApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentStatusApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.TransactionInfoApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.ApprovePaymentCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.CreatePaymentCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.GetPaymentStatusCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentApprovalResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentDetailResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentHistoryResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentStatusResponse;
 import org.springframework.stereotype.Component;
@@ -21,8 +25,9 @@ import java.time.LocalDateTime;
 @Component
 public class PaymentWebMapper {
 
-    public CreatePaymentCommand toCommand(CreatePaymentRequest request) {
+    public CreatePaymentCommand toCommand(CreatePaymentRequest request, Long userId) {
         CreatePaymentCommand.CreatePaymentCommandBuilder builder = CreatePaymentCommand.builder()
+                .userId(userId)
                 .orderNo(request.getOrderNo())
                 .productDesc(request.getProductDesc())
                 .amount(request.getAmount())
@@ -172,6 +177,67 @@ public class PaymentWebMapper {
                             .regTs(tx.getRegTs())
                             .build())
                     .toList());
+        }
+
+        return builder.build();
+    }
+
+    public PaymentHistoryApiResponse toHistoryApiResponse(PaymentHistoryResponse response) {
+        return PaymentHistoryApiResponse.builder()
+                .id(response.getId())
+                .orderNo(response.getOrderNo())
+                .transactionId(response.getTransactionId())
+                .productDesc(response.getProductDesc())
+                .amount(response.getAmount())
+                .status(response.getStatus())
+                .payMethod(response.getPayMethod())
+                .createdAt(response.getCreatedAt())
+                .paidTs(response.getPaidTs())
+                .build();
+    }
+
+    public PaymentDetailApiResponse toDetailApiResponse(PaymentDetailResponse response) {
+        PaymentDetailApiResponse.PaymentDetailApiResponseBuilder builder = PaymentDetailApiResponse.builder()
+                .id(response.getId())
+                .userId(response.getUserId())
+                .orderNo(response.getOrderNo())
+                .transactionId(response.getTransactionId())
+                .productDesc(response.getProductDesc())
+                .amount(response.getAmount())
+                .amountTaxFree(response.getAmountTaxFree())
+                .amountTaxable(response.getAmountTaxable())
+                .amountVat(response.getAmountVat())
+                .amountServiceFee(response.getAmountServiceFee())
+                .disposableCupDeposit(response.getDisposableCupDeposit())
+                .status(response.getStatus())
+                .payMethod(response.getPayMethod())
+                .discountedAmount(response.getDiscountedAmount())
+                .paidAmount(response.getPaidAmount())
+                .paidTs(response.getPaidTs())
+                .mode(response.getMode())
+                .approvalTime(response.getApprovalTime())
+                .stateMsg(response.getStateMsg())
+                .accountBankCode(response.getAccountBankCode())
+                .accountBankName(response.getAccountBankName())
+                .accountNumber(response.getAccountNumber())
+                .createdAt(response.getCreatedAt())
+                .updatedAt(response.getUpdatedAt())
+                .expiredTime(response.getExpiredTime());
+
+        if (response.getCard() != null) {
+            builder.card(CardInfoApiResponse.builder()
+                    .noInterest(response.getCard().getNoInterest())
+                    .spreadOut(response.getCard().getSpreadOut())
+                    .cardAuthorizationNo(response.getCard().getCardAuthorizationNo())
+                    .cardMethodType(response.getCard().getCardMethodType())
+                    .cardUserType(response.getCard().getCardUserType())
+                    .cardNumber(response.getCard().getCardNumber())
+                    .cardBinNumber(response.getCard().getCardBinNumber())
+                    .cardNum4Print(response.getCard().getCardNum4Print())
+                    .salesCheckLinkUrl(response.getCard().getSalesCheckLinkUrl())
+                    .cardCompanyName(response.getCard().getCardCompanyName())
+                    .cardCompanyCode(response.getCard().getCardCompanyCode())
+                    .build());
         }
 
         return builder.build();
