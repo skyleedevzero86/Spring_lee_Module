@@ -1,7 +1,7 @@
 package com.sleekydz86.payment2v2.domain.member.application.port.in;
 
 import com.sleekydz86.payment2v2.domain.member.application.dto.SearchMemberResponse;
-import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
+import com.sleekydz86.payment2v2.global.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
 
 public interface SearchMemberPageUseCase {

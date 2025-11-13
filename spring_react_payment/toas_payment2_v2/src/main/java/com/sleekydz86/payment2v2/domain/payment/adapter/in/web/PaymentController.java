@@ -22,13 +22,14 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentStatusRes
 import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.ApprovePaymentUseCase;
+import com.sleekydz86.payment2v2.domain.payment.application.port.in.CreatePaymentUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentDetailUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentHistoryUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentHistoryPageUseCase;
+import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentStatusUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.RefundPaymentUseCase;
-import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
+import com.sleekydz86.payment2v2.global.dto.PageResponse;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberId;
-import com.sleekydz86.payment2v2.domain.payment.application.service.PaymentService;
 import com.sleekydz86.payment2v2.domain.payment.model.valueobject.PaymentId;
 import com.sleekydz86.payment2v2.global.constants.HeaderConstants;
 import com.sleekydz86.payment2v2.global.exception.BusinessException;
@@ -51,8 +52,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final CreatePaymentUseCase createPaymentUseCase;
     private final ApprovePaymentUseCase approvePaymentUseCase;
+    private final GetPaymentStatusUseCase getPaymentStatusUseCase;
     private final GetPaymentHistoryUseCase getPaymentHistoryUseCase;
     private final GetPaymentHistoryPageUseCase getPaymentHistoryPageUseCase;
     private final GetPaymentDetailUseCase getPaymentDetailUseCase;
@@ -65,7 +67,7 @@ public class PaymentController {
             @Valid @RequestBody CreatePaymentRequest request) {
         return LoggingUtil.executeWithContext("userId", String.valueOf(MemberId.of(userId).getValue()), () -> {
             CreatePaymentCommand command = paymentWebMapper.toCommand(request, userId);
-            PaymentResponse response = paymentService.createPayment(command);
+            PaymentResponse response = createPaymentUseCase.createPayment(command);
             PaymentApiResponse apiResponse = paymentWebMapper.toApiResponse(response);
             return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
         });
@@ -86,7 +88,7 @@ public class PaymentController {
             @Valid @RequestBody GetPaymentStatusRequest request) {
         log.info("결제 상태 확인 요청: payToken={}, orderNo={}", request.getPayToken(), request.getOrderNo());
         GetPaymentStatusCommand command = paymentWebMapper.toStatusCommand(request);
-        PaymentStatusResponse response = paymentService.getPaymentStatus(command);
+        PaymentStatusResponse response = getPaymentStatusUseCase.getPaymentStatus(command);
         PaymentStatusApiResponse apiResponse = paymentWebMapper.toStatusApiResponse(response);
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }

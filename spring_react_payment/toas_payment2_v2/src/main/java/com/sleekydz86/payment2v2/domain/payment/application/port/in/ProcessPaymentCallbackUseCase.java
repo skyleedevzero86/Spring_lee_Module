@@ -1,8 +1,8 @@
 package com.sleekydz86.payment2v2.domain.payment.application.port.in;
 
-import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentCallbackRequest;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentCallbackCommand;
 
 public interface ProcessPaymentCallbackUseCase {
-    void processCallback(TossPaymentCallbackRequest callbackRequest);
+    void processCallback(PaymentCallbackCommand callbackCommand);
 }
 

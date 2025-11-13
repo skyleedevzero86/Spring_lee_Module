@@ -8,6 +8,7 @@ import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.To
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentStatusRequest;
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentStatusResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.port.out.PaymentGatewayPort;
 import com.sleekydz86.payment2v2.global.config.TossPaymentProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class TossPaymentClient {
+public class TossPaymentClient implements PaymentGatewayPort {
 
     private static final String TOSS_PAYMENT_API_URL = "https://pay.toss.im/api/v2/payments";
     private static final String TOSS_PAYMENT_EXECUTE_API_URL = "https://pay.toss.im/api/v2/execute";
@@ -40,6 +41,7 @@ public class TossPaymentClient {
         return tossPaymentProperties.getApi().getKey();
     }
 
+    @Override
     public TossPaymentResponse createPayment(TossPaymentRequest request) {
         long startTime = System.currentTimeMillis();
         try {
@@ -72,6 +74,7 @@ public class TossPaymentClient {
         }
     }
 
+    @Override
     public TossPaymentExecuteResponse executePayment(TossPaymentExecuteRequest request) {
         long startTime = System.currentTimeMillis();
         try {
@@ -110,6 +113,7 @@ public class TossPaymentClient {
         }
     }
 
+    @Override
     public TossPaymentStatusResponse getPaymentStatus(TossPaymentStatusRequest request) {
         long startTime = System.currentTimeMillis();
         try {
@@ -148,6 +152,7 @@ public class TossPaymentClient {
         }
     }
 
+    @Override
     public TossPaymentRefundResponse refundPayment(TossPaymentRefundRequest request) {
         long startTime = System.currentTimeMillis();
         try {

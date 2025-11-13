@@ -3,17 +3,19 @@ package com.sleekydz86.payment2v2.domain.payment.application.service;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberId;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.*;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.ApprovePaymentUseCase;
+import com.sleekydz86.payment2v2.domain.payment.application.port.in.CreatePaymentUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentDetailUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentHistoryUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentHistoryPageUseCase;
+import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentStatusUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.RefundPaymentUseCase;
-import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
+import com.sleekydz86.payment2v2.global.dto.PageResponse;
 import com.sleekydz86.payment2v2.domain.payment.model.Payment;
 import com.sleekydz86.payment2v2.domain.payment.model.PaymentStatus;
 import com.sleekydz86.payment2v2.domain.payment.model.valueobject.OrderNo;
 import com.sleekydz86.payment2v2.domain.payment.model.valueobject.PaymentId;
 import com.sleekydz86.payment2v2.domain.payment.port.out.PaymentRepository;
-import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.TossPaymentClient;
+import com.sleekydz86.payment2v2.domain.payment.application.port.out.PaymentGatewayPort;
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.TossPaymentClientException;
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.*;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentCommand;
@@ -48,8 +50,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class PaymentService
-        implements ApprovePaymentUseCase, GetPaymentHistoryUseCase, GetPaymentDetailUseCase, RefundPaymentUseCase,
-        GetPaymentHistoryPageUseCase {
+        implements CreatePaymentUseCase, ApprovePaymentUseCase, GetPaymentHistoryUseCase, GetPaymentDetailUseCase, 
+        RefundPaymentUseCase, GetPaymentHistoryPageUseCase, GetPaymentStatusUseCase {
 
     private static final String LOG_USER_ID = "userId";
     private static final String LOG_USER_ROLE = "userRole";
@@ -58,11 +60,12 @@ public class PaymentService
     private static final String LOG_OPERATION = "operation";
 
     private final PaymentRepository paymentRepository;
-    private final TossPaymentClient tossPaymentClient;
+    private final PaymentGatewayPort paymentGatewayPort;
     private final PaymentMapper paymentMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final PaymentMetricsService paymentMetricsService;
 
+    @Override
     @Transactional
     @Timed(value = "payment.create", description = "결제 생성 시간")
     public PaymentResponse createPayment(CreatePaymentCommand command) {
@@ -120,7 +123,7 @@ public class PaymentService
     @CircuitBreaker(name = "tossPayment", fallbackMethod = "tossPaymentFallback")
     private TossPaymentResponse callTossPaymentApiOutsideTransaction(TossPaymentRequest tossRequest, String orderNo) {
         try {
-            TossPaymentResponse tossResponse = tossPaymentClient.createPayment(tossRequest);
+            TossPaymentResponse tossResponse = paymentGatewayPort.createPayment(tossRequest);
 
             if (!tossResponse.isSuccess()) {
                 log.error("토스페이먼츠 결제 생성 실패: code={}, msg={}, errorCode={}, orderNo={}",
@@ -242,7 +245,7 @@ public class PaymentService
                     .orderNo(orderNo)
                     .build();
 
-            TossPaymentExecuteResponse executeResponse = tossPaymentClient.executePayment(executeRequest);
+            TossPaymentExecuteResponse executeResponse = paymentGatewayPort.executePayment(executeRequest);
 
             if (!executeResponse.isSuccess()) {
                 log.error("토스페이먼츠 결제 승인 실패: code={}, msg={}, errorCode={}, orderNo={}",
@@ -333,6 +336,7 @@ public class PaymentService
                 executeResponse.getAccountNumber());
     }
 
+    @Override
     public PaymentStatusResponse getPaymentStatus(GetPaymentStatusCommand command) {
         return LoggingUtil.executeWithContext(Map.of(
                 LOG_ORDER_NO, command.getOrderNo() != null ? command.getOrderNo() : "알수없음",
@@ -345,7 +349,7 @@ public class PaymentService
                                 .orderNo(command.getOrderNo())
                                 .build();
 
-                        TossPaymentStatusResponse statusResponse = tossPaymentClient.getPaymentStatus(statusRequest);
+                        TossPaymentStatusResponse statusResponse = paymentGatewayPort.getPaymentStatus(statusRequest);
 
                         if (!statusResponse.isSuccess()) {
                             log.error("토스페이먼츠 결제 상태 확인 실패: code={}, msg={}, errorCode={}, orderNo={}",
@@ -534,7 +538,7 @@ public class PaymentService
     private TossPaymentRefundResponse callTossRefundApiOutsideTransaction(TossPaymentRefundRequest refundRequest,
             String orderNo) {
         try {
-            TossPaymentRefundResponse refundResponse = tossPaymentClient.refundPayment(refundRequest);
+            TossPaymentRefundResponse refundResponse = paymentGatewayPort.refundPayment(refundRequest);
 
             if (!refundResponse.isSuccess()) {
                 log.error("토스페이먼츠 결제 환불 실패: code={}, msg={}, errorCode={}, orderNo={}",

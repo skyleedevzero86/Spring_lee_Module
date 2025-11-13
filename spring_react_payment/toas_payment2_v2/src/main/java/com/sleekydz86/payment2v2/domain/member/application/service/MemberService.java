@@ -7,7 +7,7 @@ import com.sleekydz86.payment2v2.domain.member.application.port.in.ResetPassword
 import com.sleekydz86.payment2v2.domain.member.application.port.in.SearchMemberUseCase;
 import com.sleekydz86.payment2v2.domain.member.application.port.in.SearchMemberPageUseCase;
 import com.sleekydz86.payment2v2.domain.member.model.Member;
-import com.sleekydz86.payment2v2.domain.member.model.PasswordEncoder;
+import com.sleekydz86.payment2v2.domain.member.port.out.PasswordEncoder;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.Email;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberId;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberName;
@@ -16,7 +16,7 @@ import com.sleekydz86.payment2v2.domain.member.port.out.MemberRepository;
 import com.sleekydz86.payment2v2.global.exception.BusinessException;
 import com.sleekydz86.payment2v2.global.exception.ErrorCode;
 import com.sleekydz86.payment2v2.global.util.LoggingUtil;
-import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
+import com.sleekydz86.payment2v2.global.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;

@@ -3,7 +3,7 @@ package com.sleekydz86.payment2v2.domain.member.adapter.in.web;
 import com.sleekydz86.payment2v2.domain.member.adapter.in.web.dto.*;
 import com.sleekydz86.payment2v2.domain.member.application.dto.*;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse;
-import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
+import com.sleekydz86.payment2v2.global.dto.PageResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

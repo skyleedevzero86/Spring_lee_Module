@@ -5,7 +5,7 @@ import com.sleekydz86.payment2v2.domain.payment.application.port.out.InventoryPo
 import com.sleekydz86.payment2v2.global.constants.PaymentConstants;
 import com.sleekydz86.payment2v2.global.exception.BusinessException;
 import com.sleekydz86.payment2v2.global.exception.ErrorCode;
-import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentCallbackRequest;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentCallbackCommand;
 import com.sleekydz86.payment2v2.domain.payment.model.Payment;
 import com.sleekydz86.payment2v2.domain.payment.model.PaymentStatus;
 import com.sleekydz86.payment2v2.domain.payment.port.out.PaymentRepository;
@@ -26,30 +26,30 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
 
     @Override
     @Transactional
-    public void processCallback(TossPaymentCallbackRequest callbackRequest) {
+    public void processCallback(PaymentCallbackCommand callbackCommand) {
         log.info("결제 콜백 처리 시작: orderNo={}, status={}, payToken={}",
-                callbackRequest.getOrderNo(), callbackRequest.getStatus(), callbackRequest.getPayToken());
+                callbackCommand.getOrderNo(), callbackCommand.getStatus(), callbackCommand.getPayToken());
 
-        Payment payment = findPaymentByOrderNo(callbackRequest.getOrderNo());
-        validatePaymentStatus(payment, callbackRequest);
-        validatePayToken(payment, callbackRequest.getPayToken());
-        validatePaymentAmount(payment, callbackRequest.getAmount());
+        Payment payment = findPaymentByOrderNo(callbackCommand.getOrderNo());
+        validatePaymentStatus(payment, callbackCommand);
+        validatePayToken(payment, callbackCommand.getPayToken());
+        validatePaymentAmount(payment, callbackCommand.getAmount());
 
-        if (!PaymentConstants.PAY_COMPLETE_STATUS.equals(callbackRequest.getStatus())) {
+        if (!PaymentConstants.PAY_COMPLETE_STATUS.equals(callbackCommand.getStatus())) {
             log.warn("결제 완료 상태가 아닙니다. status: {}, orderNo: {}",
-                    callbackRequest.getStatus(), callbackRequest.getOrderNo());
+                    callbackCommand.getStatus(), callbackCommand.getOrderNo());
             throw new BusinessException(ErrorCode.CALLBACK_INVALID_STATUS,
-                    String.format("유효하지 않은 결제 상태입니다. status: %s", callbackRequest.getStatus()));
+                    String.format("유효하지 않은 결제 상태입니다. status: %s", callbackCommand.getStatus()));
         }
 
-        updatePaymentInfo(payment, callbackRequest);
-        updatePaymentMethodInfo(payment, callbackRequest);
+        updatePaymentInfo(payment, callbackCommand);
+        updatePaymentMethodInfo(payment, callbackCommand);
         paymentRepository.save(payment);
         
         processPostPaymentActions(payment);
 
         log.info("결제 완료 처리 완료. orderNo: {}, payToken: {}, transactionId: {}",
-                callbackRequest.getOrderNo(), callbackRequest.getPayToken(), callbackRequest.getTransactionId());
+                callbackCommand.getOrderNo(), callbackCommand.getPayToken(), callbackCommand.getTransactionId());
     }
 
     private Payment findPaymentByOrderNo(String orderNo) {
@@ -66,11 +66,11 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
                 });
     }
 
-    private void validatePaymentStatus(Payment payment, TossPaymentCallbackRequest callbackRequest) {
+    private void validatePaymentStatus(Payment payment, PaymentCallbackCommand callbackCommand) {
         if (PaymentStatus.COMPLETED.equals(payment.getStatus())) {
-            log.warn("이미 완료된 결제입니다. orderNo: {}", callbackRequest.getOrderNo());
+            log.warn("이미 완료된 결제입니다. orderNo: {}", callbackCommand.getOrderNo());
             throw new BusinessException(ErrorCode.CALLBACK_PAYMENT_ALREADY_COMPLETED,
-                    String.format("이미 완료된 결제입니다. orderNo: %s", callbackRequest.getOrderNo()));
+                    String.format("이미 완료된 결제입니다. orderNo: %s", callbackCommand.getOrderNo()));
         }
     }
 
@@ -112,43 +112,43 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
         }
     }
 
-    private void updatePaymentInfo(Payment payment, TossPaymentCallbackRequest callbackRequest) {
+    private void updatePaymentInfo(Payment payment, PaymentCallbackCommand callbackCommand) {
         payment.completePayment(
-                callbackRequest.getPayMethod(),
-                callbackRequest.getDiscountedAmount() != null ? BigDecimal.valueOf(callbackRequest.getDiscountedAmount()) : null,
-                callbackRequest.getPaidAmount() != null ? BigDecimal.valueOf(callbackRequest.getPaidAmount()) : null,
-                callbackRequest.getPaidTs(),
-                callbackRequest.getTransactionId()
+                callbackCommand.getPayMethod(),
+                callbackCommand.getDiscountedAmount() != null ? BigDecimal.valueOf(callbackCommand.getDiscountedAmount()) : null,
+                callbackCommand.getPaidAmount() != null ? BigDecimal.valueOf(callbackCommand.getPaidAmount()) : null,
+                callbackCommand.getPaidTs(),
+                callbackCommand.getTransactionId()
         );
     }
 
-    private void updatePaymentMethodInfo(Payment payment, TossPaymentCallbackRequest callbackRequest) {
-        String payMethod = callbackRequest.getPayMethod();
+    private void updatePaymentMethodInfo(Payment payment, PaymentCallbackCommand callbackCommand) {
+        String payMethod = callbackCommand.getPayMethod();
         if (payMethod == null) {
             log.debug("결제 수단이 null입니다.");
             return;
         }
 
         if (PaymentConstants.PAY_METHOD_CARD.equals(payMethod)) {
-            updateCardInfo(payment, callbackRequest);
+            updateCardInfo(payment, callbackCommand);
         } else if (PaymentConstants.PAY_METHOD_TOSS_MONEY.equals(payMethod)) {
-            updateAccountInfo(payment, callbackRequest);
+            updateAccountInfo(payment, callbackCommand);
         }
     }
 
-    private void updateCardInfo(Payment payment, TossPaymentCallbackRequest callbackRequest) {
-        Integer spreadOut = parseSpreadOut(callbackRequest.getSpreadOut(), payment.getOrderNoValue());
+    private void updateCardInfo(Payment payment, PaymentCallbackCommand callbackCommand) {
+        Integer spreadOut = parseSpreadOut(callbackCommand.getSpreadOut(), payment.getOrderNoValue());
         
         payment.updateCardInfo(
-                callbackRequest.getCardCompanyCode(),
-                callbackRequest.getCardAuthorizationNo(),
+                callbackCommand.getCardCompanyCode(),
+                callbackCommand.getCardAuthorizationNo(),
                 spreadOut,
-                callbackRequest.getNoInterest(),
-                callbackRequest.getCardMethodType(),
-                callbackRequest.getCardUserType(),
-                callbackRequest.getCardBinNumber(),
-                callbackRequest.getCardNum4Print(),
-                callbackRequest.getSalesCheckLinkUrl()
+                callbackCommand.getNoInterest(),
+                callbackCommand.getCardMethodType(),
+                callbackCommand.getCardUserType(),
+                callbackCommand.getCardBinNumber(),
+                callbackCommand.getCardNum4Print(),
+                callbackCommand.getSalesCheckLinkUrl()
         );
     }
 
@@ -166,11 +166,11 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
         }
     }
 
-    private void updateAccountInfo(Payment payment, TossPaymentCallbackRequest callbackRequest) {
+    private void updateAccountInfo(Payment payment, PaymentCallbackCommand callbackCommand) {
         payment.updateAccountInfo(
-                callbackRequest.getAccountBankCode(),
-                callbackRequest.getAccountBankName(),
-                callbackRequest.getAccountNumber()
+                callbackCommand.getAccountBankCode(),
+                callbackCommand.getAccountBankName(),
+                callbackCommand.getAccountNumber()
         );
     }
 

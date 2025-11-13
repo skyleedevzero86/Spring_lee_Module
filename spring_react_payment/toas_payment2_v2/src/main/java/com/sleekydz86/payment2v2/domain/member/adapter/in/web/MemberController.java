@@ -10,7 +10,7 @@ import com.sleekydz86.payment2v2.domain.member.application.port.in.RegisterMembe
 import com.sleekydz86.payment2v2.domain.member.application.port.in.ResetPasswordUseCase;
 import com.sleekydz86.payment2v2.domain.member.application.port.in.SearchMemberUseCase;
 import com.sleekydz86.payment2v2.domain.member.application.port.in.SearchMemberPageUseCase;
-import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
+import com.sleekydz86.payment2v2.global.dto.PageResponse;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.Email;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberId;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberName;

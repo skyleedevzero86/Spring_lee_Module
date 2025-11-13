@@ -1,11 +1,11 @@
-package com.sleekydz86.payment2v2.global.config;
+package com.sleekydz86.payment2v2.domain.member.adapter.out.security;
 
-import com.sleekydz86.payment2v2.domain.member.model.PasswordEncoder;
+import com.sleekydz86.payment2v2.domain.member.port.out.PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BCryptPasswordEncoderImpl implements PasswordEncoder {
+public class BCryptPasswordEncoderAdapter implements PasswordEncoder {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Override

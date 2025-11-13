@@ -20,7 +20,7 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentDetailRes
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentHistoryResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentStatusResponse;
-import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
+import com.sleekydz86.payment2v2.global.dto.PageResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse;

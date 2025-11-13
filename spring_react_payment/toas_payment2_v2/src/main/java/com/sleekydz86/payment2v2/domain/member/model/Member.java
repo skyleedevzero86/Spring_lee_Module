@@ -48,7 +48,7 @@ public class Member {
         return new Member(email, password, name, MemberRole.ADMIN);
     }
 
-    public boolean matchesPassword(String rawPassword, com.sleekydz86.payment2v2.domain.member.model.PasswordEncoder encoder) {
+    public boolean matchesPassword(String rawPassword, com.sleekydz86.payment2v2.domain.member.port.out.PasswordEncoder encoder) {
         return encoder.matches(rawPassword, this.password);
     }
 

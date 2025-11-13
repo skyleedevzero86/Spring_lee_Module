@@ -1,4 +1,4 @@
-package com.sleekydz86.payment2v2.domain.payment.application.dto;
+package com.sleekydz86.payment2v2.global.dto;
 
 import lombok.Builder;
 import lombok.Getter;

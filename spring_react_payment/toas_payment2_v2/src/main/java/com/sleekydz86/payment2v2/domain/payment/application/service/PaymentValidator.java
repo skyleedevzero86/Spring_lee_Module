@@ -1,4 +1,4 @@
-package com.sleekydz86.payment2v2.global.validator;
+package com.sleekydz86.payment2v2.domain.payment.application.service;
 
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberId;
 import com.sleekydz86.payment2v2.domain.payment.model.valueobject.Money;
