@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "dev:clean": "pnpm clean && pnpm dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

@@ -6,11 +6,13 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
+const projectRoot = path.resolve(__dirname);
+
 const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
-  outputFileTracingRoot: path.join(__dirname),
+  outputFileTracingRoot: projectRoot,
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -21,9 +23,37 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-slot'],
   },
   webpack: (config, { isServer, dev }) => {
-    if (dev && !isServer) {
+    if (dev) {
       config.cache = false;
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+        ignored: /node_modules/,
+      };
+      config.snapshot = {
+        ...config.snapshot,
+        managedPaths: [],
+      };
+      if (isServer) {
+        const originalExternals = config.externals;
+        if (Array.isArray(originalExternals)) {
+          config.externals = [...originalExternals, '@tanstack/react-query-devtools'];
+        } else if (typeof originalExternals === 'function') {
+          config.externals = [
+            originalExternals,
+            ({ request }: { request: string }, callback: any) => {
+              if (request && request.includes('@tanstack/react-query-devtools')) {
+                return callback(null, 'commonjs ' + request);
+              }
+              callback();
+            },
+          ];
+        } else {
+          config.externals = [originalExternals, '@tanstack/react-query-devtools'];
+        }
+      }
     }
+    
     if (!isServer) {
       config.optimization = {
         ...config.optimization,
