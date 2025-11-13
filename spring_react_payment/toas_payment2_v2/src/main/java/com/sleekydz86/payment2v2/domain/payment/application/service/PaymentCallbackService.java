@@ -96,8 +96,9 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
 
         BigDecimal expectedAmount = payment.getAmount();
         if (expectedAmount == null) {
-            log.warn("결제 금액이 null입니다. orderNo={}", payment.getOrderNoValue());
-            return;
+            log.error("결제 금액이 null입니다. 데이터 무결성 문제 가능성. orderNo={}", payment.getOrderNoValue());
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR,
+                    String.format("결제 금액이 null입니다. orderNo: %s", payment.getOrderNoValue()));
         }
         
         BigDecimal actualAmount = BigDecimal.valueOf(callbackAmount);

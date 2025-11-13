@@ -284,8 +284,20 @@ public class Payment {
         this.status = PaymentStatus.CANCELLED;
     }
 
+    public void refund(String refundNo, Integer refundableAmount, Integer refundedAmount,
+                       String approvalTime, String transactionId) {
+        if (refundNo == null || approvalTime == null) {
+            throw new IllegalArgumentException("refundNo, approvalTime는 필수입니다.");
+        }
+        this.status = PaymentStatus.CANCELLED;
+    }
+
     public boolean isExpired() {
         return expiredTime != null && LocalDateTime.now().isAfter(expiredTime);
+    }
+
+    public boolean canRefund() {
+        return PaymentStatus.COMPLETED.equals(this.status);
     }
 
     public String getOrderNoValue() {

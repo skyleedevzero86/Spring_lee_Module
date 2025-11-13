@@ -5,6 +5,7 @@ import com.sleekydz86.payment2v2.domain.member.application.port.in.FindMemberUse
 import com.sleekydz86.payment2v2.domain.member.application.port.in.RegisterMemberUseCase;
 import com.sleekydz86.payment2v2.domain.member.application.port.in.ResetPasswordUseCase;
 import com.sleekydz86.payment2v2.domain.member.application.port.in.SearchMemberUseCase;
+import com.sleekydz86.payment2v2.domain.member.application.port.in.SearchMemberPageUseCase;
 import com.sleekydz86.payment2v2.domain.member.model.Member;
 import com.sleekydz86.payment2v2.domain.member.model.PasswordEncoder;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.Email;
@@ -15,8 +16,12 @@ import com.sleekydz86.payment2v2.domain.member.port.out.MemberRepository;
 import com.sleekydz86.payment2v2.global.exception.BusinessException;
 import com.sleekydz86.payment2v2.global.exception.ErrorCode;
 import com.sleekydz86.payment2v2.global.util.LoggingUtil;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +32,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, SearchMemberUseCase, ResetPasswordUseCase {
+public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, SearchMemberUseCase, ResetPasswordUseCase, SearchMemberPageUseCase {
 
     private static final String LOG_MEMBER_ID = "memberId";
     private static final String LOG_EMAIL = "email";
@@ -40,7 +45,7 @@ public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, 
     @Override
     public RegisterMemberResponse register(RegisterMemberCommand command) {
         return LoggingUtil.executeWithContext(Map.of(
-                LOG_EMAIL, command.getEmail() != null ? command.getEmail() : "unknown",
+                LOG_EMAIL, command.getEmail() != null ? command.getEmail() : "알수없음",
                 LOG_OPERATION, "register"
         ), () -> {
             log.info("회원가입 요청");
@@ -69,7 +74,7 @@ public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, 
     @Transactional(readOnly = true)
     public FindMemberResponse findByEmail(String emailValue) {
         return LoggingUtil.executeWithContext(Map.of(
-                LOG_EMAIL, emailValue != null ? emailValue : "unknown",
+                LOG_EMAIL, emailValue != null ? emailValue : "알수없음",
                 LOG_OPERATION, "findByEmail"
         ), () -> {
             log.info("회원 검색 요청 (이메일)");
@@ -90,7 +95,7 @@ public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, 
     @Transactional(readOnly = true)
     public FindMemberResponse findById(Long idValue) {
         return LoggingUtil.executeWithContext(Map.of(
-                LOG_MEMBER_ID, idValue != null ? String.valueOf(idValue) : "unknown",
+                LOG_MEMBER_ID, idValue != null ? String.valueOf(idValue) : "알수없음",
                 LOG_OPERATION, "findById"
         ), () -> {
             log.info("회원 검색 요청 (ID)");
@@ -109,6 +114,7 @@ public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, 
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "memberSearch", key = "'name_' + #nameValue", unless = "#result.isEmpty()")
     public List<SearchMemberResponse> searchByName(String nameValue) {
         return LoggingUtil.executeWithContext(Map.of(
                 LOG_OPERATION, "searchByName"
@@ -127,6 +133,7 @@ public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, 
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "memberSearch", key = "'email_' + #emailValue", unless = "#result.isEmpty()")
     public List<SearchMemberResponse> searchByEmail(String emailValue) {
         return LoggingUtil.executeWithContext(Map.of(
                 LOG_OPERATION, "searchByEmail"
@@ -161,9 +168,89 @@ public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, 
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PageResponse<SearchMemberResponse> searchByName(String nameValue, Pageable pageable) {
+        return LoggingUtil.executeWithContext(Map.of(
+                LOG_OPERATION, "searchByNamePage"
+        ), () -> {
+            log.info("회원 이름 페이징 검색 요청: name={}, page={}, size={}", nameValue, pageable.getPageNumber(), pageable.getPageSize());
+
+            MemberName name = MemberName.of(nameValue);
+            Page<Member> memberPage = memberRepository.findByNameContainingIgnoreCase(name.getValue(), pageable);
+
+            List<SearchMemberResponse> content = memberPage.getContent().stream()
+                    .map(memberMapper::toSearchResponse)
+                    .toList();
+
+            return PageResponse.<SearchMemberResponse>builder()
+                    .content(content)
+                    .page(memberPage.getNumber())
+                    .size(memberPage.getSize())
+                    .totalElements(memberPage.getTotalElements())
+                    .totalPages(memberPage.getTotalPages())
+                    .hasNext(memberPage.hasNext())
+                    .hasPrevious(memberPage.hasPrevious())
+                    .build();
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<SearchMemberResponse> searchByEmail(String emailValue, Pageable pageable) {
+        return LoggingUtil.executeWithContext(Map.of(
+                LOG_OPERATION, "searchByEmailPage"
+        ), () -> {
+            log.info("회원 이메일 페이징 검색 요청: email={}, page={}, size={}", emailValue, pageable.getPageNumber(), pageable.getPageSize());
+
+            Email email = Email.of(emailValue);
+            Page<Member> memberPage = memberRepository.findByEmailContainingIgnoreCase(email.getValue(), pageable);
+
+            List<SearchMemberResponse> content = memberPage.getContent().stream()
+                    .map(memberMapper::toSearchResponse)
+                    .toList();
+
+            return PageResponse.<SearchMemberResponse>builder()
+                    .content(content)
+                    .page(memberPage.getNumber())
+                    .size(memberPage.getSize())
+                    .totalElements(memberPage.getTotalElements())
+                    .totalPages(memberPage.getTotalPages())
+                    .hasNext(memberPage.hasNext())
+                    .hasPrevious(memberPage.hasPrevious())
+                    .build();
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<SearchMemberResponse> searchAll(Pageable pageable) {
+        return LoggingUtil.executeWithContext(Map.of(
+                LOG_OPERATION, "searchAllPage"
+        ), () -> {
+            log.info("전체 회원 페이징 검색 요청: page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
+
+            Page<Member> memberPage = memberRepository.findAll(pageable);
+
+            List<SearchMemberResponse> content = memberPage.getContent().stream()
+                    .map(memberMapper::toSearchResponse)
+                    .toList();
+
+            return PageResponse.<SearchMemberResponse>builder()
+                    .content(content)
+                    .page(memberPage.getNumber())
+                    .size(memberPage.getSize())
+                    .totalElements(memberPage.getTotalElements())
+                    .totalPages(memberPage.getTotalPages())
+                    .hasNext(memberPage.hasNext())
+                    .hasPrevious(memberPage.hasPrevious())
+                    .build();
+        });
+    }
+
+    @Override
     public ResetPasswordResponse resetPassword(ResetPasswordCommand command) {
         return LoggingUtil.executeWithContext(Map.of(
-                LOG_EMAIL, command.getEmail() != null ? command.getEmail() : "unknown",
+                LOG_EMAIL, command.getEmail() != null ? command.getEmail() : "알수없음",
                 LOG_OPERATION, "resetPassword"
         ), () -> {
             log.info("비밀번호 재설정 요청");

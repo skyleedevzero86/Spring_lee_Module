@@ -1,5 +1,7 @@
 package com.sleekydz86.payment2v2.global.constants;
 
+import java.math.RoundingMode;
+
 public final class PaymentConstants {
     public static final String PAY_METHOD_CARD = "CARD";
     public static final String PAY_METHOD_TOSS_MONEY = "TOSS_MONEY";
@@ -7,6 +9,9 @@ public final class PaymentConstants {
     public static final String PAY_COMPLETE_STATUS = "PAY_COMPLETE";
     public static final int AMOUNT_PRECISION = 19;
     public static final int AMOUNT_SCALE = 2;
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public static final RoundingMode AMOUNT_ROUNDING_MODE = RoundingMode.HALF_UP;
+    public static final int INTEGER_MAX_VALUE = Integer.MAX_VALUE;
 
     private PaymentConstants() {
         throw new AssertionError("유틸리티 클래스는 인스턴스화할 수 없습니다.");

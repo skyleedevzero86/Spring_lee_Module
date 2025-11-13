@@ -2,7 +2,11 @@ package com.sleekydz86.payment2v2.domain.member.adapter.in.web;
 
 import com.sleekydz86.payment2v2.domain.member.adapter.in.web.dto.*;
 import com.sleekydz86.payment2v2.domain.member.application.dto.*;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class MemberWebMapper {
@@ -53,6 +57,22 @@ public class MemberWebMapper {
         return ResetPasswordApiResponse.builder()
                 .message(response.getMessage())
                 .email(response.getEmail())
+                .build();
+    }
+
+    public PageApiResponse<SearchMemberApiResponse> toPageApiResponse(PageResponse<SearchMemberResponse> pageResponse) {
+        List<SearchMemberApiResponse> content = pageResponse.getContent().stream()
+                .map(this::toApiResponse)
+                .toList();
+
+        return PageApiResponse.<SearchMemberApiResponse>builder()
+                .content(content)
+                .page(pageResponse.getPage())
+                .size(pageResponse.getSize())
+                .totalElements(pageResponse.getTotalElements())
+                .totalPages(pageResponse.getTotalPages())
+                .hasNext(pageResponse.isHasNext())
+                .hasPrevious(pageResponse.isHasPrevious())
                 .build();
     }
 }

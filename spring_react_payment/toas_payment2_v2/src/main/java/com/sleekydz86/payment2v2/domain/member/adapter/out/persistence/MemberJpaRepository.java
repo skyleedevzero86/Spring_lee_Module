@@ -2,6 +2,8 @@ package com.sleekydz86.payment2v2.domain.member.adapter.out.persistence;
 
 import com.sleekydz86.payment2v2.domain.member.model.Member;
 import com.sleekydz86.payment2v2.domain.member.port.out.MemberRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,7 +27,15 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long>, Member
     List<Member> findByNameContainingIgnoreCase(@Param("name") String name);
     
     @Override
+    @Query("SELECT m FROM Member m WHERE LOWER(m.name.value) LIKE LOWER(CONCAT('%', :name, '%'))")
+    Page<Member> findByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
+    
+    @Override
     @Query("SELECT m FROM Member m WHERE LOWER(m.email.value) LIKE LOWER(CONCAT('%', :email, '%'))")
     List<Member> findByEmailContainingIgnoreCase(@Param("email") String email);
+    
+    @Override
+    @Query("SELECT m FROM Member m WHERE LOWER(m.email.value) LIKE LOWER(CONCAT('%', :email, '%'))")
+    Page<Member> findByEmailContainingIgnoreCase(@Param("email") String email, Pageable pageable);
 }
 

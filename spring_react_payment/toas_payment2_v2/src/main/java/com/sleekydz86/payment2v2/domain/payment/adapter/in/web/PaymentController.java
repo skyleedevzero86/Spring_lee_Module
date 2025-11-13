@@ -6,8 +6,11 @@ import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.GetPaymentSta
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentApprovalApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentDetailApiResponse;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentHistoryApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentStatusApiResponse;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.RefundPaymentRequest;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.RefundPaymentApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.ApprovePaymentCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.CreatePaymentCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.GetPaymentStatusCommand;
@@ -16,9 +19,14 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentDetailRes
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentHistoryResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentStatusResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentCommand;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.ApprovePaymentUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentDetailUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentHistoryUseCase;
+import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentHistoryPageUseCase;
+import com.sleekydz86.payment2v2.domain.payment.application.port.in.RefundPaymentUseCase;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberId;
 import com.sleekydz86.payment2v2.domain.payment.application.service.PaymentService;
 import com.sleekydz86.payment2v2.domain.payment.model.valueobject.PaymentId;
@@ -29,6 +37,8 @@ import com.sleekydz86.payment2v2.global.util.LoggingUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +54,9 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final ApprovePaymentUseCase approvePaymentUseCase;
     private final GetPaymentHistoryUseCase getPaymentHistoryUseCase;
+    private final GetPaymentHistoryPageUseCase getPaymentHistoryPageUseCase;
     private final GetPaymentDetailUseCase getPaymentDetailUseCase;
+    private final RefundPaymentUseCase refundPaymentUseCase;
     private final PaymentWebMapper paymentWebMapper;
 
     @PostMapping
@@ -94,6 +106,20 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponses);
     }
 
+    @GetMapping("/page")
+    public ResponseEntity<PageApiResponse<PaymentHistoryApiResponse>> getPaymentHistoryPage(
+            @RequestHeader(HeaderConstants.USER_ID_HEADER) Long userId,
+            @RequestHeader(HeaderConstants.USER_ROLE_HEADER) String userRole,
+            @PageableDefault(size = 20) Pageable pageable) {
+        MemberId.of(userId);
+        if (userRole == null || userRole.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "사용자 역할이 필요합니다.");
+        }
+        PageResponse<PaymentHistoryResponse> pageResponse = getPaymentHistoryPageUseCase.getPaymentHistory(userId, userRole, pageable);
+        PageApiResponse<PaymentHistoryApiResponse> apiResponse = paymentWebMapper.toPageApiResponse(pageResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
     @GetMapping("/{paymentId}")
     public ResponseEntity<PaymentDetailApiResponse> getPaymentDetail(
             @PathVariable Long paymentId,
@@ -106,6 +132,20 @@ public class PaymentController {
         }
         PaymentDetailResponse response = getPaymentDetailUseCase.getPaymentDetail(paymentId, userId, userRole);
         PaymentDetailApiResponse apiResponse = paymentWebMapper.toDetailApiResponse(response);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @PostMapping("/{paymentId}/refund")
+    public ResponseEntity<RefundPaymentApiResponse> refundPayment(
+            @PathVariable Long paymentId,
+            @RequestHeader(HeaderConstants.USER_ID_HEADER) Long userId,
+            @Valid @RequestBody RefundPaymentRequest request) {
+        PaymentId.of(paymentId);
+        MemberId.of(userId);
+        log.info("결제 환불 요청: paymentId={}, userId={}, refundNo={}", paymentId, userId, request.getRefundNo());
+        RefundPaymentCommand command = paymentWebMapper.toRefundCommand(paymentId, request);
+        RefundPaymentResponse response = refundPaymentUseCase.refundPayment(command);
+        RefundPaymentApiResponse apiResponse = paymentWebMapper.toRefundApiResponse(response);
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 }

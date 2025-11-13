@@ -7,25 +7,31 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentDetailRes
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentHistoryResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentStatusResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentCommand;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.TransactionInfo;
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentRequest;
+import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentRefundRequest;
+import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentRefundResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentStatusResponse;
 import com.sleekydz86.payment2v2.domain.payment.model.Payment;
 import com.sleekydz86.payment2v2.global.config.TossPaymentProperties;
+import com.sleekydz86.payment2v2.global.constants.PaymentConstants;
+import com.sleekydz86.payment2v2.global.exception.BusinessException;
+import com.sleekydz86.payment2v2.global.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 @Slf4j
 @Component
 public class PaymentMapper {
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final RoundingMode AMOUNT_ROUNDING_MODE = RoundingMode.HALF_UP;
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(PaymentConstants.DATE_TIME_FORMAT);
 
     private final String apiKey;
 
@@ -192,8 +198,12 @@ public class PaymentMapper {
         if (payment.getPaidTs() != null && !payment.getPaidTs().isEmpty()) {
             try {
                 builder.paidTs(LocalDateTime.parse(payment.getPaidTs(), DATE_TIME_FORMATTER));
-            } catch (Exception e) {
-                log.warn("paidTs 파싱 실패: paidTs={}, paymentId={}", payment.getPaidTs(), payment.getId(), e);
+            } catch (DateTimeParseException e) {
+                log.error("paidTs 파싱 실패: paidTs={}, paymentId={}, format={}", 
+                        payment.getPaidTs(), payment.getId(), PaymentConstants.DATE_TIME_FORMAT, e);
+                throw new BusinessException(ErrorCode.INVALID_DATA_FORMAT,
+                        String.format("paidTs 형식이 올바르지 않습니다. paymentId: %d, paidTs: %s", 
+                                payment.getId(), payment.getPaidTs()), e);
             }
         }
         
@@ -249,10 +259,73 @@ public class PaymentMapper {
         return builder.build();
     }
 
+    public TossPaymentRefundRequest toRefundRequest(RefundPaymentCommand command, Payment payment) {
+        TossPaymentRefundRequest.TossPaymentRefundRequestBuilder builder = TossPaymentRefundRequest.builder()
+                .payToken(payment.getPayToken())
+                .refundNo(command.getRefundNo())
+                .idempotent(command.getIdempotent() != null ? command.getIdempotent() : true)
+                .reason(command.getReason());
+
+        if (command.getAmount() != null) {
+            builder.amount(convertToInteger(command.getAmount()));
+        }
+        if (command.getAmountTaxFree() != null) {
+            builder.amountTaxFree(convertToInteger(command.getAmountTaxFree()));
+        }
+        if (command.getAmountTaxable() != null) {
+            builder.amountTaxable(convertToInteger(command.getAmountTaxable()));
+        }
+        if (command.getAmountVat() != null) {
+            builder.amountVat(convertToInteger(command.getAmountVat()));
+        }
+        if (command.getAmountServiceFee() != null) {
+            builder.amountServiceFee(convertToInteger(command.getAmountServiceFee()));
+        }
+
+        return builder.build();
+    }
+
+    public RefundPaymentResponse toRefundResponse(Payment payment, TossPaymentRefundResponse refundResponse) {
+        return RefundPaymentResponse.builder()
+                .paymentId(payment.getId())
+                .refundNo(refundResponse.getRefundNo())
+                .refundableAmount(refundResponse.getRefundableAmount())
+                .discountedAmount(refundResponse.getDiscountedAmount())
+                .paidAmount(refundResponse.getPaidAmount())
+                .refundedAmount(refundResponse.getRefundedAmount())
+                .refundedDiscountAmount(refundResponse.getRefundedDiscountAmount())
+                .refundedPaidAmount(refundResponse.getRefundedPaidAmount())
+                .approvalTime(refundResponse.getApprovalTime())
+                .cashReceiptMgtKey(refundResponse.getCashReceiptMgtKey())
+                .payToken(refundResponse.getPayToken())
+                .transactionId(refundResponse.getTransactionId())
+                .cardMethodType(refundResponse.getCardMethodType())
+                .cardNumber(refundResponse.getCardNumber())
+                .cardUserType(refundResponse.getCardUserType())
+                .cardBinNumber(refundResponse.getCardBinNumber())
+                .cardNum4Print(refundResponse.getCardNum4Print())
+                .salesCheckLinkUrl(refundResponse.getSalesCheckLinkUrl())
+                .accountBankCode(refundResponse.getAccountBankCode())
+                .accountBankName(refundResponse.getAccountBankName())
+                .accountNumber(refundResponse.getAccountNumber())
+                .status(payment.getStatus().name())
+                .build();
+    }
+
     private Integer convertToInteger(BigDecimal value) {
         if (value == null) {
             return null;
         }
-        return value.setScale(0, AMOUNT_ROUNDING_MODE).intValue();
+        
+        BigDecimal rounded = value.setScale(0, PaymentConstants.AMOUNT_ROUNDING_MODE);
+        
+        if (rounded.compareTo(BigDecimal.valueOf(PaymentConstants.INTEGER_MAX_VALUE)) > 0) {
+            log.error("금액이 Integer 범위를 초과합니다. value={}, maxValue={}", 
+                    value, PaymentConstants.INTEGER_MAX_VALUE);
+            throw new BusinessException(ErrorCode.AMOUNT_EXCEEDS_INTEGER_RANGE,
+                    String.format("금액이 Integer 범위를 초과합니다. value: %s", value));
+        }
+        
+        return rounded.intValue();
     }
 }

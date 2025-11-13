@@ -9,6 +9,8 @@ import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentApprov
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentDetailApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentHistoryApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentStatusApiResponse;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.RefundPaymentRequest;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.RefundPaymentApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.TransactionInfoApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.ApprovePaymentCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.CreatePaymentCommand;
@@ -18,9 +20,14 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentDetailRes
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentHistoryResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentStatusResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.PageResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentCommand;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentResponse;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class PaymentWebMapper {
@@ -241,6 +248,67 @@ public class PaymentWebMapper {
         }
 
         return builder.build();
+    }
+
+    public RefundPaymentCommand toRefundCommand(Long paymentId, RefundPaymentRequest request) {
+        return RefundPaymentCommand.builder()
+                .paymentId(paymentId)
+                .refundNo(request.getRefundNo())
+                .reason(request.getReason())
+                .amount(request.getAmount())
+                .amountTaxFree(request.getAmountTaxFree())
+                .amountTaxable(request.getAmountTaxable())
+                .amountVat(request.getAmountVat())
+                .amountServiceFee(request.getAmountServiceFee())
+                .idempotent(request.getIdempotent())
+                .build();
+    }
+
+    public RefundPaymentApiResponse toRefundApiResponse(RefundPaymentResponse response) {
+        return RefundPaymentApiResponse.builder()
+                .paymentId(response.getPaymentId())
+                .refundNo(response.getRefundNo())
+                .refundableAmount(response.getRefundableAmount())
+                .discountedAmount(response.getDiscountedAmount())
+                .paidAmount(response.getPaidAmount())
+                .refundedAmount(response.getRefundedAmount())
+                .refundedDiscountAmount(response.getRefundedDiscountAmount())
+                .refundedPaidAmount(response.getRefundedPaidAmount())
+                .approvalTime(response.getApprovalTime())
+                .cashReceiptMgtKey(response.getCashReceiptMgtKey())
+                .payToken(response.getPayToken())
+                .transactionId(response.getTransactionId())
+                .cardMethodType(response.getCardMethodType())
+                .cardNumber(response.getCardNumber())
+                .cardUserType(response.getCardUserType())
+                .cardBinNumber(response.getCardBinNumber())
+                .cardNum4Print(response.getCardNum4Print())
+                .salesCheckLinkUrl(response.getSalesCheckLinkUrl())
+                .accountBankCode(response.getAccountBankCode())
+                .accountBankName(response.getAccountBankName())
+                .accountNumber(response.getAccountNumber())
+                .status(response.getStatus())
+                .build();
+    }
+
+    public <T, R> PageApiResponse<R> toPageApiResponse(PageResponse<T> pageResponse, java.util.function.Function<T, R> mapper) {
+        List<R> content = pageResponse.getContent().stream()
+                .map(mapper)
+                .toList();
+
+        return PageApiResponse.<R>builder()
+                .content(content)
+                .page(pageResponse.getPage())
+                .size(pageResponse.getSize())
+                .totalElements(pageResponse.getTotalElements())
+                .totalPages(pageResponse.getTotalPages())
+                .hasNext(pageResponse.isHasNext())
+                .hasPrevious(pageResponse.isHasPrevious())
+                .build();
+    }
+
+    public PageApiResponse<PaymentHistoryApiResponse> toPageApiResponse(PageResponse<PaymentHistoryResponse> pageResponse) {
+        return toPageApiResponse(pageResponse, this::toHistoryApiResponse);
     }
 }
 
