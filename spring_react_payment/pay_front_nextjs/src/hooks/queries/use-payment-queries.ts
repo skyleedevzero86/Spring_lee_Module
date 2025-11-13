@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentApi } from '@/src/infrastructure/api/payment.api';
 import { paymentService } from '@/src/application/services/payment.service';
+import { ApiError } from '@/src/domain/types/error.types';
 import type {
   CreatePaymentRequest,
   PaymentResponse,
@@ -54,9 +55,24 @@ export function useGetPaymentStatus() {
 export function usePaymentHistory(enabled = true) {
   return useQuery({
     queryKey: paymentQueryKeys.lists(),
-    queryFn: () => paymentApi.getPaymentHistory(),
+    queryFn: async () => {
+      try {
+        return await paymentApi.getPaymentHistory();
+      } catch (error) {
+        if (error instanceof ApiError && 
+            (error.code === 'NETWORK_ERROR' || 
+             error.message.includes('서버에 연결할 수 없습니다') ||
+             error.message.includes('ERR_CONNECTION_REFUSED'))) {
+          return [];
+        }
+        throw error;
+      }
+    },
     enabled,
     staleTime: 2 * 60 * 1000,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

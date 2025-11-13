@@ -68,8 +68,19 @@ class ApiClient {
         }
 
         if (error.request) {
+          const isConnectionRefused = 
+            error.code === 'ECONNREFUSED' || 
+            error.message?.includes('ERR_CONNECTION_REFUSED') ||
+            error.message?.includes('가져오기 실패');
+          
           return Promise.reject(
-            new ApiError('NETWORK_ERROR', 0, '네트워크 오류가 발생했습니다.')
+            new ApiError(
+              'NETWORK_ERROR', 
+              0, 
+              isConnectionRefused 
+                ? '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.'
+                : '네트워크 오류가 발생했습니다.'
+            )
           );
         }
 

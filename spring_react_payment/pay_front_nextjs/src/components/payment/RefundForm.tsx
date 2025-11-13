@@ -37,7 +37,6 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
         router.push(`/payments/${paymentId}`);
       }, 2000);
     } catch (err) {
-      console.error('환불 실패:', err);
     }
   };
 

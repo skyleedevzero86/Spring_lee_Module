@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from 'path';
 import bundleAnalyzer from '@next/bundle-analyzer';
 
 const withBundleAnalyzer = bundleAnalyzer({
@@ -9,6 +10,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
+  outputFileTracingRoot: path.join(__dirname),
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -18,7 +20,10 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-slot'],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    if (dev && !isServer) {
+      config.cache = false;
+    }
     if (!isServer) {
       config.optimization = {
         ...config.optimization,

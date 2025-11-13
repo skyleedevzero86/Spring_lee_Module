@@ -25,11 +25,24 @@ export const PaymentHistoryList = () => {
     }
   };
 
+  const isConnectionError = error instanceof ApiError && 
+    (error.code === 'NETWORK_ERROR' || 
+     error.message.includes('서버에 연결할 수 없습니다') ||
+     error.message.includes('ERR_CONNECTION_REFUSED'));
+
+  if (isConnectionError) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        결제 이력이 없습니다.
+      </div>
+    );
+  }
+
   if (loading) {
     return <LoadingSpinner size="lg" className="py-8" />;
   }
 
-  if (error) {
+  if (error && !isConnectionError) {
     const apiError =
       error instanceof ApiError
         ? error

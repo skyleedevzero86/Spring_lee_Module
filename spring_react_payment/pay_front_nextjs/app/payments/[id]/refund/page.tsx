@@ -5,10 +5,11 @@ import { useParams } from 'next/navigation';
 import { usePayment } from '@/src/hooks/use-payment';
 import { LoadingSpinner } from '@/src/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/src/components/common/ErrorMessage';
+import { ProtectedRoute } from '@/src/components/common/ProtectedRoute';
 import { RefundForm } from '@/src/components/payment/RefundForm';
 import Link from 'next/link';
 
-export default function RefundPage() {
+function RefundPageContent() {
   const params = useParams();
   const paymentId = Number(params.id);
   const { getPaymentDetail, loading, error } = usePayment();
@@ -68,6 +69,14 @@ export default function RefundPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RefundPage() {
+  return (
+    <ProtectedRoute>
+      <RefundPageContent />
+    </ProtectedRoute>
   );
 }
 

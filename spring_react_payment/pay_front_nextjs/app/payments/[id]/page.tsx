@@ -6,10 +6,11 @@ import { usePayment } from '@/src/hooks/use-payment';
 import { usePaymentStore } from '@/src/store/payment.store';
 import { LoadingSpinner } from '@/src/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/src/components/common/ErrorMessage';
+import { ProtectedRoute } from '@/src/components/common/ProtectedRoute';
 import { PaymentStatus } from '@/src/domain/types/payment.types';
 import Link from 'next/link';
 
-export default function PaymentDetailPage() {
+function PaymentDetailPageContent() {
   const params = useParams();
   const router = useRouter();
   const paymentId = Number(params.id);
@@ -195,6 +196,14 @@ export default function PaymentDetailPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentDetailPage() {
+  return (
+    <ProtectedRoute>
+      <PaymentDetailPageContent />
+    </ProtectedRoute>
   );
 }
 

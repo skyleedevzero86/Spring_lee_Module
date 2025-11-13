@@ -1,7 +1,10 @@
+'use client';
+
 import { PaymentHistoryList } from '@/src/components/payment/PaymentHistoryList';
+import { ProtectedRoute } from '@/src/components/common/ProtectedRoute';
 import Link from 'next/link';
 
-export default function PaymentHistoryPage() {
+function PaymentHistoryPageContent() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -20,6 +23,14 @@ export default function PaymentHistoryPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentHistoryPage() {
+  return (
+    <ProtectedRoute>
+      <PaymentHistoryPageContent />
+    </ProtectedRoute>
   );
 }
 

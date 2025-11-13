@@ -20,9 +20,9 @@ class PerformanceMonitor {
     if (typeof window === 'undefined') return;
 
     try {
-      import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
+      import('web-vitals').then(({ onCLS, onINP, onFCP, onLCP, onTTFB }) => {
         onCLS((metric) => this.recordMetric('CLS', metric.value));
-        onFID((metric) => this.recordMetric('FID', metric.value));
+        onINP((metric) => this.recordMetric('INP', metric.value));
         onFCP((metric) => this.recordMetric('FCP', metric.value));
         onLCP((metric) => this.recordMetric('LCP', metric.value));
         onTTFB((metric) => this.recordMetric('TTFB', metric.value));
@@ -57,7 +57,7 @@ class PerformanceMonitor {
 
         this.recordMetric(`API_ERROR_${url}`, duration, {
           url,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : '알 수 없는 오류',
         });
 
         throw error;
@@ -107,7 +107,7 @@ class PerformanceMonitor {
   private getRating(name: string, value: number): 'good' | 'needs-improvement' | 'poor' {
     const thresholds: Record<string, { good: number; poor: number }> = {
       CLS: { good: 0.1, poor: 0.25 },
-      FID: { good: 100, poor: 300 },
+      INP: { good: 200, poor: 500 },
       FCP: { good: 1800, poor: 3000 },
       LCP: { good: 2500, poor: 4000 },
       TTFB: { good: 800, poor: 1800 },

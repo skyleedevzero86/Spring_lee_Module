@@ -1,12 +1,19 @@
+'use client';
+
 import { CreatePaymentForm } from '@/src/components/payment/CreatePaymentForm';
 import { PaymentHistoryList } from '@/src/components/payment/PaymentHistoryList';
+import { BackButton } from '@/src/components/common/BackButton';
+import { ProtectedRoute } from '@/src/components/common/ProtectedRoute';
 import Link from 'next/link';
 
-export default function PaymentsPage() {
+function PaymentsPageContent() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
+          <div className="mb-4">
+            <BackButton />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">결제 관리</h1>
           <div className="flex gap-4">
             <Link
@@ -37,6 +44,14 @@ export default function PaymentsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentsPage() {
+  return (
+    <ProtectedRoute>
+      <PaymentsPageContent />
+    </ProtectedRoute>
   );
 }
 

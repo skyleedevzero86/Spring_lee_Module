@@ -28,7 +28,7 @@ class ErrorTracker {
 
     window.addEventListener('unhandledrejection', (event) => {
       this.trackError({
-        message: event.reason?.message || 'Unhandled Promise Rejection',
+        message: event.reason?.message || '처리되지 않은 Promise 거부',
         stack: event.reason?.stack,
       });
     });
