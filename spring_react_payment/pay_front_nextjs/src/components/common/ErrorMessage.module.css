@@ -1,0 +1,17 @@
+.container {
+  background-color: rgb(254, 242, 242);
+  border: 1px solid rgb(254, 226, 226);
+  color: rgb(185, 28, 28);
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+}
+
+.title {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.message {
+  font-size: 0.875rem;
+}
+

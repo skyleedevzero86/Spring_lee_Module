@@ -1,0 +1,37 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  text-align: center;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgb(220, 38, 38);
+  margin-bottom: 1rem;
+}
+
+.message {
+  color: rgb(75, 85, 99);
+}
+
+.button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: rgb(59, 130, 246);
+  color: white;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: rgb(37, 99, 235);
+}
+

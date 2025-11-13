@@ -146,4 +146,3 @@ class MoneyTest {
         assertThat(money.getValue()).isEqualByComparingTo(new BigDecimal("12345.68"));
     }
 }
-
