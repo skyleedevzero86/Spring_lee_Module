@@ -35,6 +35,30 @@ const customJestConfig = {
       lines: 60,
       statements: 60,
     },
+    'src/domain/payment-amount-calculator.ts': {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100,
+    },
+    'src/domain/payment-state-machine.ts': {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100,
+    },
+    'src/domain/payment-refund-calculator.ts': {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100,
+    },
+    'src/domain/payment-validator.ts': {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100,
+    },
   },
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
 }
