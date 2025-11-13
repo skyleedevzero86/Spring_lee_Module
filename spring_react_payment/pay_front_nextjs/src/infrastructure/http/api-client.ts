@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'ax
 import { ErrorResponse, ApiError } from '@/src/domain/types/error.types';
 import { withRetry } from '@/src/lib/utils/retry';
 import { TokenManager } from '@/src/lib/utils/token-manager';
-import { sanitizeObject } from '@/src/lib/utils/security';
+import { sanitizeObject, sanitizeInput } from '@/src/lib/utils/security';
 import { CsrfTokenManager } from '@/src/lib/utils/csrf';
 import { API_TIMEOUT, STORAGE_KEYS } from '@/src/constants/api.constants';
 
@@ -23,15 +23,14 @@ class ApiClient {
 
   private setupInterceptors(): void {
     if (typeof window !== 'undefined') {
-      CsrfTokenManager.initToken();
+      CsrfTokenManager.initToken().catch(() => {});
     }
 
     this.client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        if (!TokenManager.isAuthenticated()) {
-          TokenManager.clearToken();
-        } else {
-          TokenManager.refreshToken();
+        const token = TokenManager.getJwtToken();
+        if (token && config.headers) {
+          config.headers['Authorization'] = `Bearer ${token}`;
         }
 
         const userId = this.getUserId();
@@ -59,6 +58,13 @@ class ApiClient {
       (response) => response,
       (error: AxiosError<ErrorResponse>) => {
         if (error.response) {
+          if (error.response.status === 401) {
+            TokenManager.clearToken();
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+          }
+
           const errorResponse = error.response.data;
           const apiError = ApiError.fromResponse(
             errorResponse,
@@ -99,8 +105,8 @@ class ApiClient {
     return TokenManager.getUserRole();
   }
 
-  setAuth(userId: number, role: string): void {
-    TokenManager.setToken(userId, role);
+  setAuth(userId: number, role: string, token?: string): void {
+    TokenManager.setToken(userId, role, token);
   }
 
   clearAuth(): void {
@@ -113,7 +119,7 @@ class ApiClient {
     }
 
     if (typeof data === 'string') {
-      return data;
+      return sanitizeInput(data);
     }
 
     if (typeof data === 'object' && !Array.isArray(data)) {

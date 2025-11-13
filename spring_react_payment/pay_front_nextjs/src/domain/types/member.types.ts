@@ -47,6 +47,24 @@ export interface ResetPasswordResponse {
   email: string;
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  message: string;
+  data: LoginData;
+}
+
+export interface LoginData {
+  userId: number;
+  email: string;
+  name: string;
+  role: string;
+  token: string;
+}
+
 export interface PageResponse<T> {
   content: T[];
   page: number;

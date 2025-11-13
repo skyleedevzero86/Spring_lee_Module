@@ -7,10 +7,16 @@ import type {
   SearchMemberResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  LoginRequest,
+  LoginResponse,
   PageResponse,
 } from '@/src/domain/types/member.types';
 
 class MemberApi {
+  async login(request: LoginRequest): Promise<LoginResponse> {
+    return apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, request);
+  }
+
   async register(
     request: RegisterMemberRequest
   ): Promise<RegisterMemberResponse> {

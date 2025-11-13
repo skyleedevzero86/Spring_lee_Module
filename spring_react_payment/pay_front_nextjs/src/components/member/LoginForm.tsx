@@ -10,8 +10,6 @@ import { Input } from '@/src/components/common/Input';
 import { Button } from '@/src/components/common/Button';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMemberStore } from '@/src/store/member.store';
-import apiClient from '@/src/infrastructure/http/api-client';
 
 const loginSchema = z.object({
   email: z.string().min(1, '이메일은 필수입니다.').email('올바른 이메일 형식이 아닙니다.'),
@@ -22,9 +20,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginForm = memo(() => {
   const router = useRouter();
-  const { setMember } = useMemberStore();
-  const { findByEmail, loading, error } = useMember();
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const { login, loginLoading, loginError } = useMember();
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const {
     register,
@@ -37,28 +34,17 @@ export const LoginForm = memo(() => {
   const onSubmit = useCallback(
     async (data: LoginFormData) => {
       try {
-        setLoginError(null);
-        const member = await findByEmail(data.email);
-        
-        if (!member) {
-          setLoginError('이메일 또는 비밀번호가 올바르지 않습니다.');
-          return;
-        }
-
-        apiClient.setAuth(member.id, member.role);
-        setMember({
-          id: member.id,
-          email: member.email,
-          name: member.name,
-          role: member.role,
+        setLocalError(null);
+        await login({
+          email: data.email,
+          password: data.password,
         });
-
         router.push('/payments');
       } catch (err) {
-        setLoginError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+        setLocalError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
       }
     },
-    [findByEmail, setMember, router]
+    [login, router]
   );
 
   return (
@@ -68,7 +54,7 @@ export const LoginForm = memo(() => {
         type="email"
         {...register('email')}
         error={errors.email?.message}
-        disabled={loading}
+        disabled={loginLoading}
       />
 
       <Input
@@ -76,18 +62,18 @@ export const LoginForm = memo(() => {
         type="password"
         {...register('password')}
         error={errors.password?.message}
-        disabled={loading}
+        disabled={loginLoading}
       />
 
-      {error && <ErrorMessage error={error} />}
-      {loginError && (
-        <div className="text-red-600 text-sm mt-1">{loginError}</div>
+      {loginError && <ErrorMessage error={loginError} />}
+      {localError && (
+        <div className="text-red-600 text-sm mt-1">{localError}</div>
       )}
 
       <Button
         type="submit"
-        disabled={loading}
-        loading={loading}
+        disabled={loginLoading}
+        loading={loginLoading}
         className="w-full"
       >
         로그인

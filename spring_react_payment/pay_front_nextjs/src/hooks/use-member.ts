@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { memberService } from '@/src/application/services/member.service';
 import { useMemberStore } from '@/src/store/member.store';
 import { useAsync } from '@/src/hooks/use-async';
@@ -9,6 +9,8 @@ import type {
   SearchMemberResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  LoginRequest,
+  LoginResponse,
   PageResponse,
   MemberRole,
 } from '@/src/domain/types/member.types';
@@ -23,6 +25,21 @@ function useAsyncOperation<T, Args extends unknown[]>(
 
 export const useMember = () => {
   const { setMember, clearMember } = useMemberStore();
+
+  const loginAsync = useAsync(
+    (request: LoginRequest) => memberService.login(request),
+    {
+      onSuccess: (response: LoginResponse) => {
+        const { userId, email, name, role } = response.data;
+        setMember({
+          id: userId,
+          email,
+          name,
+          role: role as MemberRole,
+        });
+      },
+    }
+  );
 
   const registerAsync = useAsync(
     (request: RegisterMemberRequest) => memberService.register(request),
@@ -80,71 +97,40 @@ export const useMember = () => {
     clearMember();
   }, [clearMember]);
 
-  const loading = useMemo(
-    () =>
-      registerAsync.loading ||
-      findByEmailAsync.loading ||
-      findByIdAsync.loading ||
-      searchByNameAsync.loading ||
-      searchByEmailAsync.loading ||
-      searchAllAsync.loading ||
-      searchByNamePageAsync.loading ||
-      searchByEmailPageAsync.loading ||
-      searchAllPageAsync.loading ||
-      resetPasswordAsync.loading,
-    [
-      registerAsync.loading,
-      findByEmailAsync.loading,
-      findByIdAsync.loading,
-      searchByNameAsync.loading,
-      searchByEmailAsync.loading,
-      searchAllAsync.loading,
-      searchByNamePageAsync.loading,
-      searchByEmailPageAsync.loading,
-      searchAllPageAsync.loading,
-      resetPasswordAsync.loading,
-    ]
-  );
-
-  const error = useMemo(
-    () =>
-      registerAsync.error ||
-      findByEmailAsync.error ||
-      findByIdAsync.error ||
-      searchByNameAsync.error ||
-      searchByEmailAsync.error ||
-      searchAllAsync.error ||
-      searchByNamePageAsync.error ||
-      searchByEmailPageAsync.error ||
-      searchAllPageAsync.error ||
-      resetPasswordAsync.error,
-    [
-      registerAsync.error,
-      findByEmailAsync.error,
-      findByIdAsync.error,
-      searchByNameAsync.error,
-      searchByEmailAsync.error,
-      searchAllAsync.error,
-      searchByNamePageAsync.error,
-      searchByEmailPageAsync.error,
-      searchAllPageAsync.error,
-      resetPasswordAsync.error,
-    ]
-  );
-
   return {
-    loading,
-    error,
+    login: loginAsync.execute,
+    loginLoading: loginAsync.loading,
+    loginError: loginAsync.error,
     register: registerAsync.execute,
+    registerLoading: registerAsync.loading,
+    registerError: registerAsync.error,
     findByEmail: findByEmailAsync.execute,
+    findByEmailLoading: findByEmailAsync.loading,
+    findByEmailError: findByEmailAsync.error,
     findById: findByIdAsync.execute,
+    findByIdLoading: findByIdAsync.loading,
+    findByIdError: findByIdAsync.error,
     searchByName: searchByNameAsync.execute,
+    searchByNameLoading: searchByNameAsync.loading,
+    searchByNameError: searchByNameAsync.error,
     searchByEmail: searchByEmailAsync.execute,
+    searchByEmailLoading: searchByEmailAsync.loading,
+    searchByEmailError: searchByEmailAsync.error,
     searchAll: searchAllAsync.execute,
+    searchAllLoading: searchAllAsync.loading,
+    searchAllError: searchAllAsync.error,
     searchByNamePage: searchByNamePageAsync.execute,
+    searchByNamePageLoading: searchByNamePageAsync.loading,
+    searchByNamePageError: searchByNamePageAsync.error,
     searchByEmailPage: searchByEmailPageAsync.execute,
+    searchByEmailPageLoading: searchByEmailPageAsync.loading,
+    searchByEmailPageError: searchByEmailPageAsync.error,
     searchAllPage: searchAllPageAsync.execute,
+    searchAllPageLoading: searchAllPageAsync.loading,
+    searchAllPageError: searchAllPageAsync.error,
     resetPassword: resetPasswordAsync.execute,
+    resetPasswordLoading: resetPasswordAsync.loading,
+    resetPasswordError: resetPasswordAsync.error,
     logout,
   };
 };

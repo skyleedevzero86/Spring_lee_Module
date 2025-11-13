@@ -1,4 +1,9 @@
 export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/api/v1/users/login',
+    REGISTER: '/api/v1/users/register',
+    VALIDATE_TOKEN: '/api/v1/users/validate-token',
+  },
   MEMBERS: {
     BASE: '/api/v1/members',
     REGISTER: '/api/v1/members',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TokenManager } from '@/src/lib/utils/token-manager';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -12,16 +12,41 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
   const router = useRouter();
-  const isAuthenticated = TokenManager.isAuthenticated();
+  const [isValidating, setIsValidating] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const userRole = TokenManager.getUserRole();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    } else if (requireAdmin && userRole !== 'ADMIN') {
-      router.push('/');
-    }
-  }, [isAuthenticated, requireAdmin, userRole, router]);
+    const validateAuth = async () => {
+      const hasToken = TokenManager.isAuthenticated();
+      if (!hasToken) {
+        setIsAuthenticated(false);
+        setIsValidating(false);
+        router.push('/login');
+        return;
+      }
+
+      const isValid = await TokenManager.validateToken();
+      setIsAuthenticated(isValid);
+      setIsValidating(false);
+
+      if (!isValid) {
+        router.push('/login');
+      } else if (requireAdmin && userRole !== 'ADMIN') {
+        router.push('/');
+      }
+    };
+
+    validateAuth();
+  }, [requireAdmin, userRole, router]);
+
+  if (isValidating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

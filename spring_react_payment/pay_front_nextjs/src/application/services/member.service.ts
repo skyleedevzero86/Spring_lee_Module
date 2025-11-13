@@ -7,6 +7,8 @@ import type {
   SearchMemberResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  LoginRequest,
+  LoginResponse,
   PageResponse,
 } from '@/src/domain/types/member.types';
 import {
@@ -15,6 +17,19 @@ import {
 } from '@/src/lib/utils/service-helper';
 
 class MemberService {
+  async login(request: LoginRequest): Promise<LoginResponse> {
+    return handleServiceCallWithPostProcess(
+      () => memberApi.login(request),
+      (response) => {
+        const { userId, role, token } = response.data;
+        apiClient.setAuth(userId, role, token);
+        return response;
+      },
+      'LOGIN_FAILED',
+      '로그인에 실패했습니다.'
+    );
+  }
+
   async register(
     request: RegisterMemberRequest
   ): Promise<RegisterMemberResponse> {

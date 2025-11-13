@@ -6,6 +6,7 @@ import com.sleekydz86.toaspayment.application.dto.RegisterRequest;
 import com.sleekydz86.toaspayment.application.dto.RegisterResponse;
 import com.sleekydz86.toaspayment.application.usecase.LoginUseCase;
 import com.sleekydz86.toaspayment.application.usecase.RegisterUseCase;
+import com.sleekydz86.toaspayment.infrastructure.security.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final LoginUseCase loginUseCase;
     private final RegisterUseCase registerUseCase;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
     @PostMapping("/login")
@@ -34,5 +36,19 @@ public class AuthController {
         RegisterResponse response = registerUseCase.execute(request);
         return ResponseEntity.ok(response);
     }
-}
 
+    @Operation(summary = "토큰 검증", description = "JWT 토큰의 유효성을 검증합니다.")
+    @GetMapping("/validate-token")
+    public ResponseEntity<Void> validateToken(@RequestHeader("Authorization") String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String token = authorization.substring(7);
+        if (jwtTokenProvider.validateToken(token)) {
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.status(401).build();
+    }
+}

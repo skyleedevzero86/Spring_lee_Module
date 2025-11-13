@@ -3,47 +3,58 @@ import { STORAGE_KEYS } from '@/src/constants/api.constants';
 interface TokenData {
   userId: number;
   role: string;
+  jwtToken: string | null;
   expiresAt: number;
 }
 
 const TOKEN_EXPIRY_HOURS = 24;
 const TOKEN_KEY = 'auth_token';
+const JWT_TOKEN_KEY = 'jwt_token';
 
-function encrypt(data: string): string {
-  if (typeof window === 'undefined') return data;
+function parseJwt(token: string): { exp?: number; userId?: number; role?: string } | null {
   try {
-    return btoa(encodeURIComponent(data));
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
   } catch {
-    return data;
+    return null;
   }
 }
 
-function decrypt(encrypted: string): string {
-  if (typeof window === 'undefined') return encrypted;
-  try {
-    return decodeURIComponent(atob(encrypted));
-  } catch {
-    return encrypted;
-  }
-}
-
-function isExpired(expiresAt: number): boolean {
-  return Date.now() >= expiresAt;
+function isJwtExpired(token: string): boolean {
+  const decoded = parseJwt(token);
+  if (!decoded || !decoded.exp) return true;
+  return Date.now() >= decoded.exp * 1000;
 }
 
 export class TokenManager {
-  static setToken(userId: number, role: string): void {
+  static setToken(userId: number, role: string, jwtToken?: string): void {
     if (typeof window === 'undefined') return;
 
-    const expiresAt = Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
+    let expiresAt = Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
+
+    if (jwtToken) {
+      const decoded = parseJwt(jwtToken);
+      if (decoded && decoded.exp) {
+        expiresAt = decoded.exp * 1000;
+      }
+      localStorage.setItem(JWT_TOKEN_KEY, jwtToken);
+    }
+
     const tokenData: TokenData = {
       userId,
       role,
+      jwtToken: jwtToken || null,
       expiresAt,
     };
 
-    const encrypted = encrypt(JSON.stringify(tokenData));
-    localStorage.setItem(TOKEN_KEY, encrypted);
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(tokenData));
     localStorage.setItem(STORAGE_KEYS.USER_ID, String(userId));
     localStorage.setItem(STORAGE_KEYS.USER_ROLE, role);
   }
@@ -51,14 +62,18 @@ export class TokenManager {
   static getToken(): TokenData | null {
     if (typeof window === 'undefined') return null;
 
-    const encrypted = localStorage.getItem(TOKEN_KEY);
-    if (!encrypted) return null;
-
     try {
-      const decrypted = decrypt(encrypted);
-      const tokenData: TokenData = JSON.parse(decrypted);
+      const stored = localStorage.getItem(TOKEN_KEY);
+      if (!stored) return null;
 
-      if (isExpired(tokenData.expiresAt)) {
+      const tokenData: TokenData = JSON.parse(stored);
+
+      if (Date.now() >= tokenData.expiresAt) {
+        this.clearToken();
+        return null;
+      }
+
+      if (tokenData.jwtToken && isJwtExpired(tokenData.jwtToken)) {
         this.clearToken();
         return null;
       }
@@ -68,6 +83,22 @@ export class TokenManager {
       this.clearToken();
       return null;
     }
+  }
+
+  static getJwtToken(): string | null {
+    if (typeof window === 'undefined') return null;
+
+    const tokenData = this.getToken();
+    if (tokenData?.jwtToken) {
+      return tokenData.jwtToken;
+    }
+
+    const stored = localStorage.getItem(JWT_TOKEN_KEY);
+    if (stored && !isJwtExpired(stored)) {
+      return stored;
+    }
+
+    return null;
   }
 
   static getUserId(): number | null {
@@ -87,21 +118,40 @@ export class TokenManager {
   static clearToken(): void {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(JWT_TOKEN_KEY);
     localStorage.removeItem(STORAGE_KEYS.USER_ID);
     localStorage.removeItem(STORAGE_KEYS.USER_ROLE);
   }
 
-  static refreshToken(): boolean {
-    const token = this.getToken();
+  static async validateToken(): Promise<boolean> {
+    const token = this.getJwtToken();
     if (!token) return false;
 
-    if (isExpired(token.expiresAt)) {
+    if (isJwtExpired(token)) {
       this.clearToken();
       return false;
     }
 
-    this.setToken(token.userId, token.role);
-    return true;
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'}/api/v1/users/validate-token`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        this.clearToken();
+        return false;
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 

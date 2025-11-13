@@ -30,13 +30,49 @@ export class CsrfTokenManager {
     sessionStorage.removeItem(CSRF_TOKEN_KEY);
   }
 
-  static initToken(): string {
+  static async initToken(): Promise<string> {
     let token = this.getToken();
     if (!token) {
-      token = this.generateToken();
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'}/api/v1/csrf-token`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          token = data.token || this.generateToken();
+        } else {
+          token = this.generateToken();
+        }
+      } catch {
+        token = this.generateToken();
+      }
       this.setToken(token);
     }
     return token;
+  }
+
+  static async validateToken(token: string): Promise<boolean> {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'}/api/v1/csrf-token/validate`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [this.getHeaderName()]: token,
+          },
+          credentials: 'include',
+          body: JSON.stringify({ token }),
+        }
+      );
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 
   static getHeaderName(): string {

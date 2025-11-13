@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 
 export const RegisterForm = memo(() => {
   const router = useRouter();
-  const { register: registerMember, loading, error } = useMember();
+  const { register: registerMember, registerLoading, registerError } = useMember();
   const [success, setSuccess] = useState(false);
 
   const {
@@ -54,7 +54,7 @@ export const RegisterForm = memo(() => {
         type="email"
         {...register('email')}
         error={errors.email?.message}
-        disabled={loading}
+        disabled={registerLoading}
       />
 
       <Input
@@ -62,7 +62,7 @@ export const RegisterForm = memo(() => {
         type="password"
         {...register('password')}
         error={errors.password?.message}
-        disabled={loading}
+        disabled={registerLoading}
         helperText="최소 8자 이상이어야 합니다."
       />
 
@@ -71,15 +71,15 @@ export const RegisterForm = memo(() => {
         type="text"
         {...register('name')}
         error={errors.name?.message}
-        disabled={loading}
+        disabled={registerLoading}
       />
 
-      <ErrorMessage error={error} />
+      <ErrorMessage error={registerError} />
 
       <Button
         type="submit"
-        disabled={loading}
-        loading={loading}
+        disabled={registerLoading}
+        loading={registerLoading}
         className="w-full"
       >
         회원가입
