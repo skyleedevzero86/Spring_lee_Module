@@ -34,19 +34,19 @@ describe('CreatePaymentForm', () => {
     });
   });
 
-  it('결제 ?�성 ???�더�?, () => {
+  it('결제 ?�성 ???�더�?, () => {
     render(<CreatePaymentForm />);
 
     expect(screen.getByLabelText('주문번호')).toBeInTheDocument();
-    expect(screen.getByLabelText('?�품 ?�명')).toBeInTheDocument();
+    expect(screen.getByLabelText('?�품 ?�명')).toBeInTheDocument();
     expect(screen.getByLabelText('결제 금액')).toBeInTheDocument();
     expect(screen.getByLabelText('비과??금액')).toBeInTheDocument();
-    expect(screen.getByLabelText('결제 ?�료 URL')).toBeInTheDocument();
+    expect(screen.getByLabelText('결제 ?�료 URL')).toBeInTheDocument();
     expect(screen.getByLabelText('결제 취소 URL')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '결제 ?�성' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '결제 ?�성' })).toBeInTheDocument();
   });
 
-  it('?�효???�보�?결제 ?�성 ?�공', async () => {
+  it('?�효???�보�?결제 ?�성 ?�공', async () => {
     const user = userEvent.setup({ delay: null });
     const mockResponse = {
       paymentId: 1,
@@ -58,16 +58,16 @@ describe('CreatePaymentForm', () => {
     render(<CreatePaymentForm />);
 
     await user.type(screen.getByLabelText('주문번호'), 'ORDER-123');
-    await user.type(screen.getByLabelText('?�품 ?�명'), '?�스???�품');
+    await user.type(screen.getByLabelText('?�품 ?�명'), '?�스???�품');
     await user.type(screen.getByLabelText('결제 금액'), '10000');
 
-    await user.click(screen.getByRole('button', { name: '결제 ?�성' }));
+    await user.click(screen.getByRole('button', { name: '결제 ?�성' }));
 
     await waitFor(() => {
       expect(mockCreatePayment).toHaveBeenCalled();
       const callArgs = mockCreatePayment.mock.calls[0][0];
       expect(callArgs.orderNo).toBe('ORDER-123');
-      expect(callArgs.productDesc).toBe('?�스???�품');
+      expect(callArgs.productDesc).toBe('?�스???�품');
       expect(callArgs.amount).toBe(10000);
       expect(callArgs.expiredTime).toBeDefined();
     });
@@ -75,7 +75,7 @@ describe('CreatePaymentForm', () => {
     expect(window.location.href).toBe('http://checkout.example.com');
   });
 
-  it('checkoutPage가 ?�을 ???�공 메시지 ?�시', async () => {
+  it('checkoutPage가 ?�을 ???�공 메시지 ?�시', async () => {
     const user = userEvent.setup({ delay: null });
     const mockResponse = {
       paymentId: 1,
@@ -86,19 +86,19 @@ describe('CreatePaymentForm', () => {
     render(<CreatePaymentForm />);
 
     await user.type(screen.getByLabelText('주문번호'), 'ORDER-123');
-    await user.type(screen.getByLabelText('?�품 ?�명'), '?�스???�품');
+    await user.type(screen.getByLabelText('?�품 ?�명'), '?�스???�품');
     await user.type(screen.getByLabelText('결제 금액'), '10000');
 
-    await user.click(screen.getByRole('button', { name: '결제 ?�성' }));
+    await user.click(screen.getByRole('button', { name: '결제 ?�성' }));
 
     await waitFor(() => {
-      expect(screen.getByText('결제가 ?�성?�었?�니??')).toBeInTheDocument();
+      expect(screen.getByText('결제가 ?�성?�었?�니??')).toBeInTheDocument();
     });
   });
 
-  it('결제 ?�성 ?�패 ???�러 메시지 ?�시', async () => {
+  it('결제 ?�성 ?�패 ???�러 메시지 ?�시', async () => {
     const user = userEvent.setup({ delay: null });
-    const apiError = new ApiError('INVALID_AMOUNT', 400, '?�효?��? ?��? 금액?�니??');
+    const apiError = new ApiError('INVALID_AMOUNT', 400, '?�효?��? ?��? 금액?�니??');
     mockCreatePayment.mockRejectedValue(apiError);
 
     mockUsePayment.mockReturnValue({
@@ -116,17 +116,17 @@ describe('CreatePaymentForm', () => {
     render(<CreatePaymentForm />);
 
     await user.type(screen.getByLabelText('주문번호'), 'ORDER-123');
-    await user.type(screen.getByLabelText('?�품 ?�명'), '?�스???�품');
+    await user.type(screen.getByLabelText('?�품 ?�명'), '?�스???�품');
     await user.type(screen.getByLabelText('결제 금액'), '10000');
 
-    await user.click(screen.getByRole('button', { name: '결제 ?�성' }));
+    await user.click(screen.getByRole('button', { name: '결제 ?�성' }));
 
     await waitFor(() => {
-      expect(screen.getByText('?�효?��? ?��? 금액?�니??')).toBeInTheDocument();
+      expect(screen.getByText('?�효?��? ?��? 금액?�니??')).toBeInTheDocument();
     });
   });
 
-  it('로딩 중일 ??버튼 비활?�화', () => {
+  it('로딩 중일 ??버튼 비활?�화', () => {
     mockUsePayment.mockReturnValue({
       loading: true,
       error: null,
@@ -141,16 +141,16 @@ describe('CreatePaymentForm', () => {
 
     render(<CreatePaymentForm />);
 
-    expect(screen.getByRole('button', { name: '결제 ?�성' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '결제 ?�성' })).toBeDisabled();
   });
 
-  it('기본값이 ?�바르게 ?�정?�어????, () => {
+  it('기본값이 ?�바르게 ?�정?�어????, () => {
     render(<CreatePaymentForm />);
 
     const taxFreeInput = screen.getByLabelText('비과??금액') as HTMLInputElement;
     expect(taxFreeInput.value).toBe('0');
 
-    const retUrlInput = screen.getByLabelText('결제 ?�료 URL') as HTMLInputElement;
+    const retUrlInput = screen.getByLabelText('결제 ?�료 URL') as HTMLInputElement;
     expect(retUrlInput.value).toContain('/payments/success');
 
     const retCancelUrlInput = screen.getByLabelText('결제 취소 URL') as HTMLInputElement;

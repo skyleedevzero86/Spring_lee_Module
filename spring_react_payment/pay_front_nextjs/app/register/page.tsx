@@ -12,7 +12,7 @@ export default function RegisterPage() {
             <BackButton />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            ?�원가??          </h2>
+            ?�원가??          </h2>
         </div>
         <RegisterForm />
       </div>

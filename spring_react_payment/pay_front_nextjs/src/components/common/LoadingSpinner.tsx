@@ -1,5 +1,5 @@
 import styles from './LoadingSpinner.module.css';
-import { cn } from '@/lib/utils/classname';
+import { cn } from '@/lib/utils';
 
 export interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';

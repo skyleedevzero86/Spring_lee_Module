@@ -43,84 +43,84 @@ describe('RegisterForm', () => {
     jest.useRealTimers();
   });
 
-  it('?�원가?????�더�?, () => {
+  it('?�원가?????�더�?, () => {
     render(<RegisterForm />);
 
-    expect(screen.getByLabelText('?�메??)).toBeInTheDocument();
-    expect(screen.getByLabelText('비�?번호')).toBeInTheDocument();
-    expect(screen.getByLabelText('?�름')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '?�원가?? })).toBeInTheDocument();
+    expect(screen.getByLabelText('?�메??)).toBeInTheDocument();
+    expect(screen.getByLabelText('비�?번호')).toBeInTheDocument();
+    expect(screen.getByLabelText('?�름')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '?�원가?? })).toBeInTheDocument();
   });
 
-  it('?�효???�보�??�원가???�공', async () => {
+  it('?�효???�보�??�원가???�공', async () => {
     const user = userEvent.setup({ delay: null });
     mockRegister.mockResolvedValue({
       id: 1,
       email: 'test@example.com',
-      name: '?�스??,
+      name: '?�스??,
       role: 'USER',
     });
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
-    await user.type(screen.getByLabelText('비�?번호'), 'password123');
-    await user.type(screen.getByLabelText('?�름'), '?�스??);
+    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
+    await user.type(screen.getByLabelText('비�?번호'), 'password123');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '?�원가?? }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
       expect(mockRegister).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
-        name: '?�스??,
+        name: '?�스??,
       });
     });
 
     await waitFor(() => {
-      expect(screen.getByText('?�원가?�이 ?�료?�었?�니??')).toBeInTheDocument();
+      expect(screen.getByText('?�원가?�이 ?�료?�었?�니??')).toBeInTheDocument();
     });
   });
 
-  it('?�메???�식 검�??�패', async () => {
+  it('?�메???�식 검�??�패', async () => {
     const user = userEvent.setup({ delay: null });
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('?�메??), 'invalid-email');
-    await user.type(screen.getByLabelText('비�?번호'), 'password123');
-    await user.type(screen.getByLabelText('?�름'), '?�스??);
+    await user.type(screen.getByLabelText('?�메??), 'invalid-email');
+    await user.type(screen.getByLabelText('비�?번호'), 'password123');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '?�원가?? }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
-      expect(screen.getByText(/?�바�??�메???�식???�닙?�다/)).toBeInTheDocument();
+      expect(screen.getByText(/?�바�??�메???�식???�닙?�다/)).toBeInTheDocument();
     });
 
     expect(mockRegister).not.toHaveBeenCalled();
   });
 
-  it('비�?번호 최소 길이 검�??�패', async () => {
+  it('비�?번호 최소 길이 검�??�패', async () => {
     const user = userEvent.setup({ delay: null });
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
-    await user.type(screen.getByLabelText('비�?번호'), 'short');
-    await user.type(screen.getByLabelText('?�름'), '?�스??);
+    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
+    await user.type(screen.getByLabelText('비�?번호'), 'short');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '?�원가?? }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
-      expect(screen.getByText(/최소 8???�상?�어???�니??)).toBeInTheDocument();
+      expect(screen.getByText(/최소 8???�상?�어???�니??)).toBeInTheDocument();
     });
 
     expect(mockRegister).not.toHaveBeenCalled();
   });
 
-  it('?�원가???�패 ???�러 메시지 ?�시', async () => {
+  it('?�원가???�패 ???�러 메시지 ?�시', async () => {
     const user = userEvent.setup({ delay: null });
-    const apiError = new ApiError('EMAIL_ALREADY_EXISTS', 400, '?��? 존재?�는 ?�메?�입?�다.');
+    const apiError = new ApiError('EMAIL_ALREADY_EXISTS', 400, '?��? 존재?�는 ?�메?�입?�다.');
     mockRegister.mockRejectedValue(apiError);
 
     mockUseMember.mockReturnValue({
@@ -141,18 +141,18 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
-    await user.type(screen.getByLabelText('비�?번호'), 'password123');
-    await user.type(screen.getByLabelText('?�름'), '?�스??);
+    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
+    await user.type(screen.getByLabelText('비�?번호'), 'password123');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '?�원가?? }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
-      expect(screen.getByText('?��? 존재?�는 ?�메?�입?�다.')).toBeInTheDocument();
+      expect(screen.getByText('?��? 존재?�는 ?�메?�입?�다.')).toBeInTheDocument();
     });
   });
 
-  it('로딩 중일 ??버튼 비활?�화', () => {
+  it('로딩 중일 ??버튼 비활?�화', () => {
     mockUseMember.mockReturnValue({
       loading: true,
       error: null,
@@ -171,18 +171,18 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    expect(screen.getByRole('button', { name: '?�원가?? })).toBeDisabled();
-    expect(screen.getByLabelText('?�메??)).toBeDisabled();
-    expect(screen.getByLabelText('비�?번호')).toBeDisabled();
-    expect(screen.getByLabelText('?�름')).toBeDisabled();
+    expect(screen.getByRole('button', { name: '?�원가?? })).toBeDisabled();
+    expect(screen.getByLabelText('?�메??)).toBeDisabled();
+    expect(screen.getByLabelText('비�?번호')).toBeDisabled();
+    expect(screen.getByLabelText('?�름')).toBeDisabled();
   });
 
-  it('?�원가???�공 ??2�????�이지 ?�동', async () => {
+  it('?�원가???�공 ??2�????�이지 ?�동', async () => {
     const user = userEvent.setup({ delay: null });
     mockRegister.mockResolvedValue({
       id: 1,
       email: 'test@example.com',
-      name: '?�스??,
+      name: '?�스??,
       role: 'USER',
     });
 
@@ -195,14 +195,14 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
-    await user.type(screen.getByLabelText('비�?번호'), 'password123');
-    await user.type(screen.getByLabelText('?�름'), '?�스??);
+    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
+    await user.type(screen.getByLabelText('비�?번호'), 'password123');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '?�원가?? }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
-      expect(screen.getByText('?�원가?�이 ?�료?�었?�니??')).toBeInTheDocument();
+      expect(screen.getByText('?�원가?�이 ?�료?�었?�니??')).toBeInTheDocument();
     });
 
     jest.advanceTimersByTime(2000);

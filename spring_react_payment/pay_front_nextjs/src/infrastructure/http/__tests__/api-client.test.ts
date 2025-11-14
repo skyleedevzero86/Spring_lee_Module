@@ -36,7 +36,7 @@ describe('ApiClient', () => {
   });
 
   describe('setAuth', () => {
-    it('?�증 ?�보�?localStorage???�?�해????, () => {
+    it('?�증 ?�보�?localStorage???�?�해????, () => {
       const userId = 1;
       const role = 'USER';
 
@@ -48,7 +48,7 @@ describe('ApiClient', () => {
   });
 
   describe('clearAuth', () => {
-    it('?�증 ?�보�?localStorage?�서 ?�거?�야 ??, () => {
+    it('?�증 ?�보�?localStorage?�서 ?�거?�야 ??, () => {
       localStorage.setItem(STORAGE_KEYS.USER_ID, '1');
       localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'USER');
 
@@ -60,8 +60,8 @@ describe('ApiClient', () => {
   });
 
   describe('get', () => {
-    it('GET ?�청 ?�공', async () => {
-      const mockData = { id: 1, name: '?�스?? };
+    it('GET ?�청 ?�공', async () => {
+      const mockData = { id: 1, name: '?�스?? };
       mockAxiosInstance.get.mockResolvedValue({ data: mockData });
 
       const result = await apiClient.get('/api/test');
@@ -72,9 +72,9 @@ describe('ApiClient', () => {
   });
 
   describe('post', () => {
-    it('POST ?�청 ?�공', async () => {
-      const requestData = { name: '?�스?? };
-      const mockData = { id: 1, name: '?�스?? };
+    it('POST ?�청 ?�공', async () => {
+      const requestData = { name: '?�스?? };
+      const mockData = { id: 1, name: '?�스?? };
       mockAxiosInstance.post.mockResolvedValue({ data: mockData });
 
       const result = await apiClient.post('/api/test', requestData);
@@ -84,11 +84,11 @@ describe('ApiClient', () => {
     });
   });
 
-  describe('?�러 처리', () => {
-    it('?�버 ?�러 ?�답 ??ApiError�?변??, () => {
+  describe('?�러 처리', () => {
+    it('?�버 ?�러 ?�답 ??ApiError�?변??, () => {
       const errorResponse = {
         code: 'VALIDATION_ERROR',
-        message: '?�효??검???�패',
+        message: '?�효??검???�패',
         timestamp: '2024-01-01T00:00:00Z',
       };
 
@@ -107,13 +107,13 @@ describe('ApiClient', () => {
         expect(error).toBeInstanceOf(ApiError);
         if (error instanceof ApiError) {
           expect(error.code).toBe('VALIDATION_ERROR');
-          expect(error.message).toBe('?�효??검???�패');
+          expect(error.message).toBe('?�효??검???�패');
           expect(error.statusCode).toBe(400);
         }
       }
     });
 
-    it('?�트?�크 ?�러 ??NETWORK_ERROR 발생', () => {
+    it('?�트?�크 ?�러 ??NETWORK_ERROR 발생', () => {
       const axiosError = {
         request: {},
       } as any;
@@ -126,12 +126,12 @@ describe('ApiClient', () => {
         expect(error).toBeInstanceOf(ApiError);
         if (error instanceof ApiError) {
           expect(error.code).toBe('NETWORK_ERROR');
-          expect(error.message).toBe('?�트?�크 ?�류가 발생?�습?�다.');
+          expect(error.message).toBe('?�트?�크 ?�류가 발생?�습?�다.');
         }
       }
     });
 
-    it('?????�는 ?�러 ??UNKNOWN_ERROR 발생', () => {
+    it('?????�는 ?�러 ??UNKNOWN_ERROR 발생', () => {
       const axiosError = {} as any;
 
       const responseInterceptor = mockAxiosInstance.interceptors.response.use.mock.calls[0][1];
@@ -142,14 +142,14 @@ describe('ApiClient', () => {
         expect(error).toBeInstanceOf(ApiError);
         if (error instanceof ApiError) {
           expect(error.code).toBe('UNKNOWN_ERROR');
-          expect(error.message).toBe('?????�는 ?�류가 발생?�습?�다.');
+          expect(error.message).toBe('?????�는 ?�류가 발생?�습?�다.');
         }
       }
     });
   });
 
-  describe('?�증 ?�더 추�?', () => {
-    it('localStorage???�증 ?�보가 ?�을 ???�더??추�?', () => {
+  describe('?�증 ?�더 추�?', () => {
+    it('localStorage???�증 ?�보가 ?�을 ???�더??추�?', () => {
       localStorage.setItem(STORAGE_KEYS.USER_ID, '1');
       localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'USER');
 
@@ -165,7 +165,7 @@ describe('ApiClient', () => {
       expect(result.headers['X-User-Role']).toBe('USER');
     });
 
-    it('localStorage???�증 ?�보가 ?�을 ???�더??추�??��? ?�음', () => {
+    it('localStorage???�증 ?�보가 ?�을 ???�더??추�??��? ?�음', () => {
       const requestInterceptor = mockAxiosInstance.interceptors.request.use.mock.calls[0][0];
 
       const config = {

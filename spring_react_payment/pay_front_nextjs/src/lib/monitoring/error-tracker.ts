@@ -28,7 +28,7 @@ class ErrorTracker {
 
     window.addEventListener('unhandledrejection', (event) => {
       this.trackError({
-        message: event.reason?.message || 'ì²˜ë¦¬?˜ì? ?Šì? Promise ê±°ë?',
+        message: event.reason?.message || 'ì²˜ë¦¬?ï¿½ï¿½? ?ï¿½ï¿½? Promise ê±°ï¿½?',
         stack: event.reason?.stack,
       });
     });

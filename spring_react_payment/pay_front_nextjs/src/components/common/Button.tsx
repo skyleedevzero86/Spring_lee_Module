@@ -1,5 +1,5 @@
 import { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react';
-import { cn } from '@/lib/utils/classname';
+import { cn } from '@/lib/utils';
 import { LoadingSpinner } from './LoadingSpinner';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

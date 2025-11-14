@@ -13,7 +13,7 @@ import type {
   PageApiResponse,
   PaymentStatus,
 } from '@/domain/types/payment.types';
-import { handleServiceCall } from '@/lib/utils/service-helper';
+import { handleServiceCall } from '@/lib/utils';
 import { paymentAmountCalculator } from '@/domain/payment-amount-calculator';
 import { paymentStateMachine } from '@/domain/payment-state-machine';
 import { paymentRefundCalculator } from '@/domain/payment-refund-calculator';
@@ -63,7 +63,7 @@ class PaymentService {
     return handleServiceCall(
       () => paymentApi.createPayment(request),
       'CREATE_PAYMENT_FAILED',
-      '결제 ?�성???�패?�습?�다.'
+      '결제 생성에 실패했습니다.'
     );
   }
 
@@ -110,7 +110,7 @@ class PaymentService {
     return handleServiceCall(
       () => paymentApi.approvePayment(request),
       'APPROVE_PAYMENT_FAILED',
-      '결제 ?�인???�패?�습?�다.'
+      '결제 승인에 실패했습니다.'
     );
   }
 
@@ -120,7 +120,7 @@ class PaymentService {
     return handleServiceCall(
       () => paymentApi.getPaymentStatus(request),
       'GET_PAYMENT_STATUS_FAILED',
-      '결제 ?�태 조회???�패?�습?�다.'
+      '결제 상태 조회에 실패했습니다.'
     );
   }
 
@@ -128,7 +128,7 @@ class PaymentService {
     return handleServiceCall(
       () => paymentApi.getPaymentHistory(),
       'GET_PAYMENT_HISTORY_FAILED',
-      '결제 ?�력 조회???�패?�습?�다.'
+      '결제 이력 조회에 실패했습니다.'
     );
   }
 
@@ -139,7 +139,7 @@ class PaymentService {
     return handleServiceCall(
       () => paymentApi.getPaymentHistoryPage(page, size),
       'GET_PAYMENT_HISTORY_FAILED',
-      '결제 ?�력 조회???�패?�습?�다.'
+      '결제 이력 조회에 실패했습니다.'
     );
   }
 
@@ -149,7 +149,7 @@ class PaymentService {
     return handleServiceCall(
       () => paymentApi.getPaymentDetail(paymentId),
       'GET_PAYMENT_DETAIL_FAILED',
-      '결제 ?�세 조회???�패?�습?�다.'
+      '결제 상세 조회에 실패했습니다.'
     );
   }
 
@@ -219,7 +219,7 @@ class PaymentService {
     return handleServiceCall(
       () => paymentApi.refundPayment(paymentId, adjustedRequest),
       'REFUND_PAYMENT_FAILED',
-      '?�불 처리???�패?�습?�다.'
+      '환불 처리에 실패했습니다.'
     );
   }
 
@@ -251,4 +251,3 @@ class PaymentService {
 }
 
 export const paymentService = new PaymentService();
-

@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { performanceMonitor } from '@/lib/monitoring/performance-monitor';
-import { errorTracker } from '@/lib/monitoring/error-tracker';
+import { performanceMonitor, errorTracker } from '@/lib';
 
 export function MonitoringProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {

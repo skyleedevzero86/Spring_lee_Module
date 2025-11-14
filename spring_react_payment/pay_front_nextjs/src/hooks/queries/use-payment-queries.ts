@@ -61,7 +61,7 @@ export function usePaymentHistory(enabled = true) {
       } catch (error) {
         if (error instanceof ApiError && 
             (error.code === 'NETWORK_ERROR' || 
-             error.message.includes('?�버???�결?????�습?�다') ||
+             error.message.includes('?�버???�결?????�습?�다') ||
              error.message.includes('ERR_CONNECTION_REFUSED'))) {
           return [];
         }

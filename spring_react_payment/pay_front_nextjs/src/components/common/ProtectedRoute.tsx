@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TokenManager } from '@/lib/utils/token-manager';
+import { TokenManager } from '@/lib/utils';
 import { LoadingSpinner } from './LoadingSpinner';
 
 interface ProtectedRouteProps {
@@ -60,8 +60,8 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">?�근 권한???�습?�다</h2>
-          <p className="text-gray-600">관리자�??�근?????�습?�다.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">?�근 권한???�습?�다</h2>
+          <p className="text-gray-600">관리자�??�근?????�습?�다.</p>
         </div>
       </div>
     );

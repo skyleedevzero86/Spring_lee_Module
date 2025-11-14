@@ -16,9 +16,9 @@ export default function LoginPage() {
             로그??
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            계정???�으?��???{' '}
+            계정???�으?��???{' '}
             <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              ?�원가??
+              ?�원가??
             </Link>
           </p>
         </div>
