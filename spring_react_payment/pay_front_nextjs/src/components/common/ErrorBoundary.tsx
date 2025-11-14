@@ -1,9 +1,9 @@
 'use client';
 
 import { Component, ReactNode } from 'react';
-import { ApiError } from '@/src/domain/types/error.types';
-import { logger } from '@/src/lib/logger/logger';
-import { errorTracker } from '@/src/lib/monitoring/error-tracker';
+import { ApiError } from '@/domain/types/error.types';
+import { logger } from '@/lib/logger/logger';
+import { errorTracker } from '@/lib/monitoring/error-tracker';
 import styles from './ErrorBoundary.module.css';
 
 export interface ErrorBoundaryProps {
@@ -27,7 +27,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    logger.error('에러가 발생했습니다', {
+    logger.error('?�러가 발생?�습?�다', {
       componentStack: errorInfo.componentStack,
       errorName: error.name,
     }, error);
@@ -47,18 +47,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       const errorMessage =
         this.state.error instanceof ApiError
           ? this.state.error.message
-          : '예상치 못한 오류가 발생했습니다.';
+          : '?�상�?못한 ?�류가 발생?�습?�다.';
 
       return (
         <div className={styles.container}>
           <div className={styles.content}>
-            <h2 className={styles.title}>오류 발생</h2>
+            <h2 className={styles.title}>?�류 발생</h2>
             <p className={styles.message}>{errorMessage}</p>
             <button
               onClick={() => this.setState({ hasError: false, error: null })}
               className={styles.button}
             >
-              다시 시도
+              ?�시 ?�도
             </button>
           </div>
         </div>

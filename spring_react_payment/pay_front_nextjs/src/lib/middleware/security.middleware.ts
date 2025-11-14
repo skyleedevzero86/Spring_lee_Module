@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sanitizeInput, containsSqlInjection, containsXss } from '@/src/lib/utils/security';
+import { sanitizeInput, containsSqlInjection, containsXss } from '@/lib/utils/security';
 
 export function securityMiddleware(request: NextRequest) {
   const response = NextResponse.next();

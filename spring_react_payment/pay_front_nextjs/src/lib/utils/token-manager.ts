@@ -1,4 +1,4 @@
-import { STORAGE_KEYS } from '@/src/constants/api.constants';
+import { STORAGE_KEYS } from '@/constants/api.constants';
 
 interface TokenData {
   userId: number;

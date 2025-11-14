@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { paymentService } from '@/src/application/services/payment.service';
-import { usePaymentStore } from '@/src/store/payment.store';
-import { useAsync } from '@/src/hooks/use-async';
+import { paymentService } from '@/application/services/payment.service';
+import { usePaymentStore } from '@/store/payment.store';
+import { useAsync } from '@/hooks/use-async';
 import type {
   CreatePaymentRequest,
   ApprovePaymentRequest,
@@ -10,7 +10,7 @@ import type {
   PaymentHistoryResponse,
   PaymentDetailResponse,
   PageApiResponse,
-} from '@/src/domain/types/payment.types';
+} from '@/domain/types/payment.types';
 
 function useAsyncOperation<T, Args extends unknown[]>(
   asyncFn: (...args: Args) => Promise<T>

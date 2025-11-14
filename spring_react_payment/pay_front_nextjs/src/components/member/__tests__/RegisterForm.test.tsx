@@ -1,10 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RegisterForm } from '../RegisterForm';
-import { useMember } from '@/src/hooks/use-member';
-import { ApiError } from '@/src/domain/types/error.types';
+import { useMember } from '@/hooks/use-member';
+import { ApiError } from '@/domain/types/error.types';
 
-jest.mock('@/src/hooks/use-member');
+jest.mock('@/hooks/use-member');
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
@@ -43,84 +43,84 @@ describe('RegisterForm', () => {
     jest.useRealTimers();
   });
 
-  it('회원가입 폼 렌더링', () => {
+  it('?�원가?????�더�?, () => {
     render(<RegisterForm />);
 
-    expect(screen.getByLabelText('이메일')).toBeInTheDocument();
-    expect(screen.getByLabelText('비밀번호')).toBeInTheDocument();
-    expect(screen.getByLabelText('이름')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '회원가입' })).toBeInTheDocument();
+    expect(screen.getByLabelText('?�메??)).toBeInTheDocument();
+    expect(screen.getByLabelText('비�?번호')).toBeInTheDocument();
+    expect(screen.getByLabelText('?�름')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '?�원가?? })).toBeInTheDocument();
   });
 
-  it('유효한 정보로 회원가입 성공', async () => {
+  it('?�효???�보�??�원가???�공', async () => {
     const user = userEvent.setup({ delay: null });
     mockRegister.mockResolvedValue({
       id: 1,
       email: 'test@example.com',
-      name: '테스트',
+      name: '?�스??,
       role: 'USER',
     });
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('이메일'), 'test@example.com');
-    await user.type(screen.getByLabelText('비밀번호'), 'password123');
-    await user.type(screen.getByLabelText('이름'), '테스트');
+    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
+    await user.type(screen.getByLabelText('비�?번호'), 'password123');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '회원가입' }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
       expect(mockRegister).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
-        name: '테스트',
+        name: '?�스??,
       });
     });
 
     await waitFor(() => {
-      expect(screen.getByText('회원가입이 완료되었습니다.')).toBeInTheDocument();
+      expect(screen.getByText('?�원가?�이 ?�료?�었?�니??')).toBeInTheDocument();
     });
   });
 
-  it('이메일 형식 검증 실패', async () => {
+  it('?�메???�식 검�??�패', async () => {
     const user = userEvent.setup({ delay: null });
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('이메일'), 'invalid-email');
-    await user.type(screen.getByLabelText('비밀번호'), 'password123');
-    await user.type(screen.getByLabelText('이름'), '테스트');
+    await user.type(screen.getByLabelText('?�메??), 'invalid-email');
+    await user.type(screen.getByLabelText('비�?번호'), 'password123');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '회원가입' }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
-      expect(screen.getByText(/올바른 이메일 형식이 아닙니다/)).toBeInTheDocument();
+      expect(screen.getByText(/?�바�??�메???�식???�닙?�다/)).toBeInTheDocument();
     });
 
     expect(mockRegister).not.toHaveBeenCalled();
   });
 
-  it('비밀번호 최소 길이 검증 실패', async () => {
+  it('비�?번호 최소 길이 검�??�패', async () => {
     const user = userEvent.setup({ delay: null });
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('이메일'), 'test@example.com');
-    await user.type(screen.getByLabelText('비밀번호'), 'short');
-    await user.type(screen.getByLabelText('이름'), '테스트');
+    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
+    await user.type(screen.getByLabelText('비�?번호'), 'short');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '회원가입' }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
-      expect(screen.getByText(/최소 8자 이상이어야 합니다/)).toBeInTheDocument();
+      expect(screen.getByText(/최소 8???�상?�어???�니??)).toBeInTheDocument();
     });
 
     expect(mockRegister).not.toHaveBeenCalled();
   });
 
-  it('회원가입 실패 시 에러 메시지 표시', async () => {
+  it('?�원가???�패 ???�러 메시지 ?�시', async () => {
     const user = userEvent.setup({ delay: null });
-    const apiError = new ApiError('EMAIL_ALREADY_EXISTS', 400, '이미 존재하는 이메일입니다.');
+    const apiError = new ApiError('EMAIL_ALREADY_EXISTS', 400, '?��? 존재?�는 ?�메?�입?�다.');
     mockRegister.mockRejectedValue(apiError);
 
     mockUseMember.mockReturnValue({
@@ -141,18 +141,18 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('이메일'), 'test@example.com');
-    await user.type(screen.getByLabelText('비밀번호'), 'password123');
-    await user.type(screen.getByLabelText('이름'), '테스트');
+    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
+    await user.type(screen.getByLabelText('비�?번호'), 'password123');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '회원가입' }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
-      expect(screen.getByText('이미 존재하는 이메일입니다.')).toBeInTheDocument();
+      expect(screen.getByText('?��? 존재?�는 ?�메?�입?�다.')).toBeInTheDocument();
     });
   });
 
-  it('로딩 중일 때 버튼 비활성화', () => {
+  it('로딩 중일 ??버튼 비활?�화', () => {
     mockUseMember.mockReturnValue({
       loading: true,
       error: null,
@@ -171,18 +171,18 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    expect(screen.getByRole('button', { name: '회원가입' })).toBeDisabled();
-    expect(screen.getByLabelText('이메일')).toBeDisabled();
-    expect(screen.getByLabelText('비밀번호')).toBeDisabled();
-    expect(screen.getByLabelText('이름')).toBeDisabled();
+    expect(screen.getByRole('button', { name: '?�원가?? })).toBeDisabled();
+    expect(screen.getByLabelText('?�메??)).toBeDisabled();
+    expect(screen.getByLabelText('비�?번호')).toBeDisabled();
+    expect(screen.getByLabelText('?�름')).toBeDisabled();
   });
 
-  it('회원가입 성공 후 2초 뒤 페이지 이동', async () => {
+  it('?�원가???�공 ??2�????�이지 ?�동', async () => {
     const user = userEvent.setup({ delay: null });
     mockRegister.mockResolvedValue({
       id: 1,
       email: 'test@example.com',
-      name: '테스트',
+      name: '?�스??,
       role: 'USER',
     });
 
@@ -195,14 +195,14 @@ describe('RegisterForm', () => {
 
     render(<RegisterForm />);
 
-    await user.type(screen.getByLabelText('이메일'), 'test@example.com');
-    await user.type(screen.getByLabelText('비밀번호'), 'password123');
-    await user.type(screen.getByLabelText('이름'), '테스트');
+    await user.type(screen.getByLabelText('?�메??), 'test@example.com');
+    await user.type(screen.getByLabelText('비�?번호'), 'password123');
+    await user.type(screen.getByLabelText('?�름'), '?�스??);
 
-    await user.click(screen.getByRole('button', { name: '회원가입' }));
+    await user.click(screen.getByRole('button', { name: '?�원가?? }));
 
     await waitFor(() => {
-      expect(screen.getByText('회원가입이 완료되었습니다.')).toBeInTheDocument();
+      expect(screen.getByText('?�원가?�이 ?�료?�었?�니??')).toBeInTheDocument();
     });
 
     jest.advanceTimersByTime(2000);

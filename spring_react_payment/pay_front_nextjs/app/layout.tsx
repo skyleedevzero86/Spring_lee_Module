@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ErrorBoundaryWrapper } from '@/src/components/common/ErrorBoundaryWrapper';
+import { ErrorBoundaryWrapper } from '@/components/common/ErrorBoundaryWrapper';
 import { QueryProvider } from '@/app/providers/QueryProvider';
 import { MonitoringProvider } from '@/app/providers/MonitoringProvider';
-import { ErrorTrackerInit } from '@/src/components/common/ErrorTrackerInit';
+import { ErrorTrackerInit } from '@/components/common/ErrorTrackerInit';
 
 export const metadata: Metadata = {
   title: "토스 페이먼츠 결제 시스템",

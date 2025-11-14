@@ -1,7 +1,7 @@
 'use client';
 
-import { RegisterForm } from '@/src/components/member/RegisterForm';
-import { BackButton } from '@/src/components/common/BackButton';
+import { RegisterForm } from '@/components/member/RegisterForm';
+import { BackButton } from '@/components/common/BackButton';
 
 export default function RegisterPage() {
   return (
@@ -12,8 +12,7 @@ export default function RegisterPage() {
             <BackButton />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            회원가입
-          </h2>
+            ?�원가??          </h2>
         </div>
         <RegisterForm />
       </div>

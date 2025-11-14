@@ -1,7 +1,7 @@
 'use client';
 
-import { LoginForm } from '@/src/components/member/LoginForm';
-import { BackButton } from '@/src/components/common/BackButton';
+import { LoginForm } from '@/components/member/LoginForm';
+import { BackButton } from '@/components/common/BackButton';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -13,12 +13,12 @@ export default function LoginPage() {
             <BackButton />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            로그인
+            로그??
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            계정이 없으신가요?{' '}
+            계정???�으?��???{' '}
             <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              회원가입
+              ?�원가??
             </Link>
           </p>
         </div>

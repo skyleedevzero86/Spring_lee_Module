@@ -1,4 +1,4 @@
-import { ApiError } from '@/src/domain/types/error.types';
+import { ApiError } from '@/domain/types/error.types';
 import styles from './ErrorMessage.module.css';
 
 export interface ErrorMessageProps {
@@ -16,7 +16,7 @@ export const ErrorMessage = ({ error, className = '' }: ErrorMessageProps) => {
       className={`${styles.container} ${className}`}
       role="alert"
     >
-      <p className={styles.title}>오류</p>
+      <p className={styles.title}>?�류</p>
       <p className={styles.message}>{message}</p>
     </div>
   );

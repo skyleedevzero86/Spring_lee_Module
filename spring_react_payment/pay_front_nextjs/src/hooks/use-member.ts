@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { memberService } from '@/src/application/services/member.service';
-import { useMemberStore } from '@/src/store/member.store';
-import { useAsync } from '@/src/hooks/use-async';
+import { memberService } from '@/application/services/member.service';
+import { useMemberStore } from '@/store/member.store';
+import { useAsync } from '@/hooks/use-async';
 import type {
   RegisterMemberRequest,
   RegisterMemberResponse,
@@ -13,8 +13,8 @@ import type {
   LoginResponse,
   PageResponse,
   MemberRole,
-} from '@/src/domain/types/member.types';
-import { ApiError } from '@/src/domain/types/error.types';
+} from '@/domain/types/member.types';
+import { ApiError } from '@/domain/types/error.types';
 
 function useAsyncOperation<T, Args extends unknown[]>(
   asyncFn: (...args: Args) => Promise<T>

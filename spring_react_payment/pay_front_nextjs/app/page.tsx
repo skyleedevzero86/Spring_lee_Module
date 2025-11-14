@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { TokenManager } from '@/src/lib/utils/token-manager';
+import { TokenManager } from '@/lib/utils/token-manager';
 import { useEffect, useState } from 'react';
 
 export default function HomePage() {

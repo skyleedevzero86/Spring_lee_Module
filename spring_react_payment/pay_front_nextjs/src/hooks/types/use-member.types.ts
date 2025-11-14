@@ -1,11 +1,11 @@
-import type { ApiError } from '@/src/domain/types/error.types';
+import type { ApiError } from '@/domain/types/error.types';
 import type {
   RegisterMemberRequest,
   FindMemberResponse,
   SearchMemberResponse,
   ResetPasswordRequest,
   PageResponse,
-} from '@/src/domain/types/member.types';
+} from '@/domain/types/member.types';
 
 export interface UseMemberReturn {
   loading: boolean;

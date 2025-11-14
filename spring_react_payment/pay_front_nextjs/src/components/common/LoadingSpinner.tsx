@@ -1,5 +1,5 @@
 import styles from './LoadingSpinner.module.css';
-import { cn } from '@/src/lib/utils/classname';
+import { cn } from '@/lib/utils/classname';
 
 export interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
@@ -18,9 +18,9 @@ export const LoadingSpinner = ({ size = 'md', className = '' }: LoadingSpinnerPr
       <div
         className={cn(styles.spinner, sizeClass)}
         role="status"
-        aria-label="로딩 중"
+        aria-label="로딩 �?
       >
-        <span className={styles.srOnly}>로딩 중...</span>
+        <span className={styles.srOnly}>로딩 �?..</span>
       </div>
     </div>
   );

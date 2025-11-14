@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { errorTracker } from '@/src/lib/monitoring/error-tracker';
+import { errorTracker } from '@/lib/monitoring/error-tracker';
 
 export const ErrorTrackerInit = () => {
   useEffect(() => {

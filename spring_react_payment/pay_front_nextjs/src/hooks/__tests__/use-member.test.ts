@@ -1,12 +1,12 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useMember } from '../use-member';
-import { memberService } from '@/src/application/services/member.service';
-import { useMemberStore } from '@/src/store/member.store';
-import { ApiError } from '@/src/domain/types/error.types';
-import { MemberRole } from '@/src/domain/types/member.types';
+import { memberService } from '@/application/services/member.service';
+import { useMemberStore } from '@/store/member.store';
+import { ApiError } from '@/domain/types/error.types';
+import { MemberRole } from '@/domain/types/member.types';
 
-jest.mock('@/src/application/services/member.service');
-jest.mock('@/src/store/member.store');
+jest.mock('@/application/services/member.service');
+jest.mock('@/store/member.store');
 
 const mockMemberService = memberService as jest.Mocked<typeof memberService>;
 const mockUseMemberStore = useMemberStore as jest.MockedFunction<typeof useMemberStore>;
@@ -31,17 +31,17 @@ describe('useMember', () => {
     const mockRequest = {
       email: 'test@example.com',
       password: 'password123',
-      name: '테스트',
+      name: '?�스??,
     };
 
     const mockResponse = {
       id: 1,
       email: 'test@example.com',
-      name: '테스트',
+      name: '?�스??,
       role: MemberRole.USER,
     };
 
-    it('회원가입 성공 시 스토어에 회원 정보 저장', async () => {
+    it('?�원가???�공 ???�토?�에 ?�원 ?�보 ?�??, async () => {
       mockMemberService.register.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useMember());
@@ -53,14 +53,14 @@ describe('useMember', () => {
         expect(mockSetMember).toHaveBeenCalledWith({
           id: 1,
           email: 'test@example.com',
-          name: '테스트',
+          name: '?�스??,
           role: MemberRole.USER,
         });
       });
     });
 
-    it('회원가입 실패 시 에러 상태 설정', async () => {
-      const apiError = new ApiError('EMAIL_ALREADY_EXISTS', 400, '이미 존재하는 이메일입니다.');
+    it('?�원가???�패 ???�러 ?�태 ?�정', async () => {
+      const apiError = new ApiError('EMAIL_ALREADY_EXISTS', 400, '?��? 존재?�는 ?�메?�입?�다.');
       mockMemberService.register.mockRejectedValue(apiError);
 
       const { result } = renderHook(() => useMember());
@@ -73,7 +73,7 @@ describe('useMember', () => {
       });
     });
 
-    it('회원가입 중 loading 상태가 true여야 함', async () => {
+    it('?�원가??�?loading ?�태가 true?�야 ??, async () => {
       mockMemberService.register.mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve(mockResponse), 100))
       );
@@ -96,11 +96,11 @@ describe('useMember', () => {
     const mockResponse = {
       id: 1,
       email: 'test@example.com',
-      name: '테스트',
+      name: '?�스??,
       role: MemberRole.USER,
     };
 
-    it('이메일로 회원 조회 성공', async () => {
+    it('?�메?�로 ?�원 조회 ?�공', async () => {
       mockMemberService.findByEmail.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useMember());
@@ -113,7 +113,7 @@ describe('useMember', () => {
   });
 
   describe('searchByNamePage', () => {
-    const name = '테스트';
+    const name = '?�스??;
     const page = 0;
     const size = 20;
     const mockResponse = {
@@ -121,7 +121,7 @@ describe('useMember', () => {
         {
           id: 1,
           email: 'test@example.com',
-          name: '테스트',
+          name: '?�스??,
           role: MemberRole.USER,
         },
       ],
@@ -133,7 +133,7 @@ describe('useMember', () => {
       hasPrevious: false,
     };
 
-    it('페이지네이션으로 회원 검색 성공', async () => {
+    it('?�이지?�이?�으�??�원 검???�공', async () => {
       mockMemberService.searchByNamePage.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useMember());
@@ -144,7 +144,7 @@ describe('useMember', () => {
       expect(mockMemberService.searchByNamePage).toHaveBeenCalledWith(name, page, size);
     });
 
-    it('기본 페이지/사이즈 값 사용', async () => {
+    it('기본 ?�이지/?�이�?�??�용', async () => {
       mockMemberService.searchByNamePage.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useMember());
@@ -156,7 +156,7 @@ describe('useMember', () => {
   });
 
   describe('logout', () => {
-    it('로그아웃 시 인증 정보 제거', () => {
+    it('로그?�웃 ???�증 ?�보 ?�거', () => {
       const { result } = renderHook(() => useMember());
 
       result.current.logout();
@@ -166,9 +166,9 @@ describe('useMember', () => {
     });
   });
 
-  describe('에러 처리', () => {
-    it('여러 함수 중 하나가 에러 발생 시 error 상태에 반영', async () => {
-      const apiError = new ApiError('MEMBER_NOT_FOUND', 404, '회원을 찾을 수 없습니다.');
+  describe('?�러 처리', () => {
+    it('?�러 ?�수 �??�나가 ?�러 발생 ??error ?�태??반영', async () => {
+      const apiError = new ApiError('MEMBER_NOT_FOUND', 404, '?�원??찾을 ???�습?�다.');
       mockMemberService.findByEmail.mockRejectedValue(apiError);
 
       const { result } = renderHook(() => useMember());
@@ -181,8 +181,8 @@ describe('useMember', () => {
     });
   });
 
-  describe('loading 상태', () => {
-    it('여러 함수 중 하나가 실행 중이면 loading이 true', async () => {
+  describe('loading ?�태', () => {
+    it('?�러 ?�수 �??�나가 ?�행 중이�?loading??true', async () => {
       mockMemberService.findByEmail.mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve({} as any), 100))
       );

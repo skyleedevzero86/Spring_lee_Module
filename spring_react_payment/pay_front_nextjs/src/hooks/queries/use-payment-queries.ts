@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { paymentApi } from '@/src/infrastructure/api/payment.api';
-import { paymentService } from '@/src/application/services/payment.service';
-import { ApiError } from '@/src/domain/types/error.types';
+import { paymentApi } from '@/infrastructure/api/payment.api';
+import { paymentService } from '@/application/services/payment.service';
+import { ApiError } from '@/domain/types/error.types';
 import type {
   CreatePaymentRequest,
   PaymentResponse,
@@ -14,7 +14,7 @@ import type {
   RefundPaymentRequest,
   RefundPaymentResponse,
   PageApiResponse,
-} from '@/src/domain/types/payment.types';
+} from '@/domain/types/payment.types';
 
 export const paymentQueryKeys = {
   all: ['payments'] as const,
@@ -61,7 +61,7 @@ export function usePaymentHistory(enabled = true) {
       } catch (error) {
         if (error instanceof ApiError && 
             (error.code === 'NETWORK_ERROR' || 
-             error.message.includes('서버에 연결할 수 없습니다') ||
+             error.message.includes('?�버???�결?????�습?�다') ||
              error.message.includes('ERR_CONNECTION_REFUSED'))) {
           return [];
         }

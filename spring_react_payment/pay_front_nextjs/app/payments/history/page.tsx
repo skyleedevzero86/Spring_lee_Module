@@ -1,7 +1,7 @@
 'use client';
 
-import { PaymentHistoryList } from '@/src/components/payment/PaymentHistoryList';
-import { ProtectedRoute } from '@/src/components/common/ProtectedRoute';
+import { PaymentHistoryList } from '@/components/payment/PaymentHistoryList';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import Link from 'next/link';
 
 function PaymentHistoryPageContent() {
@@ -13,9 +13,8 @@ function PaymentHistoryPageContent() {
             href="/payments"
             className="text-blue-600 hover:text-blue-800 mb-4 inline-block"
           >
-            ← 돌아가기
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">결제 이력</h1>
+            ???�아가�?          </Link>
+          <h1 className="text-3xl font-bold text-gray-900">결제 ?�력</h1>
         </div>
 
         <div className="bg-white shadow rounded-lg p-6">

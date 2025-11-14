@@ -1,10 +1,10 @@
 'use client';
 
-import { usePaymentHistory } from '@/src/hooks/queries/use-payment-queries';
-import { LoadingSpinner } from '@/src/components/common/LoadingSpinner';
-import { ErrorMessage } from '@/src/components/common/ErrorMessage';
-import { PaymentStatus } from '@/src/domain/types/payment.types';
-import { ApiError } from '@/src/domain/types/error.types';
+import { usePaymentHistory } from '@/hooks/queries/use-payment-queries';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { PaymentStatus } from '@/domain/types/payment.types';
+import { ApiError } from '@/domain/types/error.types';
 import Link from 'next/link';
 
 export const PaymentHistoryList = () => {
@@ -27,13 +27,13 @@ export const PaymentHistoryList = () => {
 
   const isConnectionError = error instanceof ApiError && 
     (error.code === 'NETWORK_ERROR' || 
-     error.message.includes('서버에 연결할 수 없습니다') ||
+     error.message.includes('?�버???�결?????�습?�다') ||
      error.message.includes('ERR_CONNECTION_REFUSED'));
 
   if (isConnectionError) {
     return (
       <div className="text-center py-8 text-gray-500">
-        결제 이력이 없습니다.
+        결제 ?�력???�습?�다.
       </div>
     );
   }
@@ -46,14 +46,14 @@ export const PaymentHistoryList = () => {
     const apiError =
       error instanceof ApiError
         ? error
-        : new ApiError('UNKNOWN_ERROR', 500, '알 수 없는 오류가 발생했습니다.');
+        : new ApiError('UNKNOWN_ERROR', 500, '?????�는 ?�류가 발생?�습?�다.');
     return <ErrorMessage error={apiError} />;
   }
 
   if (paymentHistory.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        결제 이력이 없습니다.
+        결제 ?�력???�습?�다.
       </div>
     );
   }
@@ -67,22 +67,21 @@ export const PaymentHistoryList = () => {
               주문번호
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              상품 설명
+              ?�품 ?�명
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               금액
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              상태
+              ?�태
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              결제수단
+              결제?�단
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              생성일
-            </th>
+              ?�성??            </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              작업
+              ?�업
             </th>
           </tr>
         </thead>
@@ -96,8 +95,7 @@ export const PaymentHistoryList = () => {
                 {payment.productDesc}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {payment.amount.toLocaleString()}원
-              </td>
+                {payment.amount.toLocaleString()}??              </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span
                   className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
@@ -118,7 +116,7 @@ export const PaymentHistoryList = () => {
                   href={`/payments/${payment.id}`}
                   className="text-blue-600 hover:text-blue-900"
                 >
-                  상세보기
+                  ?�세보기
                 </Link>
               </td>
             </tr>

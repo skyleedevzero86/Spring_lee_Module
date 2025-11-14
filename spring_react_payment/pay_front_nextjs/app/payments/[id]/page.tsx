@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { usePayment } from '@/src/hooks/use-payment';
-import { usePaymentStore } from '@/src/store/payment.store';
-import { LoadingSpinner } from '@/src/components/common/LoadingSpinner';
-import { ErrorMessage } from '@/src/components/common/ErrorMessage';
-import { ProtectedRoute } from '@/src/components/common/ProtectedRoute';
-import { PaymentStatus } from '@/src/domain/types/payment.types';
+import { usePayment } from '@/hooks/use-payment';
+import { usePaymentStore } from '@/store/payment.store';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
+import { PaymentStatus } from '@/domain/types/payment.types';
 import Link from 'next/link';
 
 function PaymentDetailPageContent() {

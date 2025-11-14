@@ -1,10 +1,10 @@
-import type { ApiError } from '@/src/domain/types/error.types';
+import type { ApiError } from '@/domain/types/error.types';
 import type {
   CreatePaymentRequest,
   ApprovePaymentRequest,
   GetPaymentStatusRequest,
   RefundPaymentRequest,
-} from '@/src/domain/types/payment.types';
+} from '@/domain/types/payment.types';
 
 export interface UsePaymentReturn {
   loading: boolean;

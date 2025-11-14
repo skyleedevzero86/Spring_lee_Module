@@ -3,7 +3,7 @@ import type {
   PaymentHistoryResponse,
   PaymentDetailResponse,
   PageApiResponse,
-} from '@/src/domain/types/payment.types';
+} from '@/domain/types/payment.types';
 
 interface PaymentState {
   paymentHistory: PaymentHistoryResponse[];

@@ -1,5 +1,5 @@
 import apiClient from '../http/api-client';
-import { API_ENDPOINTS } from '@/src/constants/api.constants';
+import { API_ENDPOINTS } from '@/constants/api.constants';
 import type {
   RegisterMemberRequest,
   RegisterMemberResponse,
@@ -10,7 +10,7 @@ import type {
   LoginRequest,
   LoginResponse,
   PageResponse,
-} from '@/src/domain/types/member.types';
+} from '@/domain/types/member.types';
 
 class MemberApi {
   async login(request: LoginRequest): Promise<LoginResponse> {

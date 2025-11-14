@@ -1,9 +1,9 @@
 'use client';
 
-import { CreatePaymentForm } from '@/src/components/payment/CreatePaymentForm';
-import { PaymentHistoryList } from '@/src/components/payment/PaymentHistoryList';
-import { BackButton } from '@/src/components/common/BackButton';
-import { ProtectedRoute } from '@/src/components/common/ProtectedRoute';
+import { CreatePaymentForm } from '@/components/payment/CreatePaymentForm';
+import { PaymentHistoryList } from '@/components/payment/PaymentHistoryList';
+import { BackButton } from '@/components/common/BackButton';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import Link from 'next/link';
 
 function PaymentsPageContent() {
@@ -14,31 +14,31 @@ function PaymentsPageContent() {
           <div className="mb-4">
             <BackButton />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">결제 관리</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">결제 관�?/h1>
           <div className="flex gap-4">
             <Link
               href="/payments/create"
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
             >
-              결제 생성
+              결제 ?�성
             </Link>
             <Link
               href="/payments/history"
               className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
             >
-              결제 이력
+              결제 ?�력
             </Link>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">결제 생성</h2>
+            <h2 className="text-xl font-semibold mb-4">결제 ?�성</h2>
             <CreatePaymentForm />
           </div>
 
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">최근 결제 이력</h2>
+            <h2 className="text-xl font-semibold mb-4">최근 결제 ?�력</h2>
             <PaymentHistoryList />
           </div>
         </div>

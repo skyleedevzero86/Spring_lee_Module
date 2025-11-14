@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { memberApi } from '@/src/infrastructure/api/member.api';
-import { memberService } from '@/src/application/services/member.service';
-import apiClient from '@/src/infrastructure/http/api-client';
+import { memberApi } from '@/infrastructure/api/member.api';
+import { memberService } from '@/application/services/member.service';
+import apiClient from '@/infrastructure/http/api-client';
 import type {
   RegisterMemberRequest,
   RegisterMemberResponse,
@@ -10,7 +10,7 @@ import type {
   ResetPasswordRequest,
   ResetPasswordResponse,
   PageResponse,
-} from '@/src/domain/types/member.types';
+} from '@/domain/types/member.types';
 
 export const memberQueryKeys = {
   all: ['members'] as const,

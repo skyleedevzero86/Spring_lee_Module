@@ -1,9 +1,9 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useAsync } from '../use-async';
-import { ApiError } from '@/src/domain/types/error.types';
+import { ApiError } from '@/domain/types/error.types';
 
 describe('useAsync', () => {
-  it('null 데이터, false 로딩, null 에러로 초기화', () => {
+  it('null ?�이?? false 로딩, null ?�러�?초기??, () => {
     const { result } = renderHook(() =>
       useAsync(() => Promise.resolve('test'))
     );
@@ -13,7 +13,7 @@ describe('useAsync', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('execute 호출 시 로딩을 true로 설정', async () => {
+  it('execute ?�출 ??로딩??true�??�정', async () => {
     const mockAsyncFn = jest.fn(
       () => new Promise((resolve) => setTimeout(() => resolve('success'), 100))
     );
@@ -32,7 +32,7 @@ describe('useAsync', () => {
     });
   });
 
-  it('비동기 함수 성공 시 데이터 설정', async () => {
+  it('비동�??�수 ?�공 ???�이???�정', async () => {
     const mockAsyncFn = jest.fn().mockResolvedValue('success');
 
     const { result } = renderHook(() => useAsync(mockAsyncFn));
@@ -46,8 +46,8 @@ describe('useAsync', () => {
     });
   });
 
-  it('비동기 함수가 ApiError를 던질 때 에러 설정', async () => {
-    const apiError = new ApiError('TEST_ERROR', 400, '테스트 에러');
+  it('비동�??�수가 ApiError�??�질 ???�러 ?�정', async () => {
+    const apiError = new ApiError('TEST_ERROR', 400, '?�스???�러');
     const mockAsyncFn = jest.fn().mockRejectedValue(apiError);
 
     const { result } = renderHook(() => useAsync(mockAsyncFn));
@@ -60,10 +60,10 @@ describe('useAsync', () => {
     });
   });
 
-  it('ApiError가 아닌 에러를 ApiError로 래핑', async () => {
+  it('ApiError가 ?�닌 ?�러�?ApiError�??�핑', async () => {
     const mockAsyncFn = jest
       .fn()
-      .mockRejectedValue(new Error('네트워크 오류'));
+      .mockRejectedValue(new Error('?�트?�크 ?�류'));
 
     const { result } = renderHook(() => useAsync(mockAsyncFn));
 
@@ -75,7 +75,7 @@ describe('useAsync', () => {
     });
   });
 
-  it('onSuccess 콜백이 제공되면 호출', async () => {
+  it('onSuccess 콜백???�공?�면 ?�출', async () => {
     const mockOnSuccess = jest.fn();
     const mockAsyncFn = jest.fn().mockResolvedValue('success');
 
@@ -88,8 +88,8 @@ describe('useAsync', () => {
     expect(mockOnSuccess).toHaveBeenCalledWith('success');
   });
 
-  it('onError 콜백이 제공되면 호출', async () => {
-    const apiError = new ApiError('TEST_ERROR', 400, '테스트 에러');
+  it('onError 콜백???�공?�면 ?�출', async () => {
+    const apiError = new ApiError('TEST_ERROR', 400, '?�스???�러');
     const mockOnError = jest.fn();
     const mockAsyncFn = jest.fn().mockRejectedValue(apiError);
 
@@ -104,7 +104,7 @@ describe('useAsync', () => {
     });
   });
 
-  it('reset 호출 시 상태 초기화', async () => {
+  it('reset ?�출 ???�태 초기??, async () => {
     const mockAsyncFn = jest.fn().mockResolvedValue('success');
 
     const { result } = renderHook(() => useAsync(mockAsyncFn));
@@ -124,7 +124,7 @@ describe('useAsync', () => {
     });
   });
 
-  it('인자가 있는 함수 처리', async () => {
+  it('?�자가 ?�는 ?�수 처리', async () => {
     const mockAsyncFn = jest.fn((arg1: string, arg2: number) =>
       Promise.resolve(`${arg1}-${arg2}`)
     );

@@ -1,5 +1,5 @@
 import apiClient from '../http/api-client';
-import { API_ENDPOINTS } from '@/src/constants/api.constants';
+import { API_ENDPOINTS } from '@/constants/api.constants';
 import type {
   CreatePaymentRequest,
   PaymentResponse,
@@ -12,7 +12,7 @@ import type {
   RefundPaymentRequest,
   RefundPaymentResponse,
   PageApiResponse,
-} from '@/src/domain/types/payment.types';
+} from '@/domain/types/payment.types';
 
 class PaymentApi {
   async createPayment(

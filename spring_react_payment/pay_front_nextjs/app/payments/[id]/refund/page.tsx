@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { usePayment } from '@/src/hooks/use-payment';
-import { LoadingSpinner } from '@/src/components/common/LoadingSpinner';
-import { ErrorMessage } from '@/src/components/common/ErrorMessage';
-import { ProtectedRoute } from '@/src/components/common/ProtectedRoute';
-import { RefundForm } from '@/src/components/payment/RefundForm';
+import { usePayment } from '@/hooks/use-payment';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
+import { RefundForm } from '@/components/payment/RefundForm';
 import Link from 'next/link';
 
 function RefundPageContent() {

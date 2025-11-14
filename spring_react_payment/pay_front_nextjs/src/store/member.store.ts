@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import type { Member, MemberRole } from '@/src/domain/types/member.types';
-import { STORAGE_KEYS } from '@/src/constants/api.constants';
+import type { Member, MemberRole } from '@/domain/types/member.types';
+import { STORAGE_KEYS } from '@/constants/api.constants';
 
 interface MemberState {
   member: Member | null;

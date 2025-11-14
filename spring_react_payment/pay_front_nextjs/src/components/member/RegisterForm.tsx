@@ -3,11 +3,11 @@
 import { memo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { registerMemberSchema, type RegisterMemberFormData } from '@/src/domain/validators/member.validator';
-import { useMember } from '@/src/hooks/use-member';
-import { ErrorMessage } from '@/src/components/common/ErrorMessage';
-import { Input } from '@/src/components/common/Input';
-import { Button } from '@/src/components/common/Button';
+import { registerMemberSchema, type RegisterMemberFormData } from '@/domain/validators/member.validator';
+import { useMember } from '@/hooks/use-member';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { Input } from '@/components/common/Input';
+import { Button } from '@/components/common/Button';
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -34,7 +34,7 @@ export const RegisterForm = memo(() => {
         }, 2000);
       } catch (err) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('회원가입 실패:', err);
+          console.error('?�원가???�패:', err);
         }
       }
     },
@@ -44,8 +44,8 @@ export const RegisterForm = memo(() => {
   if (success) {
     return (
       <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-        <p className="font-medium">회원가입이 완료되었습니다.</p>
-        <p className="text-sm">잠시 후 결제 페이지로 이동합니다.</p>
+        <p className="font-medium">?�원가?�이 ?�료?�었?�니??</p>
+        <p className="text-sm">?�시 ??결제 ?�이지�??�동?�니??</p>
       </div>
     );
   }
@@ -53,7 +53,7 @@ export const RegisterForm = memo(() => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Input
-        label="이메일"
+        label="?�메??
         type="email"
         {...register('email')}
         error={errors.email?.message}
@@ -61,16 +61,16 @@ export const RegisterForm = memo(() => {
       />
 
       <Input
-        label="비밀번호"
+        label="비�?번호"
         type="password"
         {...register('password')}
         error={errors.password?.message}
         disabled={registerLoading}
-        helperText="최소 8자 이상이어야 합니다."
+        helperText="최소 8???�상?�어???�니??"
       />
 
       <Input
-        label="이름"
+        label="?�름"
         type="text"
         {...register('name')}
         error={errors.name?.message}
@@ -85,7 +85,7 @@ export const RegisterForm = memo(() => {
         loading={registerLoading}
         className="w-full"
       >
-        회원가입
+        ?�원가??
       </Button>
     </form>
   );

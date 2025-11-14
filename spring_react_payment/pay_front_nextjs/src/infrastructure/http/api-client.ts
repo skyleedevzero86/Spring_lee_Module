@@ -1,10 +1,10 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { ErrorResponse, ApiError } from '@/src/domain/types/error.types';
-import { withRetry } from '@/src/lib/utils/retry';
-import { TokenManager } from '@/src/lib/utils/token-manager';
-import { sanitizeObject, sanitizeInput } from '@/src/lib/utils/security';
-import { CsrfTokenManager } from '@/src/lib/utils/csrf';
-import { API_TIMEOUT, STORAGE_KEYS } from '@/src/constants/api.constants';
+import { ErrorResponse, ApiError } from '@/domain/types/error.types';
+import { withRetry } from '@/lib/utils/retry';
+import { TokenManager } from '@/lib/utils/token-manager';
+import { sanitizeObject, sanitizeInput } from '@/lib/utils/security';
+import { CsrfTokenManager } from '@/lib/utils/csrf';
+import { API_TIMEOUT, STORAGE_KEYS } from '@/constants/api.constants';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -25,7 +25,7 @@ class ApiClient {
     if (typeof window !== 'undefined') {
       CsrfTokenManager.initToken().catch((error) => {
         if (process.env.NODE_ENV === 'development') {
-          console.warn('CSRF 토큰 초기화 실패:', error);
+          console.warn('CSRF ?�큰 초기???�패:', error);
         }
       });
     }
@@ -63,7 +63,7 @@ class ApiClient {
       (error: AxiosError<ErrorResponse>) => {
         if (error.response) {
           if (process.env.NODE_ENV === 'development') {
-            console.error('API 응답 에러:', {
+            console.error('API ?�답 ?�러:', {
               status: error.response.status,
               statusText: error.response.statusText,
               url: error.config?.url,
@@ -82,11 +82,11 @@ class ApiClient {
           const errorResponse = error.response.data;
           
           if (error.response.status === 500) {
-            const message = errorResponse?.message || '서버 내부 오류가 발생했습니다.';
+            const message = errorResponse?.message || '?�버 ?��? ?�류가 발생?�습?�다.';
             const detail = errorResponse?.detail || 
               (process.env.NODE_ENV === 'development' 
-                ? `서버가 요청을 처리하는 중 오류가 발생했습니다. (${error.config?.url})`
-                : '잠시 후 다시 시도해주세요.');
+                ? `?�버가 ?�청??처리?�는 �??�류가 발생?�습?�다. (${error.config?.url})`
+                : '?�시 ???�시 ?�도?�주?�요.');
             
             return Promise.reject(
               new ApiError(
@@ -109,11 +109,11 @@ class ApiClient {
           const isConnectionRefused = 
             error.code === 'ECONNREFUSED' || 
             error.message?.includes('ERR_CONNECTION_REFUSED') ||
-            error.message?.includes('가져오기 실패') ||
+            error.message?.includes('가?�오�??�패') ||
             error.message?.includes('Failed to fetch');
           
           if (process.env.NODE_ENV === 'development') {
-            console.error('API 요청 실패:', {
+            console.error('API ?�청 ?�패:', {
               url: error.config?.url,
               method: error.config?.method,
               baseURL: error.config?.baseURL,
@@ -127,14 +127,14 @@ class ApiClient {
               'NETWORK_ERROR', 
               0, 
               isConnectionRefused 
-                ? '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.'
-                : '네트워크 오류가 발생했습니다.'
+                ? '?�버???�결?????�습?�다. ?�버가 ?�행 중인지 ?�인?�주?�요.'
+                : '?�트?�크 ?�류가 발생?�습?�다.'
             )
           );
         }
 
         return Promise.reject(
-          new ApiError('UNKNOWN_ERROR', 0, '알 수 없는 오류가 발생했습니다.')
+          new ApiError('UNKNOWN_ERROR', 0, '?????�는 ?�류가 발생?�습?�다.')
         );
       }
     );

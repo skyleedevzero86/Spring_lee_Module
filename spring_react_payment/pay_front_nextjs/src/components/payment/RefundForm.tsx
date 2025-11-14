@@ -2,10 +2,10 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { refundPaymentSchema, type RefundPaymentFormData } from '@/src/domain/validators/payment.validator';
-import { usePayment } from '@/src/hooks/use-payment';
-import { ErrorMessage } from '@/src/components/common/ErrorMessage';
-import { LoadingSpinner } from '@/src/components/common/LoadingSpinner';
+import { refundPaymentSchema, type RefundPaymentFormData } from '@/domain/validators/payment.validator';
+import { usePayment } from '@/hooks/use-payment';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -47,8 +47,8 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
   if (success) {
     return (
       <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-        <p className="font-medium">환불 요청이 완료되었습니다.</p>
-        <p className="text-sm">잠시 후 결제 상세 페이지로 이동합니다.</p>
+        <p className="font-medium">?�불 ?�청???�료?�었?�니??</p>
+        <p className="text-sm">?�시 ??결제 ?�세 ?�이지�??�동?�니??</p>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <label htmlFor="refundNo" className="block text-sm font-medium text-gray-700 mb-1">
-          환불 번호
+          ?�불 번호
         </label>
         <input
           id="refundNo"
@@ -73,7 +73,7 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
 
       <div>
         <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
-          환불 사유
+          ?�불 ?�유
         </label>
         <textarea
           id="reason"
@@ -89,7 +89,7 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
 
       <div>
         <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-          환불 금액 (환불 가능 금액: {refundableAmount.toLocaleString()}원)
+          ?�불 금액 (?�불 가??금액: {refundableAmount.toLocaleString()}??
         </label>
         <input
           id="amount"
@@ -112,7 +112,7 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
           disabled={loading}
           className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          {loading ? <LoadingSpinner size="sm" /> : '환불 요청'}
+          {loading ? <LoadingSpinner size="sm" /> : '?�불 ?�청'}
         </button>
         <button
           type="button"

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { ApiError } from '@/src/domain/types/error.types';
+import { ApiError } from '@/domain/types/error.types';
 
 interface UseAsyncOptions<T> {
   onSuccess?: (data: T) => void | Promise<void>;
@@ -58,7 +58,7 @@ export function useAsync<T, Args extends unknown[] = []>(
             : new ApiError(
                 'UNKNOWN_ERROR',
                 500,
-                '알 수 없는 오류가 발생했습니다.'
+                '?????�는 ?�류가 발생?�습?�다.'
               );
         setError(apiError);
         onError?.(apiError);

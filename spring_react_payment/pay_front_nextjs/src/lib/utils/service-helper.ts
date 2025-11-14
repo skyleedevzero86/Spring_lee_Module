@@ -1,4 +1,4 @@
-import { ApiError } from '@/src/domain/types/error.types';
+import { ApiError } from '@/domain/types/error.types';
 
 export async function handleServiceCall<T>(
   apiCall: () => Promise<T>,
