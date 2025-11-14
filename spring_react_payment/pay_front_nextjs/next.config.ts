@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
       config.cache = false;
       config.watchOptions = {
         poll: 1000,
-        aggregateTimeout: 300,
+        aggregateTimeout: 500,
         ignored: /node_modules/,
         followSymlinks: false,
       };
@@ -38,6 +38,9 @@ const nextConfig: NextConfig = {
         buildDependencies: {
           hash: false,
         },
+      };
+      config.infrastructureLogging = {
+        level: 'error',
       };
       if (isServer) {
         const originalExternals = config.externals;
