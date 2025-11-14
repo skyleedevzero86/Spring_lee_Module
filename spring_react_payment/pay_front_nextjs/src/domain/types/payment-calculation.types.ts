@@ -39,3 +39,13 @@ export interface PaymentValidationResult {
   warnings: string[];
 }
 
+export interface RefundRequest {
+  paymentId: number;
+  refundAmount?: number;
+  refundTaxFree?: number;
+  refundTaxable?: number;
+  refundVat?: number;
+  refundServiceFee?: number;
+  reason?: string;
+}
+

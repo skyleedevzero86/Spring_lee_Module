@@ -10,74 +10,73 @@ const urlRefine = (value: string) => validateUrl(value);
 export const createPaymentSchema = z.object({
   orderNo: z
     .string()
-    .min(1, '주문번호???�수?�니??')
-    .max(50, '주문번호??50???�하?�야 ?�니??')
-    .regex(orderNoPattern, '주문번호???�자, ?�문?? ?�수문자 _-:.^@�??�용 가?�합?�다.')
-    .refine(sqlInjectionRefine, '주문번호???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, '주문번호???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
+    .min(1, '주문번호는 필수입니다')
+    .max(50, '주문번호는 50자 이하여야 합니다')
+    .regex(orderNoPattern, '주문번호는 숫자, 영문자, 특수문자 _-:.^@만 사용 가능합니다.')
+    .refine(sqlInjectionRefine, '주문번호에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, '주문번호에 사용할 수 없는 문자가 포함되어 있습니다.'),
   productDesc: z
     .string()
-    .min(1, '?�품 ?�명?� ?�수?�니??')
-    .max(255, '?�품 ?�명?� 255???�하?�야 ?�니??')
+    .min(1, '상품 명은 필수입니다')
+    .max(255, '상품 명은 255자 이하여야 합니다')
     .trim()
-    .refine(sqlInjectionRefine, '?�품 ?�명???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, '?�품 ?�명???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
+    .refine(sqlInjectionRefine, '상품 명에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, '상품 명에 사용할 수 없는 문자가 포함되어 있습니다.'),
   amount: z
     .number()
-    .min(1, '결제 금액?� 1???�상?�어???�니??')
-    .max(1000000000, '결제 금액?� 10???�을 초과?????�습?�다.'),
+    .min(1, '결제 금액은 1원 이상이어야 합니다')
+    .max(1000000000, '결제 금액은 10억을 초과할 수 없습니다.'),
   amountTaxFree: z
     .number()
-    .min(0, '비과??금액?� 0???�상?�어???�니??')
-    .default(0),
-  amountTaxable: z.number().min(0, '과세 금액?� 0???�상?�어???�니??').optional(),
-  amountVat: z.number().min(0, '부가?�는 0???�상?�어???�니??').optional(),
-  amountServiceFee: z.number().min(0, '봉사료는 0???�상?�어???�니??').optional(),
-  disposableCupDeposit: z.number().min(0, '?�회?�컵 보증금�? 0???�상?�어???�니??').optional(),
+    .min(0, '비과세 금액은 0원 이상이어야 합니다'),
+  amountTaxable: z.number().min(0, '과세 금액은 0원 이상이어야 합니다').optional(),
+  amountVat: z.number().min(0, '부가세는 0원 이상이어야 합니다').optional(),
+  amountServiceFee: z.number().min(0, '봉사료는 0원 이상이어야 합니다').optional(),
+  disposableCupDeposit: z.number().min(0, '일회용컵 보증금은 0원 이상이어야 합니다').optional(),
   retUrl: z
     .string()
-    .min(1, '결제 ?�료 URL?� ?�수?�니??')
-    .max(255, '결제 ?�료 URL?� 255???�하?�야 ?�니??')
-    .refine(urlRefine, '?�바�?URL ?�식???�닙?�다.')
-    .refine(sqlInjectionRefine, 'URL???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, 'URL???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
+    .min(1, '결제 완료 URL은 필수입니다')
+    .max(255, '결제 완료 URL은 255자 이하여야 합니다')
+    .refine(urlRefine, '올바른 URL 형식이 아닙니다.')
+    .refine(sqlInjectionRefine, 'URL에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, 'URL에 사용할 수 없는 문자가 포함되어 있습니다.'),
   retCancelUrl: z
     .string()
-    .min(1, '결제 취소 URL?� ?�수?�니??')
-    .max(255, '결제 취소 URL?� 255???�하?�야 ?�니??')
-    .refine(urlRefine, '?�바�?URL ?�식???�닙?�다.')
-    .refine(sqlInjectionRefine, 'URL???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, 'URL???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
-  retAppScheme: z.string().max(255, '???�킴?� 255???�하?�야 ?�니??').optional(),
+    .min(1, '결제 취소 URL은 필수입니다')
+    .max(255, '결제 취소 URL은 255자 이하여야 합니다')
+    .refine(urlRefine, '올바른 URL 형식이 아닙니다.')
+    .refine(sqlInjectionRefine, 'URL에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, 'URL에 사용할 수 없는 문자가 포함되어 있습니다.'),
+  retAppScheme: z.string().max(255, '앱 스킴은 255자 이하여야 합니다').optional(),
   autoExecute: z.boolean().optional(),
-  resultCallback: z.string().max(500, '결제 결과 콜백 URL?� 500???�하?�야 ?�니??').optional(),
-  callbackVersion: z.string().max(2, '콜백 버전?� 2???�하?�야 ?�니??').optional(),
+  resultCallback: z.string().max(500, '결제 결과 콜백 URL은 500자 이하여야 합니다').optional(),
+  callbackVersion: z.string().max(2, '콜백 버전은 2자 이하여야 합니다').optional(),
   expiredTime: z.string().optional(),
-  enablePayMethods: z.string().max(100, '결제?�단 구분?� 100???�하?�야 ?�니??').optional(),
+  enablePayMethods: z.string().max(100, '결제수단 구분은 100자 이하여야 합니다').optional(),
   cashReceipt: z.boolean().optional(),
-  cashReceiptTradeOption: z.string().max(10, '?�금?�수�?발급 ?�?��? 10???�하?�야 ?�니??').optional(),
+  cashReceiptTradeOption: z.string().max(10, '현금영수증 발급 구분은 10자 이하여야 합니다').optional(),
   cardOptions: z.unknown().optional(),
-  installment: z.string().max(10, '?��? ?�한 ?�?��? 10???�하?�야 ?�니??').optional(),
+  installment: z.string().max(10, '할부 개월 수는 10자 이하여야 합니다').optional(),
 });
 
 export const approvePaymentSchema = z.object({
-  payToken: z.string().max(30, '결제 ?�큰?� 30???�하?�야 ?�니??').optional(),
-  orderNo: z.string().max(50, '주문번호??50???�하?�야 ?�니??').optional(),
+  payToken: z.string().max(30, '결제 토큰은 30자 이하여야 합니다').optional(),
+  orderNo: z.string().max(50, '주문번호는 50자 이하여야 합니다').optional(),
 }).refine(
   (data) => (data.payToken && data.payToken.trim() !== '') || (data.orderNo && data.orderNo.trim() !== ''),
   {
-    message: '결제 ?�큰 ?�는 주문번호 �??�나???�수?�니??',
+    message: '결제 토큰 또는 주문번호 중 하나는 필수입니다',
     path: ['payToken'],
   }
 );
 
 export const getPaymentStatusSchema = z.object({
-  payToken: z.string().max(50, '결제 ?�큰?� 50???�하?�야 ?�니??').optional(),
-  orderNo: z.string().max(50, '주문번호??50???�하?�야 ?�니??').optional(),
+  payToken: z.string().max(50, '결제 토큰은 50자 이하여야 합니다').optional(),
+  orderNo: z.string().max(50, '주문번호는 50자 이하여야 합니다').optional(),
 }).refine(
   (data) => (data.payToken && data.payToken.trim() !== '') || (data.orderNo && data.orderNo.trim() !== ''),
   {
-    message: '결제 ?�큰 ?�는 주문번호 �??�나???�수?�니??',
+    message: '결제 토큰 또는 주문번호 중 하나는 필수입니다',
     path: ['payToken'],
   }
 );
@@ -85,22 +84,22 @@ export const getPaymentStatusSchema = z.object({
 export const refundPaymentSchema = z.object({
   refundNo: z
     .string()
-    .min(1, '?�불 번호???�수?�니??')
-    .max(36, '?�불 번호??최�? 36?�까지 ?�력 가?�합?�다.')
+    .min(1, '환불 번호는 필수입니다')
+    .max(36, '환불 번호는 최대 36자까지 입력 가능합니다.')
     .trim()
-    .refine(sqlInjectionRefine, '?�불 번호???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, '?�불 번호???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
+    .refine(sqlInjectionRefine, '환불 번호에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, '환불 번호에 사용할 수 없는 문자가 포함되어 있습니다.'),
   reason: z
     .string()
-    .max(255, '?�불 ?�유??최�? 255?�까지 ?�력 가?�합?�다.')
-    .refine((val) => !val || sqlInjectionRefine(val), '?�불 ?�유???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine((val) => !val || xssRefine(val), '?�불 ?�유???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
+    .max(255, '환불 사유는 최대 255자까지 입력 가능합니다.')
+    .refine((val) => !val || sqlInjectionRefine(val), '환불 사유에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine((val) => !val || xssRefine(val), '환불 사유에 사용할 수 없는 문자가 포함되어 있습니다.')
     .optional(),
-  amount: z.number().min(1, '?�불 금액?� 1???�상?�어???�니??').optional(),
-  amountTaxFree: z.number().min(0, '비과??금액?� 0???�상?�어???�니??').optional(),
-  amountTaxable: z.number().min(0, '과세 금액?� 0???�상?�어???�니??').optional(),
-  amountVat: z.number().min(0, '부가?�는 0???�상?�어???�니??').optional(),
-  amountServiceFee: z.number().min(0, '봉사료는 0???�상?�어???�니??').optional(),
+  amount: z.number().min(1, '환불 금액은 1원 이상이어야 합니다').optional(),
+  amountTaxFree: z.number().min(0, '비과세 금액은 0원 이상이어야 합니다').optional(),
+  amountTaxable: z.number().min(0, '과세 금액은 0원 이상이어야 합니다').optional(),
+  amountVat: z.number().min(0, '부가세는 0원 이상이어야 합니다').optional(),
+  amountServiceFee: z.number().min(0, '봉사료는 0원 이상이어야 합니다').optional(),
   idempotent: z.boolean().optional(),
 });
 
@@ -108,4 +107,3 @@ export type CreatePaymentFormData = z.infer<typeof createPaymentSchema>;
 export type ApprovePaymentFormData = z.infer<typeof approvePaymentSchema>;
 export type GetPaymentStatusFormData = z.infer<typeof getPaymentStatusSchema>;
 export type RefundPaymentFormData = z.infer<typeof refundPaymentSchema>;
-

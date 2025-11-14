@@ -44,6 +44,7 @@ export const CreatePaymentForm = memo(() => {
       createPayment(
         {
           ...data,
+          amountTaxFree: data.amountTaxFree ?? 0,
           expiredTime:
             data.expiredTime ||
             new Date(Date.now() + 3600000).toISOString(),

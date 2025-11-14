@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-slot'],
   },
+  turbopack: {},
   webpack: (config, { isServer, dev }) => {
     if (dev) {
       config.cache = false;

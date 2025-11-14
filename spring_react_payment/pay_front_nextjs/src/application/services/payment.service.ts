@@ -11,8 +11,8 @@ import type {
   RefundPaymentRequest,
   RefundPaymentResponse,
   PageApiResponse,
-  PaymentStatus,
 } from '@/domain/types/payment.types';
+import { PaymentStatus } from '@/domain/types/payment.types';
 import { handleServiceCall } from '@/lib/utils';
 import { paymentAmountCalculator } from '@/domain/payment-amount-calculator';
 import { paymentStateMachine } from '@/domain/payment-state-machine';
@@ -155,9 +155,9 @@ class PaymentService {
 
   async refundPayment(
     paymentId: number,
-    request: RefundPaymentRequest,
-    paymentDetail: PaymentDetailResponse
+    request: RefundPaymentRequest
   ): Promise<RefundPaymentResponse> {
+    const paymentDetail = await this.getPaymentDetail(paymentId);
     const refundRequest: RefundRequest = {
       paymentId,
       refundAmount: request.amount,

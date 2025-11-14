@@ -1,6 +1,7 @@
 import type {
   RefundCalculation,
   PaymentAmountBreakdown,
+  RefundRequest,
 } from './types/payment-calculation.types';
 import { PaymentStatus } from './types/payment.types';
 import { paymentStateMachine } from './payment-state-machine';
@@ -11,16 +12,6 @@ export interface RefundPolicy {
   refundDeadlineDays: number;
   cancellationFeeRate: number;
   minRefundAmount: number;
-}
-
-export interface RefundRequest {
-  paymentId: number;
-  refundAmount?: number;
-  refundTaxFree?: number;
-  refundTaxable?: number;
-  refundVat?: number;
-  refundServiceFee?: number;
-  reason?: string;
 }
 
 export class PaymentRefundCalculator {
@@ -51,7 +42,7 @@ export class PaymentRefundCalculator {
       throw new Error('환불 가능한 금액이 없습니다');
     }
 
-    let requestedRefundAmount = request.refundAmount || refundableAmount;
+    const requestedRefundAmount = request.refundAmount || refundableAmount;
 
     if (requestedRefundAmount < policy.minRefundAmount) {
       throw new Error(
