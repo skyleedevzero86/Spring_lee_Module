@@ -8,7 +8,11 @@ import { ErrorMessage } from '@/src/components/common/ErrorMessage';
 import { LoadingSpinner } from '@/src/components/common/LoadingSpinner';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { RefundFormProps } from './types/RefundForm.types';
+
+export interface RefundFormProps {
+  paymentId: number;
+  refundableAmount: number;
+}
 
 export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => {
   const router = useRouter();

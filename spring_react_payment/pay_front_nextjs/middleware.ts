@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { securityMiddleware } from '@/src/middleware/security.middleware';
+import { securityMiddleware } from '@/src/lib/middleware/security.middleware';
 
 export function middleware(request: NextRequest) {
   return securityMiddleware(request);

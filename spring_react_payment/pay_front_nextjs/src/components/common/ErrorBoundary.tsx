@@ -1,11 +1,20 @@
 'use client';
 
-import { Component } from 'react';
+import { Component, ReactNode } from 'react';
 import { ApiError } from '@/src/domain/types/error.types';
 import { logger } from '@/src/lib/logger/logger';
 import { errorTracker } from '@/src/lib/monitoring/error-tracker';
-import styles from './styles/ErrorBoundary.module.css';
-import type { ErrorBoundaryProps, ErrorBoundaryState } from './types/ErrorBoundary.types';
+import styles from './ErrorBoundary.module.css';
+
+export interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: (error: Error) => ReactNode;
+}
+
+export interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {

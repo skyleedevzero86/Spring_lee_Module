@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ErrorBoundaryWrapper } from '@/src/components/common/ErrorBoundaryWrapper';
-import { QueryProvider } from '@/src/providers/QueryProvider';
-import { MonitoringProvider } from '@/src/components/monitoring/MonitoringProvider';
+import { QueryProvider } from '@/app/providers/QueryProvider';
+import { MonitoringProvider } from '@/app/providers/MonitoringProvider';
 import { ErrorTrackerInit } from '@/src/components/common/ErrorTrackerInit';
 
 export const metadata: Metadata = {
