@@ -47,8 +47,8 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
   if (success) {
     return (
       <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-        <p className="font-medium">?�불 ?�청???�료?�었?�니??</p>
-        <p className="text-sm">?�시 ??결제 ?�세 ?�이지�??�동?�니??</p>
+        <p className="font-medium">?�불 ?�청???�료?�었?�니??</p>
+        <p className="text-sm">?�시 ??결제 ?�세 ?�이지�??�동?�니??</p>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <label htmlFor="refundNo" className="block text-sm font-medium text-gray-700 mb-1">
-          ?�불 번호
+          ?�불 번호
         </label>
         <input
           id="refundNo"
@@ -73,7 +73,7 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
 
       <div>
         <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
-          ?�불 ?�유
+          ?�불 ?�유
         </label>
         <textarea
           id="reason"
@@ -89,7 +89,7 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
 
       <div>
         <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-          ?�불 금액 (?�불 가??금액: {refundableAmount.toLocaleString()}??
+          ?�불 금액 (?�불 가??금액: {refundableAmount.toLocaleString()}??
         </label>
         <input
           id="amount"
@@ -112,7 +112,7 @@ export const RefundForm = ({ paymentId, refundableAmount }: RefundFormProps) => 
           disabled={loading}
           className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          {loading ? <LoadingSpinner size="sm" /> : '?�불 ?�청'}
+          {loading ? <LoadingSpinner size="sm" /> : '?�불 ?�청'}
         </button>
         <button
           type="button"

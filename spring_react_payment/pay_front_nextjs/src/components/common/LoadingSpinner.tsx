@@ -18,9 +18,9 @@ export const LoadingSpinner = ({ size = 'md', className = '' }: LoadingSpinnerPr
       <div
         className={cn(styles.spinner, sizeClass)}
         role="status"
-        aria-label="로딩 �?
+        aria-label="로딩 �?
       >
-        <span className={styles.srOnly}>로딩 �?..</span>
+        <span className={styles.srOnly}>로딩 �?..</span>
       </div>
     </div>
   );

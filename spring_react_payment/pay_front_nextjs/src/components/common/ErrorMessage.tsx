@@ -16,7 +16,7 @@ export const ErrorMessage = ({ error, className = '' }: ErrorMessageProps) => {
       className={`${styles.container} ${className}`}
       role="alert"
     >
-      <p className={styles.title}>?�류</p>
+      <p className={styles.title}>?�류</p>
       <p className={styles.message}>{message}</p>
     </div>
   );

@@ -25,7 +25,7 @@ class ApiClient {
     if (typeof window !== 'undefined') {
       CsrfTokenManager.initToken().catch((error) => {
         if (process.env.NODE_ENV === 'development') {
-          console.warn('CSRF ?�큰 초기???�패:', error);
+          console.warn('CSRF ?�큰 초기???�패:', error);
         }
       });
     }
@@ -63,7 +63,7 @@ class ApiClient {
       (error: AxiosError<ErrorResponse>) => {
         if (error.response) {
           if (process.env.NODE_ENV === 'development') {
-            console.error('API ?�답 ?�러:', {
+            console.error('API ?�답 ?�러:', {
               status: error.response.status,
               statusText: error.response.statusText,
               url: error.config?.url,
@@ -82,11 +82,11 @@ class ApiClient {
           const errorResponse = error.response.data;
           
           if (error.response.status === 500) {
-            const message = errorResponse?.message || '?�버 ?��? ?�류가 발생?�습?�다.';
+            const message = errorResponse?.message || '?�버 ?��? ?�류가 발생?�습?�다.';
             const detail = errorResponse?.detail || 
               (process.env.NODE_ENV === 'development' 
-                ? `?�버가 ?�청??처리?�는 �??�류가 발생?�습?�다. (${error.config?.url})`
-                : '?�시 ???�시 ?�도?�주?�요.');
+                ? `?�버가 ?�청??처리?�는 �??�류가 발생?�습?�다. (${error.config?.url})`
+                : '?�시 ???�시 ?�도?�주?�요.');
             
             return Promise.reject(
               new ApiError(
@@ -109,11 +109,11 @@ class ApiClient {
           const isConnectionRefused = 
             error.code === 'ECONNREFUSED' || 
             error.message?.includes('ERR_CONNECTION_REFUSED') ||
-            error.message?.includes('가?�오�??�패') ||
+            error.message?.includes('가?�오�??�패') ||
             error.message?.includes('Failed to fetch');
           
           if (process.env.NODE_ENV === 'development') {
-            console.error('API ?�청 ?�패:', {
+            console.error('API ?�청 ?�패:', {
               url: error.config?.url,
               method: error.config?.method,
               baseURL: error.config?.baseURL,
@@ -127,14 +127,14 @@ class ApiClient {
               'NETWORK_ERROR', 
               0, 
               isConnectionRefused 
-                ? '?�버???�결?????�습?�다. ?�버가 ?�행 중인지 ?�인?�주?�요.'
-                : '?�트?�크 ?�류가 발생?�습?�다.'
+                ? '?�버???�결?????�습?�다. ?�버가 ?�행 중인지 ?�인?�주?�요.'
+                : '?�트?�크 ?�류가 발생?�습?�다.'
             )
           );
         }
 
         return Promise.reject(
-          new ApiError('UNKNOWN_ERROR', 0, '?????�는 ?�류가 발생?�습?�다.')
+          new ApiError('UNKNOWN_ERROR', 0, '?????�는 ?�류가 발생?�습?�다.')
         );
       }
     );

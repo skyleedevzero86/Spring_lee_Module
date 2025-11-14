@@ -6,7 +6,6 @@ function updateImportsInFile(filePath) {
     let content = fs.readFileSync(filePath, 'utf8');
     const originalContent = content;
     
-    // Replace @/src/ with @/
     content = content.replace(/@\/src\//g, '@/');
     
     if (content !== originalContent) {
@@ -28,7 +27,6 @@ function walkDir(dir, fileList = []) {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
     
-    // Skip node_modules, .next, coverage, and other build directories
     if (file === 'node_modules' || file === '.next' || file === 'coverage' || 
         file === '.git' || file.startsWith('.')) {
       return;

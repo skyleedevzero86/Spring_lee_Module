@@ -1,4 +1,3 @@
-// Main utilities re-export hub
 export * from './utils';
 export { cn } from './utils/classname';
 export * from './utils/format';
@@ -11,17 +10,13 @@ export {
   handleServiceCallWithPostProcess,
 } from './utils/service-helper';
 
-// Logger
 export { logger } from './logger/logger';
 
-// Monitoring
 export { errorTracker } from './monitoring/error-tracker';
 export { performanceMonitor } from './monitoring/performance-monitor';
 
-// Config
 export * from './config/app-config';
 export * from './config/env-validator';
 
-// Middleware
 export { securityMiddleware } from './middleware/security.middleware';
 
