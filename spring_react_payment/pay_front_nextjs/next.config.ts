@@ -29,10 +29,15 @@ const nextConfig: NextConfig = {
         poll: 1000,
         aggregateTimeout: 300,
         ignored: /node_modules/,
+        followSymlinks: false,
       };
       config.snapshot = {
         ...config.snapshot,
         managedPaths: [],
+        immutablePaths: [],
+        buildDependencies: {
+          hash: false,
+        },
       };
       if (isServer) {
         const originalExternals = config.externals;

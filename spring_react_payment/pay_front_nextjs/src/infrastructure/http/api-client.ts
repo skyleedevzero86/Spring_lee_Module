@@ -23,7 +23,11 @@ class ApiClient {
 
   private setupInterceptors(): void {
     if (typeof window !== 'undefined') {
-      CsrfTokenManager.initToken().catch(() => {});
+      CsrfTokenManager.initToken().catch((error) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('CSRF 토큰 초기화 실패:', error);
+        }
+      });
     }
 
     this.client.interceptors.request.use(
@@ -58,6 +62,16 @@ class ApiClient {
       (response) => response,
       (error: AxiosError<ErrorResponse>) => {
         if (error.response) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('API 응답 에러:', {
+              status: error.response.status,
+              statusText: error.response.statusText,
+              url: error.config?.url,
+              method: error.config?.method,
+              data: error.response.data,
+            });
+          }
+
           if (error.response.status === 401) {
             TokenManager.clearToken();
             if (typeof window !== 'undefined') {
@@ -66,6 +80,24 @@ class ApiClient {
           }
 
           const errorResponse = error.response.data;
+          
+          if (error.response.status === 500) {
+            const message = errorResponse?.message || '서버 내부 오류가 발생했습니다.';
+            const detail = errorResponse?.detail || 
+              (process.env.NODE_ENV === 'development' 
+                ? `서버가 요청을 처리하는 중 오류가 발생했습니다. (${error.config?.url})`
+                : '잠시 후 다시 시도해주세요.');
+            
+            return Promise.reject(
+              new ApiError(
+                errorResponse?.code || 'INTERNAL_SERVER_ERROR',
+                error.response.status,
+                message,
+                detail
+              )
+            );
+          }
+          
           const apiError = ApiError.fromResponse(
             errorResponse,
             error.response.status
@@ -77,7 +109,18 @@ class ApiClient {
           const isConnectionRefused = 
             error.code === 'ECONNREFUSED' || 
             error.message?.includes('ERR_CONNECTION_REFUSED') ||
-            error.message?.includes('가져오기 실패');
+            error.message?.includes('가져오기 실패') ||
+            error.message?.includes('Failed to fetch');
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.error('API 요청 실패:', {
+              url: error.config?.url,
+              method: error.config?.method,
+              baseURL: error.config?.baseURL,
+              code: error.code,
+              message: error.message,
+            });
+          }
           
           return Promise.reject(
             new ApiError(

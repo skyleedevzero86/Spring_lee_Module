@@ -7,23 +7,40 @@ const dirsToClean = [
   path.join(__dirname, '..', '.swc'),
 ];
 
-function removeDir(dir, retries = 3) {
+function removeDir(dir, retries = 5) {
   if (!fs.existsSync(dir)) {
     return;
   }
   
   for (let i = 0; i < retries; i++) {
     try {
-      fs.rmSync(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+      if (i > 0) {
+        const waitTime = 1000 * (i + 1);
+        console.log(`재시도 대기 중... (${waitTime}ms)`);
+        const start = Date.now();
+        while (Date.now() - start < waitTime) {
+        }
+      }
+
+      if (process.platform === 'win32') {
+        try {
+          fs.chmodSync(dir, 0o777);
+        } catch {
+        }
+      }
+
+      fs.rmSync(dir, { 
+        recursive: true, 
+        force: true, 
+        maxRetries: 5, 
+        retryDelay: 500 
+      });
       console.log(`✓ 삭제됨: ${dir}`);
       return;
     } catch (error) {
       if (i === retries - 1) {
         console.error(`✗ 삭제 실패: ${dir}`, error.message);
-      } else {
-        const start = Date.now();
-        while (Date.now() - start < 500) {
-        }
+        console.error('수동으로 삭제해주세요:', dir);
       }
     }
   }

@@ -33,6 +33,9 @@ export const RegisterForm = memo(() => {
           router.push('/payments');
         }, 2000);
       } catch (err) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('회원가입 실패:', err);
+        }
       }
     },
     [registerMember, router]
