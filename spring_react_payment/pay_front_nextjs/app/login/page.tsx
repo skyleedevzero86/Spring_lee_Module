@@ -13,12 +13,12 @@ export default function LoginPage() {
             <BackButton />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            로그??
+            로그인
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            계정???�으?��???{' '}
+            계정이 없으신가요?{' '}
             <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              ?�원가??
+              회원가입
             </Link>
           </p>
         </div>
@@ -27,4 +27,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

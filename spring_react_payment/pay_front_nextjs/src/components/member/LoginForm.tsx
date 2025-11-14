@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { memo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
@@ -12,8 +12,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const loginSchema = z.object({
-  email: z.string().min(1, '?�메?��? ?�수?�니??').email('?�바�??�메???�식???�닙?�다.'),
-  password: z.string().min(1, '비�?번호???�수?�니??'),
+  email: z.string().min(1, '이메일은 필수입니다').email('올바른 이메일 형식이 아닙니다.'),
+  password: z.string().min(1, '비밀번호는 필수입니다'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -41,7 +41,7 @@ export const LoginForm = memo(() => {
         });
         router.push('/payments');
       } catch (err) {
-        setLocalError('로그?�에 ?�패?�습?�다. ?�메?�과 비�?번호�??�인?�주?�요.');
+        setLocalError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
       }
     },
     [login, router]
@@ -50,7 +50,7 @@ export const LoginForm = memo(() => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Input
-        label="?�메??
+        label="이메일"
         type="email"
         {...register('email')}
         error={errors.email?.message}
@@ -58,7 +58,7 @@ export const LoginForm = memo(() => {
       />
 
       <Input
-        label="비�?번호"
+        label="비밀번호"
         type="password"
         {...register('password')}
         error={errors.password?.message}
@@ -76,10 +76,10 @@ export const LoginForm = memo(() => {
         loading={loginLoading}
         className="w-full"
       >
-        로그??      </Button>
+        로그인
+      </Button>
     </form>
   );
 });
 
 LoginForm.displayName = 'LoginForm';
-

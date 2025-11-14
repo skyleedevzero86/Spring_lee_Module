@@ -1,3 +1,5 @@
+﻿import { TokenManager } from '../utils/token-manager';
+
 interface ErrorReport {
   message: string;
   stack?: string;
@@ -28,7 +30,7 @@ class ErrorTracker {
 
     window.addEventListener('unhandledrejection', (event) => {
       this.trackError({
-        message: event.reason?.message || '처리?��? ?��? Promise 거�?',
+        message: event.reason?.message || '처리되지 않은 Promise 거부',
         stack: event.reason?.stack,
       });
     });
@@ -68,7 +70,6 @@ class ErrorTracker {
   private getUserId(): number | null {
     if (typeof window === 'undefined') return null;
     try {
-      const { TokenManager } = require('@/lib/utils/token-manager');
       return TokenManager.getUserId();
     } catch {
       return null;
@@ -108,4 +109,3 @@ class ErrorTracker {
 }
 
 export const errorTracker = new ErrorTracker();
-

@@ -26,7 +26,7 @@ class MemberService {
         return response;
       },
       'LOGIN_FAILED',
-      '로그?�에 ?�패?�습?�다.'
+      '로그인에 실패했습니다.'
     );
   }
 
@@ -40,7 +40,7 @@ class MemberService {
         return response;
       },
       'REGISTER_FAILED',
-      '?�원가?�에 ?�패?�습?�다.'
+      '회원가입에 실패했습니다.'
     );
   }
 
@@ -48,7 +48,7 @@ class MemberService {
     return handleServiceCall(
       () => memberApi.findByEmail(email),
       'FIND_MEMBER_FAILED',
-      '?�원 조회???�패?�습?�다.'
+      '회원 조회에 실패했습니다.'
     );
   }
 
@@ -56,7 +56,7 @@ class MemberService {
     return handleServiceCall(
       () => memberApi.findById(id),
       'FIND_MEMBER_FAILED',
-      '?�원 조회???�패?�습?�다.'
+      '회원 조회에 실패했습니다.'
     );
   }
 
@@ -64,7 +64,7 @@ class MemberService {
     return handleServiceCall(
       () => memberApi.searchByName(name),
       'SEARCH_MEMBER_FAILED',
-      '?�원 검?�에 ?�패?�습?�다.'
+      '회원 검색에 실패했습니다.'
     );
   }
 
@@ -72,7 +72,7 @@ class MemberService {
     return handleServiceCall(
       () => memberApi.searchByEmail(email),
       'SEARCH_MEMBER_FAILED',
-      '?�원 검?�에 ?�패?�습?�다.'
+      '회원 검색에 실패했습니다.'
     );
   }
 
@@ -80,7 +80,7 @@ class MemberService {
     return handleServiceCall(
       () => memberApi.searchAll(),
       'SEARCH_MEMBER_FAILED',
-      '?�원 검?�에 ?�패?�습?�다.'
+      '회원 검색에 실패했습니다.'
     );
   }
 
@@ -92,7 +92,7 @@ class MemberService {
     return handleServiceCall(
       () => memberApi.searchByNamePage(name, page, size),
       'SEARCH_MEMBER_FAILED',
-      '?�원 검?�에 ?�패?�습?�다.'
+      '회원 검색에 실패했습니다.'
     );
   }
 
@@ -104,7 +104,7 @@ class MemberService {
     return handleServiceCall(
       () => memberApi.searchByEmailPage(email, page, size),
       'SEARCH_MEMBER_FAILED',
-      '?�원 검?�에 ?�패?�습?�다.'
+      '회원 검색에 실패했습니다.'
     );
   }
 
@@ -115,7 +115,7 @@ class MemberService {
     return handleServiceCall(
       () => memberApi.searchAllPage(page, size),
       'SEARCH_MEMBER_FAILED',
-      '?�원 검?�에 ?�패?�습?�다.'
+      '회원 검색에 실패했습니다.'
     );
   }
 
@@ -125,7 +125,7 @@ class MemberService {
     return handleServiceCall(
       () => memberApi.resetPassword(request),
       'RESET_PASSWORD_FAILED',
-      '비�?번호 ?�설?�에 ?�패?�습?�다.'
+      '비밀번호 재설정에 실패했습니다.'
     );
   }
 
@@ -135,4 +135,3 @@ class MemberService {
 }
 
 export const memberService = new MemberService();
-

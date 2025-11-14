@@ -7,15 +7,31 @@ interface LogContext {
 class Logger {
   private isDevelopment = process.env.NODE_ENV === 'development';
 
-  private formatMessage(level: LogLevel, message: string, context?: LogContext): string {
+  private formatMessage(level: LogLevel, message: string, context?: LogContext, error?: Error): string {
     const timestamp = new Date().toISOString();
+    
+    const processedContext = context ? { ...context } : {};
+    if (processedContext.componentStack && typeof processedContext.componentStack === 'string') {
+      const stack = processedContext.componentStack as string;
+      if (stack.length > 500) {
+        processedContext.componentStack = stack.substring(0, 500) + '... (truncated)';
+      }
+    }
+    
     const logEntry = {
       timestamp,
       level,
       message,
-      ...context,
+      ...processedContext,
+      ...(error && {
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack?.substring(0, 1000),
+        },
+      }),
     };
-    return JSON.stringify(logEntry);
+    return JSON.stringify(logEntry, null, 2);
   }
 
   private log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
@@ -23,23 +39,26 @@ class Logger {
       return;
     }
 
-    const formattedMessage = this.formatMessage(level, message, context);
+    const formattedMessage = this.formatMessage(level, message, context, error);
     const logContext = error
       ? { ...context, error: { name: error.name, message: error.message, stack: error.stack } }
       : context;
 
     switch (level) {
       case 'debug':
-        console.debug(formattedMessage, logContext);
+        console.debug(formattedMessage);
         break;
       case 'info':
-        console.info(formattedMessage, logContext);
+        console.info(formattedMessage);
         break;
       case 'warn':
-        console.warn(formattedMessage, logContext);
+        console.warn(formattedMessage);
         break;
       case 'error':
-        console.error(formattedMessage, logContext);
+        console.error(formattedMessage);
+        if (error) {
+          console.error('Error details:', error);
+        }
         break;
     }
 

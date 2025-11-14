@@ -7,42 +7,41 @@ const xssRefine = (value: string) => !containsXss(value);
 export const registerMemberSchema = z.object({
   email: z
     .string()
-    .min(1, '?�메?��? ?�수?�니??')
-    .email('?�바�??�메???�식???�닙?�다.')
-    .max(255, '?�메?��? 255???�하?�야 ?�니??')
-    .refine(sqlInjectionRefine, '?�메?�에 ?�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, '?�메?�에 ?�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
+    .min(1, '이메일은 필수입니다')
+    .email('올바른 이메일 형식이 아닙니다.')
+    .max(255, '이메일은 255자 이하여야 합니다')
+    .refine(sqlInjectionRefine, '이메일에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, '이메일에 사용할 수 없는 문자가 포함되어 있습니다.'),
   password: z
     .string()
-    .min(8, '비�?번호??최소 8???�상?�어???�니??')
-    .max(100, '비�?번호??100???�하?�야 ?�니??')
-    .refine(sqlInjectionRefine, '비�?번호???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, '비�?번호???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
+    .min(8, '비밀번호는 최소 8자 이상이어야 합니다')
+    .max(100, '비밀번호는 100자 이하여야 합니다')
+    .refine(sqlInjectionRefine, '비밀번호에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, '비밀번호에 사용할 수 없는 문자가 포함되어 있습니다.'),
   name: z
     .string()
-    .min(1, '?�름?� ?�수?�니??')
-    .max(50, '?�름?� 50???�하?�야 ?�니??')
+    .min(1, '이름은 필수입니다')
+    .max(50, '이름은 50자 이하여야 합니다')
     .trim()
-    .refine(sqlInjectionRefine, '?�름???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, '?�름???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
+    .refine(sqlInjectionRefine, '이름에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, '이름에 사용할 수 없는 문자가 포함되어 있습니다.'),
 });
 
 export const resetPasswordSchema = z.object({
   email: z
     .string()
-    .min(1, '?�메?��? ?�수?�니??')
-    .email('?�바�??�메???�식???�닙?�다.')
-    .max(255, '?�메?��? 255???�하?�야 ?�니??')
-    .refine(sqlInjectionRefine, '?�메?�에 ?�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, '?�메?�에 ?�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
+    .min(1, '이메일은 필수입니다')
+    .email('올바른 이메일 형식이 아닙니다.')
+    .max(255, '이메일은 255자 이하여야 합니다')
+    .refine(sqlInjectionRefine, '이메일에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, '이메일에 사용할 수 없는 문자가 포함되어 있습니다.'),
   newPassword: z
     .string()
-    .min(8, '비�?번호??최소 8???�상?�어???�니??')
-    .max(100, '비�?번호??100???�하?�야 ?�니??')
-    .refine(sqlInjectionRefine, '비�?번호???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.')
-    .refine(xssRefine, '비�?번호???�용?��? ?��? 문자가 ?�함?�어 ?�습?�다.'),
+    .min(8, '비밀번호는 최소 8자 이상이어야 합니다')
+    .max(100, '비밀번호는 100자 이하여야 합니다')
+    .refine(sqlInjectionRefine, '비밀번호에 사용할 수 없는 문자가 포함되어 있습니다.')
+    .refine(xssRefine, '비밀번호에 사용할 수 없는 문자가 포함되어 있습니다.'),
 });
 
 export type RegisterMemberFormData = z.infer<typeof registerMemberSchema>;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
-
