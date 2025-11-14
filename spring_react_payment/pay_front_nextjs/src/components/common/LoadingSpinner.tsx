@@ -1,6 +1,6 @@
-import styles from './LoadingSpinner.module.css';
+import styles from './styles/LoadingSpinner.module.css';
 import { cn } from '@/src/lib/utils/classname';
-import type { LoadingSpinnerProps } from './LoadingSpinner.types';
+import type { LoadingSpinnerProps } from './types/LoadingSpinner.types';
 
 export const LoadingSpinner = ({ size = 'md', className = '' }: LoadingSpinnerProps) => {
   const sizeClass = {

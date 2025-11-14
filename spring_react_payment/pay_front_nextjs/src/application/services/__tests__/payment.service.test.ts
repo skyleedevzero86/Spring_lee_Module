@@ -1,4 +1,4 @@
-import { paymentService } from './payment.service';
+import { paymentService } from '../payment.service';
 import { paymentApi } from '@/src/infrastructure/api/payment.api';
 import { ApiError } from '@/src/domain/types/error.types';
 import { PaymentStatus } from '@/src/domain/types/payment.types';

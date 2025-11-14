@@ -1,5 +1,5 @@
-import { PaymentStateMachine } from './payment-state-machine';
-import { PaymentStatus } from './types/payment.types';
+import { PaymentStateMachine } from '../payment-state-machine';
+import { PaymentStatus } from '../types/payment.types';
 
 describe('PaymentStateMachine', () => {
   let stateMachine: PaymentStateMachine;

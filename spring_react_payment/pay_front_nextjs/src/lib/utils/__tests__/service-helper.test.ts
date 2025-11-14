@@ -2,7 +2,7 @@ import { ApiError } from '@/src/domain/types/error.types';
 import {
   handleServiceCall,
   handleServiceCallWithPostProcess,
-} from './service-helper';
+} from '../service-helper';
 
 describe('service-helper', () => {
   describe('handleServiceCall', () => {

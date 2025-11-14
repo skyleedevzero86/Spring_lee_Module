@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useAsync } from './use-async';
+import { useAsync } from '../use-async';
 import { ApiError } from '@/src/domain/types/error.types';
 
 describe('useAsync', () => {

@@ -4,8 +4,8 @@ import { Component } from 'react';
 import { ApiError } from '@/src/domain/types/error.types';
 import { logger } from '@/src/lib/logger/logger';
 import { errorTracker } from '@/src/lib/monitoring/error-tracker';
-import styles from './ErrorBoundary.module.css';
-import type { ErrorBoundaryProps, ErrorBoundaryState } from './ErrorBoundary.types';
+import styles from './styles/ErrorBoundary.module.css';
+import type { ErrorBoundaryProps, ErrorBoundaryState } from './types/ErrorBoundary.types';
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {

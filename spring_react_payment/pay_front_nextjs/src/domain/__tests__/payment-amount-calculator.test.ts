@@ -1,5 +1,5 @@
-import { PaymentAmountCalculator } from './payment-amount-calculator';
-import type { Discount } from './types/payment-calculation.types';
+import { PaymentAmountCalculator } from '../payment-amount-calculator';
+import type { Discount } from '../types/payment-calculation.types';
 
 describe('PaymentAmountCalculator', () => {
   let calculator: PaymentAmountCalculator;

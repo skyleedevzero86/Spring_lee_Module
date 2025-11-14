@@ -1,4 +1,4 @@
-import apiClient from './api-client';
+import apiClient from '../api-client';
 import { ApiError } from '@/src/domain/types/error.types';
 import { STORAGE_KEYS } from '@/src/constants/api.constants';
 import axios from 'axios';

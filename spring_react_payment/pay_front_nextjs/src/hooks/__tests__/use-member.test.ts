@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useMember } from './use-member';
+import { useMember } from '../use-member';
 import { memberService } from '@/src/application/services/member.service';
 import { useMemberStore } from '@/src/store/member.store';
 import { ApiError } from '@/src/domain/types/error.types';

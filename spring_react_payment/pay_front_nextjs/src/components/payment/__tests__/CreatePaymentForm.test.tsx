@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CreatePaymentForm } from './CreatePaymentForm';
+import { CreatePaymentForm } from '../CreatePaymentForm';
 import { usePayment } from '@/src/hooks/use-payment';
 import { ApiError } from '@/src/domain/types/error.types';
 

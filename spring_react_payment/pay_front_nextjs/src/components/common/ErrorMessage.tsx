@@ -1,6 +1,6 @@
 import { ApiError } from '@/src/domain/types/error.types';
-import styles from './ErrorMessage.module.css';
-import type { ErrorMessageProps } from './ErrorMessage.types';
+import styles from './styles/ErrorMessage.module.css';
+import type { ErrorMessageProps } from './types/ErrorMessage.types';
 
 export const ErrorMessage = ({ error, className = '' }: ErrorMessageProps) => {
   if (!error) return null;

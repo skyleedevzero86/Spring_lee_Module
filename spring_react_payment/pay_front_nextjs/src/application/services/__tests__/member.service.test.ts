@@ -1,4 +1,4 @@
-import { memberService } from './member.service';
+import { memberService } from '../member.service';
 import { memberApi } from '@/src/infrastructure/api/member.api';
 import apiClient from '@/src/infrastructure/http/api-client';
 import { ApiError } from '@/src/domain/types/error.types';

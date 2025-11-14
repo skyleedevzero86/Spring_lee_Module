@@ -1,9 +1,9 @@
-import { PaymentValidator } from './payment-validator';
-import { PaymentStatus } from './types/payment.types';
+import { PaymentValidator } from '../payment-validator';
+import { PaymentStatus } from '../types/payment.types';
 import type {
   CreatePaymentRequest,
   PaymentAmountBreakdown,
-} from './types/payment.types';
+} from '../types/payment.types';
 
 describe('PaymentValidator', () => {
   let validator: PaymentValidator;

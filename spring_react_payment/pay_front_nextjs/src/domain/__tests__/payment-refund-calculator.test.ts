@@ -1,10 +1,10 @@
-import { PaymentRefundCalculator } from './payment-refund-calculator';
-import { PaymentStatus } from './types/payment.types';
+import { PaymentRefundCalculator } from '../payment-refund-calculator';
+import { PaymentStatus } from '../types/payment.types';
 import type {
   RefundRequest,
   PaymentAmountBreakdown,
   RefundPolicy,
-} from './types/payment-calculation.types';
+} from '../types/payment-calculation.types';
 
 describe('PaymentRefundCalculator', () => {
   let calculator: PaymentRefundCalculator;

@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { RegisterForm } from './RegisterForm';
+import { RegisterForm } from '../RegisterForm';
 import { useMember } from '@/src/hooks/use-member';
 import { ApiError } from '@/src/domain/types/error.types';
 
