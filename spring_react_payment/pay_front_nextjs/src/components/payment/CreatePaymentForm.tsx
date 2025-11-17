@@ -106,22 +106,6 @@ export const CreatePaymentForm = memo(() => {
         helperText="기본값: 0"
       />
 
-      <Input
-        label="결제 완료 URL"
-        type="url"
-        {...register('retUrl')}
-        error={errors.retUrl?.message}
-        disabled={loading}
-      />
-
-      <Input
-        label="결제 취소 URL"
-        type="url"
-        {...register('retCancelUrl')}
-        error={errors.retCancelUrl?.message}
-        disabled={loading}
-      />
-
       <ErrorMessage
         error={
           error instanceof ApiError
