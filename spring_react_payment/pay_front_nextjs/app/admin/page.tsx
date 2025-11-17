@@ -7,6 +7,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { paymentApi } from '@/infrastructure/api/payment.api';
 import { TokenManager } from '@/lib/utils';
 import { exportPaymentsToExcel } from '@/lib/utils';
+import { API_ENDPOINTS } from '@/constants/api.constants';
 import { PaymentStatusPieChart } from '@/components/admin/PaymentStatusPieChart';
 import { PaymentTrendLineChart } from '@/components/admin/PaymentTrendLineChart';
 import type { PaymentHistoryResponse, PageApiResponse } from '@/domain/types/payment.types';
@@ -37,7 +38,29 @@ function AdminDashboardContent() {
     try {
       setLoading(true);
       setError(null);
+      
+      const userId = await TokenManager.getUserId();
+      const userRole = await TokenManager.getUserRole();
+      
+      if (!userId || !userRole) {
+        setError('로그인이 필요합니다. 사용자 정보를 확인할 수 없습니다.');
+        setLoading(false);
+        router.push('/login');
+        return;
+      }
+      
+      if (userRole !== 'ADMIN') {
+        setError('관리자 권한이 필요합니다.');
+        setLoading(false);
+        router.push('/');
+        return;
+      }
+      
+      console.log('결제 내역 로드 시작:', { userId, userRole, page, size });
+      console.log('API 엔드포인트:', API_ENDPOINTS.PAYMENTS.HISTORY_PAGE(page, size));
+      
       const response = await paymentApi.getPaymentHistoryPage(page, size);
+      console.log('결제 내역 로드 성공:', { totalElements: response.totalElements, contentLength: response.content.length });
       setPageInfo(response);
       
       let filteredPayments = response.content;
@@ -65,9 +88,21 @@ function AdminDashboardContent() {
         failedCount: failedPayments.length,
         cancelledCount: cancelledPayments.length,
       });
-    } catch (err) {
-      console.error('결제 내역 로드 실패:', err);
-      setError('결제 내역을 불러오는데 실패했습니다.');
+    } catch (err: any) {
+      if (err?.code === 'NETWORK_ERROR' || err?.code === 'ERR_NETWORK' || err?.code === 'ERR_CONNECTION_REFUSED' || err?.message?.includes('서버에 연결할 수 없습니다')) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('백엔드 서버에 연결할 수 없습니다. 서버를 실행해주세요.');
+        }
+      } else if (err?.status === 401) {
+        setError('인증이 필요합니다. 다시 로그인해주세요.');
+        router.push('/login');
+      } else if (err?.status === 400) {
+        setError(err?.message || '잘못된 요청입니다. 사용자 정보를 확인해주세요.');
+      } else if (err?.status === 403) {
+        setError('권한이 없습니다. 관리자 권한이 필요합니다.');
+      } else {
+        setError(err?.message || err?.detail || '결제 내역을 불러오는데 실패했습니다.');
+      }
     } finally {
       setLoading(false);
     }
@@ -98,8 +133,13 @@ function AdminDashboardContent() {
         failedCount: failedPayments.length,
         cancelledCount: cancelledPayments.length,
       }));
-    } catch (err) {
+    } catch (err: any) {
       console.error('전체 결제 내역 로드 실패:', err);
+      if (err?.code !== 'NETWORK_ERROR' && err?.code !== 'ERR_NETWORK' && err?.code !== 'ERR_CONNECTION_REFUSED') {
+        if (!error) {
+          setError('전체 결제 내역을 불러오는데 실패했습니다.');
+        }
+      }
     } finally {
       setLoadingAllPayments(false);
     }
@@ -108,7 +148,7 @@ function AdminDashboardContent() {
   const handleExportExcel = useCallback(async () => {
     try {
       const allData = await paymentApi.getPaymentHistory();
-      exportPaymentsToExcel(allData, '결제내역');
+      await exportPaymentsToExcel(allData, '결제내역');
     } catch (err) {
       console.error('엑셀 다운로드 실패:', err);
       alert('엑셀 다운로드에 실패했습니다.');
@@ -311,11 +351,6 @@ function AdminDashboardContent() {
             </div>
           </div>
 
-          {error && (
-            <div className="px-6 py-4 bg-red-50 border-b border-red-200">
-              <p className="text-red-800">{error}</p>
-            </div>
-          )}
 
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">

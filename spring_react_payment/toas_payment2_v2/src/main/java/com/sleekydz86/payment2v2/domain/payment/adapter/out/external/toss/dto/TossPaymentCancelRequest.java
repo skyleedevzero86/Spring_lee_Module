@@ -46,4 +46,3 @@ public class TossPaymentCancelRequest {
         private String holderName;
     }
 }
-

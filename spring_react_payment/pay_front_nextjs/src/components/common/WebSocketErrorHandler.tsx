@@ -13,12 +13,28 @@ export function WebSocketErrorHandler() {
     console.error = (...args: any[]) => {
       try {
         const errorMessage = args[0]?.toString() || '';
+        const errorObj = args[0];
         
         if (
           errorMessage.includes('WebSocket connection to') &&
           errorMessage.includes('_next/webpack-hmr') &&
           errorMessage.includes('failed')
         ) {
+          return;
+        }
+
+        if (
+          errorObj &&
+          typeof errorObj === 'object' &&
+          'code' in errorObj &&
+          errorObj.code === 'ERR_NETWORK' &&
+          errorMessage.includes('Network Error')
+        ) {
+          if (typeof originalError === 'function') {
+            originalError.apply(console, args);
+          } else {
+            originalError(...args);
+          }
           return;
         }
 

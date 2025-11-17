@@ -204,6 +204,8 @@ public class PaymentWebMapper {
                 .payMethod(response.getPayMethod())
                 .createdAt(response.getCreatedAt())
                 .paidTs(response.getPaidTs())
+                .userName(response.getUserName())
+                .userEmail(response.getUserEmail())
                 .build();
     }
 

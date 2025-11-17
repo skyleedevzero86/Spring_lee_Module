@@ -31,7 +31,8 @@ public class CorsConfig {
                 "Authorization",
                 "X-User-Id",
                 "X-User-Role",
-                "X-Requested-With"
+                "X-Requested-With",
+                "X-CSRF-Token"
         ));
         config.setExposedHeaders(Arrays.asList(
                 "Authorization",

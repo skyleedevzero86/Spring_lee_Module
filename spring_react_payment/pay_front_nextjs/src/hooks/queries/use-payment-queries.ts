@@ -60,20 +60,24 @@ export function usePaymentHistory(enabled = true) {
       try {
         return await paymentApi.getPaymentHistory();
       } catch (error) {
-        if (error instanceof ApiError && 
-            (error.code === 'NETWORK_ERROR' || 
-             error.message.includes('?�버???�결?????�습?�다') ||
-             error.message.includes('ERR_CONNECTION_REFUSED'))) {
-          return [];
+        if (error instanceof ApiError && error.code === 'NETWORK_ERROR') {
+          logger.error('결제 이력 조회 실패: 네트워크 오류', { error });
+          throw error;
         }
         throw error;
       }
     },
     enabled,
     staleTime: 2 * 60 * 1000,
-    retry: false,
+    retry: (failureCount, error) => {
+      if (error instanceof ApiError && error.code === 'NETWORK_ERROR') {
+        return failureCount < 1;
+      }
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    refetchOnReconnect: true,
   });
 }
 
@@ -107,4 +111,3 @@ export function useRefundPayment() {
     },
   });
 }
-

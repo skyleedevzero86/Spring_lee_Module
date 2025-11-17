@@ -69,6 +69,10 @@ class ApiClient {
             url: config.url,
             baseURL: config.baseURL,
             headers: Object.keys(config.headers || {}),
+            userId: userId,
+            userRole: userRole,
+            xUserId: config.headers?.['X-User-Id'],
+            xUserRole: config.headers?.['X-User-Role'],
           });
         }
 
@@ -187,29 +191,26 @@ class ApiClient {
           const url = error.config?.url || '알 수 없음';
           const fullUrl = `${baseURL}${url}`;
           
-          logger.error('Network Error', {
-            url: error.config?.url,
-            method: error.config?.method,
-            baseURL: error.config?.baseURL,
-            fullUrl,
-            code: error.code,
-            message: error.message,
-            request: error.request ? {
-              readyState: (error.request as any).readyState,
-              status: (error.request as any).status,
-              statusText: (error.request as any).statusText,
-            } : null,
-            stack: error.stack,
-          });
+          if (process.env.NODE_ENV === 'development') {
+            logger.debug('Network Error', {
+              url: error.config?.url,
+              method: error.config?.method,
+              baseURL: error.config?.baseURL,
+              fullUrl,
+              code: error.code,
+            });
+          }
           
           let errorMessage = '네트워크 오류가 발생했습니다.';
           let errorDetail = '';
           
-          if (isConnectionRefused || error.code === 'ERR_NETWORK') {
+          if (isConnectionRefused || error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
             errorMessage = '서버에 연결할 수 없습니다.';
-            errorDetail = `백엔드 서버(${baseURL})가 실행 중인지 확인해주세요. ` +
-                         `서버가 실행 중이라면 방화벽이나 네트워크 설정을 확인해주세요. ` +
-                         `요청 URL: ${fullUrl}`;
+            errorDetail = `백엔드 서버(${baseURL})가 실행 중인지 확인해주세요.`;
+            
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`백엔드 서버 연결 실패: ${fullUrl}`);
+            }
           }
           
           return Promise.reject(

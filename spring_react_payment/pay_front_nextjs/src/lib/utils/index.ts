@@ -12,4 +12,5 @@ export * from './input-validator';
 export { generateOrderNo, resetOrderNoGenerator } from './order-number-generator';
 export { logger } from '../logger/logger';
 export { exportPaymentsToExcel } from './excel-export';
+export { checkServerHealth, checkApiEndpoint } from './server-health-check';
 

@@ -1,6 +1,7 @@
 package com.sleekydz86.payment2v2.domain.payment.application.service;
 
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberId;
+import com.sleekydz86.payment2v2.domain.member.port.out.MemberRepository;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.*;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.ApprovePaymentUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.CreatePaymentUseCase;
@@ -44,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -63,6 +65,7 @@ public class PaymentService
     private final PaymentMapper paymentMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final PaymentMetricsService paymentMetricsService;
+    private final MemberRepository memberRepository;
 
     @Override
     @Transactional
@@ -384,7 +387,18 @@ public class PaymentService
 
                     log.debug("조회 결과: {}건", payments.size());
                     return payments.stream()
-                            .map(payment -> paymentMapper.toHistoryResponse(payment, isAdmin, null, null))
+                            .map(payment -> {
+                                AtomicReference<String> userName = new AtomicReference<>(null);
+                                AtomicReference<String> userEmail = new AtomicReference<>(null);
+                                if (isAdmin && payment.getUserId() != null) {
+                                    memberRepository.findById(payment.getUserId())
+                                            .ifPresent(member -> {
+                                                userName.set(member.getNameValue());
+                                                userEmail.set(member.getEmailValue());
+                                            });
+                                }
+                                return paymentMapper.toHistoryResponse(payment, isAdmin, userName.get(), userEmail.get());
+                            })
                             .toList();
                 });
     }
@@ -405,7 +419,18 @@ public class PaymentService
                             : paymentRepository.findAllByUserIdOrderByCreatedAtDesc(userId.getValue(), pageable);
 
                     List<PaymentHistoryResponse> content = paymentPage.getContent().stream()
-                            .map(payment -> paymentMapper.toHistoryResponse(payment, isAdmin, null, null))
+                            .map(payment -> {
+                                AtomicReference<String> userName = new AtomicReference<>(null);
+                                AtomicReference<String> userEmail = new AtomicReference<>(null);
+                                if (isAdmin && payment.getUserId() != null) {
+                                    memberRepository.findById(payment.getUserId())
+                                            .ifPresent(member -> {
+                                                userName.set(member.getNameValue());
+                                                userEmail.set(member.getEmailValue());
+                                            });
+                                }
+                                return paymentMapper.toHistoryResponse(payment, isAdmin, userName.get(), userEmail.get());
+                            })
                             .toList();
 
                     return PageResponse.<PaymentHistoryResponse>builder()
