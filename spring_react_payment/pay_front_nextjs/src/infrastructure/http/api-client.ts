@@ -34,14 +34,21 @@ class ApiClient {
     }
 
     this.client.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        const token = TokenManager.getJwtToken();
-        if (token && config.headers) {
-          config.headers['Authorization'] = `Bearer ${token}`;
+      async (config: InternalAxiosRequestConfig) => {
+        try {
+          const token = await TokenManager.getJwtToken();
+          if (token && config.headers) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+          }
+        } catch (error) {
+          const syncToken = TokenManager.getJwtTokenSync();
+          if (syncToken && config.headers) {
+            config.headers['Authorization'] = `Bearer ${syncToken}`;
+          }
         }
 
-        const userId = this.getUserId();
-        const userRole = this.getUserRole();
+        const userId = await this.getUserIdAsync();
+        const userRole = await this.getUserRoleAsync();
 
         if (userId && config.headers) {
           config.headers['X-User-Id'] = String(userId);
@@ -77,16 +84,32 @@ class ApiClient {
       (response) => response,
       (error: AxiosError<ErrorResponse>) => {
         if (error.response) {
-          logger.error('API 응답 에러', {
-            status: error.response.status,
-            statusText: error.response.statusText,
-            url: error.config?.url,
-            method: error.config?.method,
-            data: error.response.data,
-          });
+          const status = error.response.status;
+          const statusText = error.response.statusText;
+          const url = error.config?.url;
+          const method = error.config?.method;
+          const data = error.response.data;
 
-          if (error.response.status === 401) {
-            TokenManager.clearToken();
+          if (status >= 400 && status < 500) {
+            logger.warn('API 클라이언트 에러', {
+              status,
+              statusText,
+              url,
+              method,
+              data,
+            });
+          } else if (status >= 500) {
+            logger.error('API 응답 에러', {
+              status,
+              statusText,
+              url,
+              method,
+              data,
+            });
+          }
+
+          if (status === 401) {
+            TokenManager.clearTokenSync();
             if (typeof window !== 'undefined') {
               window.location.href = '/login';
             }
@@ -94,17 +117,17 @@ class ApiClient {
 
           const errorResponse = error.response.data;
           
-          if (error.response.status === 500) {
+          if (status === 500) {
             const message = errorResponse?.message || '서버 내부 오류가 발생했습니다.';
             const detail = errorResponse?.detail || 
               (process.env.NODE_ENV === 'development' 
-                ? `서버가 요청을 처리하는 중 오류가 발생했습니다. (${error.config?.url})`
+                ? `서버가 요청을 처리하는 중 오류가 발생했습니다. (${url})`
                 : '잠시 후 다시 시도해주세요.');
             
             return Promise.reject(
               new ApiError(
                 errorResponse?.code || 'INTERNAL_SERVER_ERROR',
-                error.response.status,
+                status,
                 message,
                 detail
               )
@@ -113,7 +136,7 @@ class ApiClient {
           
           const apiError = ApiError.fromResponse(
             errorResponse,
-            error.response.status
+            status
           );
           return Promise.reject(apiError);
         }
@@ -174,20 +197,40 @@ class ApiClient {
     );
   }
 
+  private async getUserIdAsync(): Promise<number | null> {
+    try {
+      return await TokenManager.getUserId();
+    } catch (error) {
+      return TokenManager.getUserIdSync();
+    }
+  }
+
+  private async getUserRoleAsync(): Promise<string | null> {
+    try {
+      return await TokenManager.getUserRole();
+    } catch (error) {
+      return TokenManager.getUserRoleSync();
+    }
+  }
+
   private getUserId(): number | null {
-    return TokenManager.getUserId();
+    return TokenManager.getUserIdSync();
   }
 
   private getUserRole(): string | null {
-    return TokenManager.getUserRole();
+    return TokenManager.getUserRoleSync();
   }
 
   setAuth(userId: number, role: string, token?: string): void {
-    TokenManager.setToken(userId, role, token);
+    TokenManager.setToken(userId, role, token).catch((error) => {
+      console.error('토큰 저장 실패:', error);
+    });
   }
 
   clearAuth(): void {
-    TokenManager.clearToken();
+    TokenManager.clearToken().catch((error) => {
+      console.error('토큰 삭제 실패:', error);
+    });
   }
 
   private sanitizeRequestData(data: unknown): unknown {
@@ -224,10 +267,11 @@ class ApiClient {
     data?: unknown,
     config?: InternalAxiosRequestConfig
   ): Promise<T> {
-    const sanitizedData = this.sanitizeRequestData(data);
+    const shouldSanitize = !url.includes('/login') && !url.includes('/register');
+    const requestData = shouldSanitize ? this.sanitizeRequestData(data) : data;
     return withRetry(
       async () => {
-        const response = await this.client.post<T>(url, sanitizedData, config);
+        const response = await this.client.post<T>(url, requestData, config);
         return response.data;
       },
       {

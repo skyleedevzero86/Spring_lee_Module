@@ -28,11 +28,13 @@ export const RegisterForm = memo(() => {
   const onSubmit = useCallback(
     async (data: RegisterMemberFormData) => {
       try {
-        await registerMember(data);
-        setSuccess(true);
-        setTimeout(() => {
-          router.push('/payments');
-        }, 2000);
+        const result = await registerMember(data);
+        if (result) {
+          setSuccess(true);
+          setTimeout(() => {
+            router.push('/payments');
+          }, 2000);
+        }
       } catch (err) {
         logger.error('회원가입 실패', { error: err });
       }

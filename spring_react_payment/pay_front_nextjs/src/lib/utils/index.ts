@@ -9,4 +9,5 @@ export {
   handleServiceCallWithPostProcess,
 } from './service-helper';
 export * from './input-validator';
+export { generateOrderNo, resetOrderNoGenerator } from './order-number-generator';
 

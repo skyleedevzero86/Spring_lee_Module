@@ -70,7 +70,7 @@ class ErrorTracker {
   private getUserId(): number | null {
     if (typeof window === 'undefined') return null;
     try {
-      return TokenManager.getUserId();
+      return TokenManager.getUserIdSync();
     } catch {
       return null;
     }

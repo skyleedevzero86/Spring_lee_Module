@@ -14,29 +14,38 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
   const router = useRouter();
   const [isValidating, setIsValidating] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasAdminRole, setHasAdminRole] = useState(true);
 
   useEffect(() => {
     const validateAuth = async () => {
-      const hasToken = TokenManager.isAuthenticated();
-      if (!hasToken) {
+      try {
+        const isValid = await TokenManager.validateToken();
+        setIsAuthenticated(isValid);
+        
+        if (!isValid) {
+          setIsValidating(false);
+          router.push('/login');
+          return;
+        }
+
+        if (requireAdmin) {
+          const currentRole = await TokenManager.getUserRole();
+          const isAdmin = currentRole === 'ADMIN';
+          setHasAdminRole(isAdmin);
+          
+          if (!isAdmin) {
+            setIsValidating(false);
+            router.push('/');
+            return;
+          }
+        }
+        
+        setIsValidating(false);
+      } catch (error) {
+        console.error('인증 확인 실패:', error);
         setIsAuthenticated(false);
         setIsValidating(false);
         router.push('/login');
-        return;
-      }
-
-      const isValid = await TokenManager.validateToken();
-      setIsAuthenticated(isValid);
-      setIsValidating(false);
-
-      if (!isValid) {
-        router.push('/login');
-        return;
-      }
-
-      const currentRole = TokenManager.getUserRole();
-      if (requireAdmin && currentRole !== 'ADMIN') {
-        router.push('/');
       }
     };
 
@@ -59,12 +68,12 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
-  if (requireAdmin && userRole !== 'ADMIN') {
+  if (requireAdmin && !hasAdminRole) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">?�근 권한???�습?�다</h2>
-          <p className="text-gray-600">관리자�??�근?????�습?�다.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">접근 권한이 없습니다</h2>
+          <p className="text-gray-600">관리자만 접근할 수 있습니다.</p>
         </div>
       </div>
     );
@@ -72,4 +81,3 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
 
   return <>{children}</>;
 };
-

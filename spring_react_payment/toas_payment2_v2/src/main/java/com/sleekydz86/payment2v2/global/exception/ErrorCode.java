@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "C000", "인증이 필요합니다."),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "입력값이 올바르지 않습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C002", "서버 내부 오류가 발생했습니다."),
     DUPLICATE_ORDER_NO(HttpStatus.BAD_REQUEST, "P001", "이미 사용된 주문번호입니다."),

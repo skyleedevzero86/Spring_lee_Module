@@ -14,13 +14,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const isAuthenticated = TokenManager.isAuthenticated();
-      if (isAuthenticated) {
+      try {
         const isValid = await TokenManager.validateToken();
         if (isValid) {
           router.replace('/payments');
           return;
         }
+      } catch (error) {
+        console.error('인증 확인 실패:', error);
       }
       setIsChecking(false);
     };

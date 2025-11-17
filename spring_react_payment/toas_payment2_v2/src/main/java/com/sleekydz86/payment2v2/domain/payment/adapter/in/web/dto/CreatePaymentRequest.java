@@ -41,9 +41,11 @@ public class CreatePaymentRequest {
     @Min(value = 0, message = "일회용컵 보증금은 0원 이상이어야 합니다.")
     private BigDecimal disposableCupDeposit;
 
+    @NotBlank(message = "결제 완료 URL은 필수입니다.")
     @Size(max = 255, message = "결제 완료 URL은 255자 이하여야 합니다.")
     private String retUrl;
 
+    @NotBlank(message = "결제 취소 URL은 필수입니다.")
     @Size(max = 255, message = "결제 취소 URL은 255자 이하여야 합니다.")
     private String retCancelUrl;
 

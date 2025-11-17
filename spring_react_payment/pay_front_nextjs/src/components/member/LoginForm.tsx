@@ -39,6 +39,7 @@ export const LoginForm = memo(() => {
           email: data.email,
           password: data.password,
         });
+        await new Promise((resolve) => setTimeout(resolve, 50));
         router.push('/payments');
       } catch (err) {
         setLocalError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');

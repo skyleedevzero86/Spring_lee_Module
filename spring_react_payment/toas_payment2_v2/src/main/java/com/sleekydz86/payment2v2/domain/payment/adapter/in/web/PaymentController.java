@@ -63,9 +63,11 @@ public class PaymentController {
 
     @PostMapping
     public ResponseEntity<PaymentApiResponse> createPayment(
+            @RequestHeader(value = "Authorization", required = false) String authorization,
             @RequestHeader(HeaderConstants.USER_ID_HEADER) Long userId,
             @Valid @RequestBody CreatePaymentRequest request) {
-        return LoggingUtil.executeWithContext("userId", String.valueOf(MemberId.of(userId).getValue()), () -> {
+        MemberId memberId = MemberId.of(userId);
+        return LoggingUtil.executeWithContext("userId", String.valueOf(memberId.getValue()), () -> {
             CreatePaymentCommand command = paymentWebMapper.toCommand(request, userId);
             PaymentResponse response = createPaymentUseCase.createPayment(command);
             PaymentApiResponse apiResponse = paymentWebMapper.toApiResponse(response);
