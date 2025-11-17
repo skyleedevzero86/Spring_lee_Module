@@ -1,32 +1,71 @@
-# Pay Front Next.js
+# 토스 페이먼츠 결제 시스템
 
-토스 페이먼츠 결제 시스템 프론트엔드 (Next.js 버전)
+Next.js 16을 사용한 토스 페이먼츠 결제 시스템 프론트엔드입니다.
 
-React + TypeScript + Next.js + Tailwind CSS + shadcn/ui 프로젝트
+## 주요 기능
+
+- 코드 스플리팅 및 동적 import
+- 재시도 로직 (exponential backoff)
+- 보안 강화 (토큰 관리, CSP 헤더)
+- 캐싱 전략 (React Query)
+- 관찰성 확보 (로깅, 에러 추적, 성능 모니터링)
+- E2E 테스트 (Playwright)
+- 프로덕션 최적화
 
 ## 기술 스택
 
-- **Next.js 16** - React 프레임워크 (App Router)
-- **React 19** - UI 라이브러리
-- **TypeScript** - 타입 안정성
-- **Tailwind CSS** - 유틸리티 CSS 프레임워크
-- **shadcn/ui** - UI 컴포넌트 라이브러리
-- **Axios** - HTTP 클라이언트
-- **Toss Payments SDK** - 결제 연동
-- **Zustand** - 상태 관리
-- **React Hook Form + Zod** - 폼 관리 및 검증
+- **Framework**: Next.js 16
+- **Language**: TypeScript
+- **State Management**: Zustand, React Query
+- **Form Handling**: React Hook Form + Zod
+- **Styling**: Tailwind CSS
+- **Testing**: Jest, React Testing Library, Playwright
+- **HTTP Client**: Axios
+
+## 프로젝트 구조
+
+```
+pay_front_nextjs/
+├── src/
+│   ├── domain/              # 도메인 레이어
+│   │   ├── types/          # 타입 정의
+│   │   └── validators/     # 검증 스키마
+│   ├── infrastructure/      # 인프라 레이어
+│   │   ├── api/            # API 클라이언트
+│   │   └── http/           # HTTP 클라이언트
+│   ├── application/         # 애플리케이션 레이어
+│   │   └── services/       # 비즈니스 로직
+│   ├── store/              # 상태 관리
+│   ├── hooks/              # 커스텀 훅
+│   ├── components/         # UI 컴포넌트
+│   │   ├── common/         # 공통 컴포넌트
+│   │   ├── member/         # 회원 관련 컴포넌트
+│   │   └── payment/        # 결제 관련 컴포넌트
+│   ├── lib/                # 유틸리티
+│   │   ├── logger/         # 로깅 시스템
+│   │   ├── monitoring/     # 모니터링 시스템
+│   │   └── config/         # 설정
+│   └── app/                # Next.js 페이지
+├── e2e/                    # E2E 테스트
+└── docs/                   # 문서
+```
 
 ## 시작하기
-
-### 필수 요구사항
-
-- Node.js 18+
-- pnpm
 
 ### 설치
 
 ```bash
 pnpm install
+```
+
+### 환경 변수 설정
+
+`.env.local` 파일을 생성하고 다음 내용을 설정:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_ERROR_TRACKING_ENABLED=false
+NEXT_PUBLIC_PERFORMANCE_MONITORING_ENABLED=false
 ```
 
 ### 개발 서버 실행
@@ -35,103 +74,109 @@ pnpm install
 pnpm dev
 ```
 
-개발 서버는 `http://localhost:3000`에서 실행됩니다.
+브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 확인하세요.
 
-### 빌드
+## 스크립트
 
-```bash
-pnpm build
-```
+- `pnpm dev`: 개발 서버 시작
+- `pnpm dev:clean`: 캐시 정리 후 개발 서버 시작 (문제 발생 시 사용)
+- `pnpm build`: 프로덕션 빌드
+- `pnpm start`: 프로덕션 서버 시작
+- `pnpm lint`: 코드 린팅
+- `pnpm clean`: 빌드 캐시 정리 (.next, .swc, node_modules/.cache)
+- `pnpm test`: 단위 테스트 실행
+- `pnpm test:watch`: 단위 테스트 감시 모드
+- `pnpm test:coverage`: 커버리지 리포트 생성
+- `pnpm test:e2e`: E2E 테스트 실행
+- `pnpm test:e2e:ui`: E2E 테스트 UI 모드
+- `pnpm analyze`: 번들 분석
 
-### 프로덕션 실행
+## 문제 해결
 
-```bash
-pnpm start
-```
+### 개발 서버 에러 발생 시
 
-## 프로젝트 구조
+1. **캐시 정리**:
 
-```
-pay_front_nextjs/
-├── app/                    # Next.js App Router
-│   ├── layout.tsx         # 루트 레이아웃
-│   ├── page.tsx           # 홈 페이지
-│   ├── globals.css        # 전역 스타일
-│   └── (routes)/          # 라우트 페이지들
-├── components/
-│   ├── ui/                # shadcn/ui 컴포넌트
-│   └── ...                # 커스텀 컴포넌트
-├── hooks/                 # Custom Hooks
-├── lib/
-│   ├── api.ts             # Axios 인스턴스
-│   ├── services/          # API 서비스
-│   └── utils.ts           # 유틸리티 함수
-├── store/                 # Zustand 스토어
-└── types/                 # TypeScript 타입 정의
-```
+   ```bash
+   pnpm clean
+   ```
+
+2. **캐시 정리 후 개발 서버 재시작**:
+   ```bash
+   pnpm dev:clean
+   ```
+
+### Windows에서 파일 시스템 에러 발생 시
+
+Windows에서 파일 잠금 문제가 발생하면:
+
+- 개발 서버를 종료한 후 `pnpm clean` 실행
+- 또는 `pnpm dev:clean` 사용하여 자동으로 캐시 정리 후 시작
 
 ## 주요 기능
 
-- 사용자 로그인 및 회원가입
-- 결제 초기화 및 승인
-- 결제 성공/실패 페이지
-- JWT 토큰 기반 인증
-- 토스 페이먼츠 결제 연동
-- 관리자 대시보드
+### 회원 관리
 
-## 환경 변수 설정
+- 회원가입
+- 회원 조회
+- 회원 검색
+- 비밀번호 재설정
 
-프로젝트 루트에 `.env.local` 파일을 생성하고 다음 내용을 추가하세요:
+### 결제 관리
 
-```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:9000
-NEXT_PUBLIC_TOSS_CLIENT_KEY=your_toss_client_key
-NEXT_PUBLIC_TOSS_CUSTOMER_KEY=your_customer_key
-```
+- 결제 생성
+- 결제 승인
+- 결제 상태 조회
+- 결제 이력 조회
+- 결제 상세 조회
+- 환불 처리
 
-## 백엔드 연동
+## 문서
 
-프로젝트는 Spring Boot 백엔드(`toas_payment2`)와 연동됩니다.
+- [API 문서](./docs/API.md)
+- [컴포넌트 문서](./docs/COMPONENTS.md)
+- [모니터링 문서](./docs/MONITORING.md)
+- [배포 문서](./docs/DEPLOYMENT.md)
 
-### API 사용 예제
+## 아키텍처 원칙
 
-```typescript
-import api from '@/lib/api'
+### 클린 아키텍처
 
-// GET 요청
-const response = await api.get('/api/v1/endpoint')
+1. **Domain Layer**: 비즈니스 로직과 타입 정의
+2. **Infrastructure Layer**: 외부 시스템과의 통신 (API, HTTP)
+3. **Application Layer**: 유스케이스 및 서비스 로직
+4. **Presentation Layer**: UI 컴포넌트 및 페이지
 
-// POST 요청
-const response = await api.post('/api/v1/endpoint', { data })
-```
+### 보안 고려사항
 
-### 인증
+- 입력 검증: Zod 스키마를 통한 클라이언트 사이드 검증
+- XSS 방지: React의 기본 이스케이핑 활용
+- CSP 헤더: Content Security Policy 설정
+- 토큰 관리: 암호화된 토큰 저장 및 자동 갱신
+- 환경 변수 검증: Zod를 통한 환경 변수 검증
 
-JWT 토큰은 `localStorage`에 저장되며, 모든 API 요청에 자동으로 포함됩니다.
+## 테스트
 
-## shadcn/ui 컴포넌트 추가
-
-새로운 shadcn/ui 컴포넌트를 추가하려면:
+### 단위 테스트
 
 ```bash
-npx shadcn@latest add [component-name]
+pnpm test
+pnpm test:watch
+pnpm test:coverage
 ```
 
-예: `npx shadcn@latest add card`
+### E2E 테스트
 
-## Next.js App Router
+```bash
+pnpm test:e2e
+pnpm test:e2e:ui
+```
 
-이 프로젝트는 Next.js 16의 App Router를 사용합니다:
+## 빌드 및 배포
 
-- `app/` 디렉토리: 라우트 및 레이아웃
-- `app/page.tsx`: 홈 페이지 (`/`)
-- `app/login/page.tsx`: 로그인 페이지 (`/login`)
-- `app/(auth)/`: 인증 관련 라우트 그룹
+```bash
+pnpm build
+pnpm start
+```
 
-## 추가 리소스
-
-- [Next.js 문서](https://nextjs.org/docs)
-- [React 문서](https://react.dev/)
-- [Tailwind CSS 문서](https://tailwindcss.com/)
-- [shadcn/ui 문서](https://ui.shadcn.com/)
-- [토스 페이먼츠 문서](https://docs.tosspayments.com/)
+자세한 배포 가이드는 [배포 문서](./docs/DEPLOYMENT.md)를 참조하세요.
