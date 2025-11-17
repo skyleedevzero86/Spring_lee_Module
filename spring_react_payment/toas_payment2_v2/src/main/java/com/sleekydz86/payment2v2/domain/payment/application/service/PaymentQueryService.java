@@ -24,6 +24,7 @@ import com.sleekydz86.payment2v2.global.util.TossPaymentExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@Primary
 @RequiredArgsConstructor
 public class PaymentQueryService implements GetPaymentHistoryUseCase, GetPaymentDetailUseCase,
         GetPaymentHistoryPageUseCase, GetPaymentStatusUseCase {

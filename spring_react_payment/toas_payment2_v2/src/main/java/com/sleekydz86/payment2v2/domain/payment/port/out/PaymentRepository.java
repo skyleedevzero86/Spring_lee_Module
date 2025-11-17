@@ -19,4 +19,3 @@ public interface PaymentRepository {
     Optional<Payment> findByIdAndUserId(Long id, Long userId);
     Optional<Payment> findById(Long id);
 }
-

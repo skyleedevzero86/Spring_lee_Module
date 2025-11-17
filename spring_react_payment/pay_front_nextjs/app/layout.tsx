@@ -8,6 +8,8 @@ import { ErrorTrackerInit } from '@/components/common/ErrorTrackerInit';
 export const metadata: Metadata = {
   title: "토스 페이먼츠 결제 시스템",
   description: "토스 페이먼츠를 활용한 결제 시스템",
+  charset: "UTF-8",
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({
@@ -16,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <body className="antialiased">
         <ErrorTrackerInit />
         <MonitoringProvider>

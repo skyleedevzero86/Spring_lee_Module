@@ -36,7 +36,6 @@ public final class TossPaymentExceptionHandler {
         T call() throws TossPaymentClientException;
     }
 
-    @FunctionalInterface
     public interface TossResponseValidator<T> {
         boolean isSuccess(T response);
         String getErrorMessage(T response);

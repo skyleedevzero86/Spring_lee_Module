@@ -19,6 +19,7 @@ class ApiClient {
       timeout: API_TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     });
 
@@ -55,9 +56,21 @@ class ApiClient {
           config.headers[CsrfTokenManager.getHeaderName()] = csrfToken;
         }
 
+        if (process.env.NODE_ENV === 'development') {
+          logger.debug('API 요청 시작', {
+            method: config.method?.toUpperCase(),
+            url: config.url,
+            baseURL: config.baseURL,
+            headers: Object.keys(config.headers || {}),
+          });
+        }
+
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => {
+        logger.error('요청 설정 중 오류 발생', { error });
+        return Promise.reject(error);
+      }
     );
 
     this.client.interceptors.response.use(
@@ -108,25 +121,49 @@ class ApiClient {
         if (error.request) {
           const isConnectionRefused = 
             error.code === 'ECONNREFUSED' || 
+            error.code === 'ERR_NETWORK' ||
             error.message?.includes('ERR_CONNECTION_REFUSED') ||
+            error.message?.includes('ERR_NETWORK') ||
             error.message?.includes('가져오기 실패') ||
-            error.message?.includes('Failed to fetch');
+            error.message?.includes('Failed to fetch') ||
+            error.message?.includes('Network Error');
           
-          logger.error('API 요청 실패', {
+          const baseURL = error.config?.baseURL || '알 수 없음';
+          const url = error.config?.url || '알 수 없음';
+          const fullUrl = `${baseURL}${url}`;
+          
+          // 상세한 에러 정보 로깅
+          logger.error('Network Error', {
             url: error.config?.url,
             method: error.config?.method,
             baseURL: error.config?.baseURL,
+            fullUrl,
             code: error.code,
             message: error.message,
+            request: error.request ? {
+              readyState: (error.request as any).readyState,
+              status: (error.request as any).status,
+              statusText: (error.request as any).statusText,
+            } : null,
+            stack: error.stack,
           });
+          
+          let errorMessage = '네트워크 오류가 발생했습니다.';
+          let errorDetail = '';
+          
+          if (isConnectionRefused || error.code === 'ERR_NETWORK') {
+            errorMessage = '서버에 연결할 수 없습니다.';
+            errorDetail = `백엔드 서버(${baseURL})가 실행 중인지 확인해주세요. ` +
+                         `서버가 실행 중이라면 방화벽이나 네트워크 설정을 확인해주세요. ` +
+                         `요청 URL: ${fullUrl}`;
+          }
           
           return Promise.reject(
             new ApiError(
               'NETWORK_ERROR', 
               0, 
-              isConnectionRefused 
-                ? '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.'
-                : '네트워크 오류가 발생했습니다.'
+              errorMessage,
+              errorDetail
             )
           );
         }

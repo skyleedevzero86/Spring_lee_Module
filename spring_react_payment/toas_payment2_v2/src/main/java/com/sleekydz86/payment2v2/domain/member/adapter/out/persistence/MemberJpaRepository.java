@@ -15,6 +15,12 @@ import java.util.Optional;
 @Repository
 public interface MemberJpaRepository extends JpaRepository<Member, Long>, MemberRepository {
     @Override
+    Optional<Member> findById(Long id);
+    
+    @Override
+    Member save(Member member);
+    
+    @Override
     @Query("SELECT m FROM Member m WHERE m.email.value = :email")
     Optional<Member> findByEmail(@Param("email") String email);
     

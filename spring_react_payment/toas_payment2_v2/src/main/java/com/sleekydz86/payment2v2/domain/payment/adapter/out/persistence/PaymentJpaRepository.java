@@ -15,6 +15,12 @@ import java.util.Optional;
 @Repository
 public interface PaymentJpaRepository extends JpaRepository<Payment, Long>, PaymentRepository {
     @Override
+    Optional<Payment> findById(Long id);
+    
+    @Override
+    Payment save(Payment payment);
+    
+    @Override
     @Query("SELECT p FROM Payment p WHERE p.orderNo.value = :orderNo")
     Optional<Payment> findByOrderNo(@Param("orderNo") String orderNo);
     
