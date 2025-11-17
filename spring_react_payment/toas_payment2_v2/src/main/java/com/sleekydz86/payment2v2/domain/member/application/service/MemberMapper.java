@@ -1,6 +1,7 @@
 package com.sleekydz86.payment2v2.domain.member.application.service;
 
 import com.sleekydz86.payment2v2.domain.member.application.dto.FindMemberResponse;
+import com.sleekydz86.payment2v2.domain.member.application.dto.LoginResponse;
 import com.sleekydz86.payment2v2.domain.member.application.dto.RegisterMemberResponse;
 import com.sleekydz86.payment2v2.domain.member.application.dto.SearchMemberResponse;
 import com.sleekydz86.payment2v2.domain.member.model.Member;
@@ -33,6 +34,21 @@ public class MemberMapper {
                 .email(member.getEmailValue())
                 .name(member.getNameValue())
                 .role(member.getRole().name())
+                .build();
+    }
+
+    public LoginResponse toLoginResponse(Member member) {
+        LoginResponse.LoginData data = LoginResponse.LoginData.builder()
+                .userId(member.getId())
+                .email(member.getEmailValue())
+                .name(member.getNameValue())
+                .role(member.getRole().name())
+                .token("")
+                .build();
+        
+        return LoginResponse.builder()
+                .message("로그인 성공")
+                .data(data)
                 .build();
     }
 }

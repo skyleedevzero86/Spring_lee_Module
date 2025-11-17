@@ -60,6 +60,28 @@ public class MemberWebMapper {
                 .build();
     }
 
+    public LoginCommand toCommand(LoginRequest request) {
+        return LoginCommand.builder()
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .build();
+    }
+
+    public LoginApiResponse toApiResponse(LoginResponse response) {
+        LoginApiResponse.LoginData data = LoginApiResponse.LoginData.builder()
+                .userId(response.getData().getUserId())
+                .email(response.getData().getEmail())
+                .name(response.getData().getName())
+                .role(response.getData().getRole())
+                .token(response.getData().getToken())
+                .build();
+        
+        return LoginApiResponse.builder()
+                .message(response.getMessage())
+                .data(data)
+                .build();
+    }
+
     public PageApiResponse<SearchMemberApiResponse> toPageApiResponse(PageResponse<SearchMemberResponse> pageResponse) {
         List<SearchMemberApiResponse> content = pageResponse.getContent().stream()
                 .map(this::toApiResponse)

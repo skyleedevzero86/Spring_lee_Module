@@ -25,9 +25,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SecurityConfig implements WebMvcConfigurer {
 
     @Bean
+    public org.springframework.security.authentication.AuthenticationManager authenticationManager(
+            org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -129,7 +137,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 HttpServletRequest request,
                 HttpServletResponse response,
                 jakarta.servlet.FilterChain filterChain) throws jakarta.servlet.ServletException, IOException {
-            
+
             log.info("요청 수신: {} {} from origin: {}", 
                 request.getMethod(), 
                 request.getRequestURI(),

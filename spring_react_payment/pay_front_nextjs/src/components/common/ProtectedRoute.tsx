@@ -14,7 +14,6 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
   const router = useRouter();
   const [isValidating, setIsValidating] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const userRole = TokenManager.getUserRole();
 
   useEffect(() => {
     const validateAuth = async () => {
@@ -32,13 +31,17 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
 
       if (!isValid) {
         router.push('/login');
-      } else if (requireAdmin && userRole !== 'ADMIN') {
+        return;
+      }
+
+      const currentRole = TokenManager.getUserRole();
+      if (requireAdmin && currentRole !== 'ADMIN') {
         router.push('/');
       }
     };
 
     validateAuth();
-  }, [requireAdmin, userRole, router]);
+  }, [requireAdmin, router]);
 
   if (isValidating) {
     return (

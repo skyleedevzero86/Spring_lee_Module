@@ -1,10 +1,41 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { LoginForm } from '@/components/member/LoginForm';
 import { BackButton } from '@/components/common/BackButton';
+import { TokenManager } from '@/lib/utils';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import Link from 'next/link';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const isAuthenticated = TokenManager.isAuthenticated();
+      if (isAuthenticated) {
+        const isValid = await TokenManager.validateToken();
+        if (isValid) {
+          router.replace('/payments');
+          return;
+        }
+      }
+      setIsChecking(false);
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">

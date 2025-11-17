@@ -2,6 +2,7 @@ package com.sleekydz86.payment2v2.domain.member.application.service;
 
 import com.sleekydz86.payment2v2.domain.member.application.dto.*;
 import com.sleekydz86.payment2v2.domain.member.application.port.in.FindMemberUseCase;
+import com.sleekydz86.payment2v2.domain.member.application.port.in.LoginUseCase;
 import com.sleekydz86.payment2v2.domain.member.application.port.in.RegisterMemberUseCase;
 import com.sleekydz86.payment2v2.domain.member.application.port.in.ResetPasswordUseCase;
 import com.sleekydz86.payment2v2.domain.member.application.port.in.SearchMemberUseCase;
@@ -32,7 +33,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, SearchMemberUseCase, ResetPasswordUseCase, SearchMemberPageUseCase {
+public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, SearchMemberUseCase, ResetPasswordUseCase, SearchMemberPageUseCase, LoginUseCase {
 
     private static final String LOG_MEMBER_ID = "memberId";
     private static final String LOG_EMAIL = "email";
@@ -276,6 +277,35 @@ public class MemberService implements RegisterMemberUseCase, FindMemberUseCase, 
                     .message("비밀번호가 성공적으로 재설정되었습니다.")
                     .email(email.getValue())
                     .build();
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LoginResponse login(LoginCommand command) {
+        return LoggingUtil.executeWithContext(Map.of(
+                LOG_EMAIL, command.getEmail() != null ? command.getEmail() : "알수없음",
+                LOG_OPERATION, "login"
+        ), () -> {
+            log.info("로그인 요청");
+
+            Email email = Email.of(command.getEmail());
+            Member member = memberRepository.findByEmail(email.getValue())
+                    .orElseThrow(() -> {
+                        log.warn("회원을 찾을 수 없음: email={}", email.getValue());
+                        return new BusinessException(ErrorCode.MEMBER_NOT_FOUND,
+                                "아이디 또는 비밀번호가 잘못되었습니다.");
+                    });
+
+            if (!member.matchesPassword(command.getPassword(), passwordEncoder)) {
+                log.warn("비밀번호 불일치: email={}", email.getValue());
+                throw new BusinessException(ErrorCode.INVALID_PASSWORD,
+                        "아이디 또는 비밀번호가 잘못되었습니다.");
+            }
+
+            log.info("로그인 성공: id={}, email={}", member.getId(), email.getValue());
+
+            return memberMapper.toLoginResponse(member);
         });
     }
 }

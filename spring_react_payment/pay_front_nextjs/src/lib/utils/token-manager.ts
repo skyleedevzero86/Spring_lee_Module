@@ -124,34 +124,44 @@ export class TokenManager {
   }
 
   static async validateToken(): Promise<boolean> {
-    const token = this.getJwtToken();
-    if (!token) return false;
+    const tokenData = this.getToken();
+    if (!tokenData) return false;
 
-    if (isJwtExpired(token)) {
-      this.clearToken();
-      return false;
-    }
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'}/api/v1/users/validate-token`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
+    const jwtToken = this.getJwtToken();
+    
+    if (jwtToken) {
+      if (isJwtExpired(jwtToken)) {
         this.clearToken();
         return false;
       }
 
-      return true;
-    } catch {
-      return false;
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'}/api/v1/users/validate-token`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${jwtToken}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          this.clearToken();
+          return false;
+        }
+
+        return true;
+      } catch {
+        return false;
+      }
     }
+
+    if (tokenData.userId && tokenData.role) {
+      return true;
+    }
+
+    return false;
   }
 }
 

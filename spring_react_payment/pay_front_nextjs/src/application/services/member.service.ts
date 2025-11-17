@@ -22,7 +22,8 @@ class MemberService {
       () => memberApi.login(request),
       (response) => {
         const { userId, role, token } = response.data;
-        apiClient.setAuth(userId, role, token);
+        const jwtToken = token && token.trim() !== '' ? token : undefined;
+        apiClient.setAuth(userId, role, jwtToken);
         return response;
       },
       'LOGIN_FAILED',
