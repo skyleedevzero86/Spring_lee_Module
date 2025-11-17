@@ -11,6 +11,8 @@ import type {
   RefundPaymentRequest,
   RefundPaymentResponse,
   PageApiResponse,
+  CancelPaymentRequest,
+  CancelPaymentResponse,
 } from '@/domain/types/payment.types';
 import { PaymentStatus } from '@/domain/types/payment.types';
 import { handleServiceCall } from '@/lib/utils';
@@ -247,6 +249,17 @@ class PaymentService {
     currentStatus: PaymentStatus
   ): PaymentStatus[] {
     return paymentStateMachine.getAllowedTransitions(currentStatus);
+  }
+
+  async cancelPayment(
+    paymentKey: string,
+    request: CancelPaymentRequest
+  ): Promise<CancelPaymentResponse> {
+    return handleServiceCall(
+      () => paymentApi.cancelPayment(paymentKey, request),
+      'CANCEL_PAYMENT_FAILED',
+      '결제 취소에 실패했습니다.'
+    );
   }
 }
 

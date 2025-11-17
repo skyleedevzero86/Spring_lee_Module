@@ -28,6 +28,11 @@ import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentHi
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentHistoryPageUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.GetPaymentStatusUseCase;
 import com.sleekydz86.payment2v2.domain.payment.application.port.in.RefundPaymentUseCase;
+import com.sleekydz86.payment2v2.domain.payment.application.port.in.CancelPaymentUseCase;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.CancelPaymentCommand;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.CancelPaymentResponse;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.CancelPaymentRequest;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.CancelPaymentApiResponse;
 import com.sleekydz86.payment2v2.global.dto.PageResponse;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberId;
 import com.sleekydz86.payment2v2.domain.payment.model.valueobject.PaymentId;
@@ -60,6 +65,7 @@ public class PaymentController {
     private final GetPaymentHistoryPageUseCase getPaymentHistoryPageUseCase;
     private final GetPaymentDetailUseCase getPaymentDetailUseCase;
     private final RefundPaymentUseCase refundPaymentUseCase;
+    private final CancelPaymentUseCase cancelPaymentUseCase;
     private final PaymentWebMapper paymentWebMapper;
     private final CacheManager cacheManager;
 
@@ -169,6 +175,20 @@ public class PaymentController {
         RefundPaymentCommand command = paymentWebMapper.toRefundCommand(paymentId, request);
         RefundPaymentResponse response = refundPaymentUseCase.refundPayment(command);
         RefundPaymentApiResponse apiResponse = paymentWebMapper.toRefundApiResponse(response);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @PostMapping("/{paymentKey}/cancel")
+    public ResponseEntity<CancelPaymentApiResponse> cancelPayment(
+            @PathVariable String paymentKey,
+            @RequestHeader(HeaderConstants.USER_ID_HEADER) Long userId,
+            @Valid @RequestBody CancelPaymentRequest request) {
+        log.info("결제 취소 요청: paymentKey={}, userId={}, cancelReason={}", 
+                paymentKey, userId, request.getCancelReason());
+        
+        CancelPaymentCommand command = paymentWebMapper.toCancelCommand(paymentKey, request);
+        CancelPaymentResponse response = cancelPaymentUseCase.cancelPayment(command);
+        CancelPaymentApiResponse apiResponse = paymentWebMapper.toCancelApiResponse(response);
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 }

@@ -11,6 +11,10 @@ import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentHistor
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PaymentStatusApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.RefundPaymentRequest;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.RefundPaymentApiResponse;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.CancelPaymentRequest;
+import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.CancelPaymentApiResponse;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.CancelPaymentCommand;
+import com.sleekydz86.payment2v2.domain.payment.application.dto.CancelPaymentResponse;
 import com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.TransactionInfoApiResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.ApprovePaymentCommand;
 import com.sleekydz86.payment2v2.domain.payment.application.dto.CreatePaymentCommand;
@@ -309,6 +313,53 @@ public class PaymentWebMapper {
 
     public PageApiResponse<PaymentHistoryApiResponse> toPageApiResponse(PageResponse<PaymentHistoryResponse> pageResponse) {
         return toPageApiResponse(pageResponse, this::toHistoryApiResponse);
+    }
+
+    public CancelPaymentCommand toCancelCommand(String paymentKey, CancelPaymentRequest request) {
+        CancelPaymentCommand.CancelPaymentCommandBuilder builder = CancelPaymentCommand.builder()
+                .paymentKey(paymentKey)
+                .cancelReason(request.getCancelReason())
+                .cancelAmount(request.getCancelAmount())
+                .taxFreeAmount(request.getTaxFreeAmount())
+                .currency(request.getCurrency())
+                .idempotencyKey(request.getIdempotencyKey());
+
+        if (request.getRefundReceiveAccount() != null) {
+            CancelPaymentCommand.RefundReceiveAccount refundAccount = 
+                    CancelPaymentCommand.RefundReceiveAccount.builder()
+                            .bank(request.getRefundReceiveAccount().getBank())
+                            .accountNumber(request.getRefundReceiveAccount().getAccountNumber())
+                            .holderName(request.getRefundReceiveAccount().getHolderName())
+                            .build();
+            builder.refundReceiveAccount(refundAccount);
+        }
+
+        return builder.build();
+    }
+
+    public CancelPaymentApiResponse toCancelApiResponse(CancelPaymentResponse response) {
+        List<CancelPaymentApiResponse.CancelInfo> cancels = null;
+        if (response.getCancels() != null) {
+            cancels = response.getCancels().stream()
+                    .map(cancel -> CancelPaymentApiResponse.CancelInfo.builder()
+                            .transactionKey(cancel.getTransactionKey())
+                            .cancelReason(cancel.getCancelReason())
+                            .cancelAmount(cancel.getCancelAmount())
+                            .canceledAt(cancel.getCanceledAt())
+                            .cancelStatus(cancel.getCancelStatus())
+                            .build())
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        return CancelPaymentApiResponse.builder()
+                .paymentKey(response.getPaymentKey())
+                .orderId(response.getOrderId())
+                .orderName(response.getOrderName())
+                .status(response.getStatus())
+                .totalAmount(response.getTotalAmount())
+                .balanceAmount(response.getBalanceAmount())
+                .cancels(cancels)
+                .build();
     }
 }
 

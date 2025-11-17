@@ -195,4 +195,73 @@ export interface PageApiResponse<T> {
   hasPrevious: boolean;
 }
 
+export interface CancelPaymentRequest {
+  cancelReason: string;
+  cancelAmount?: number;
+  taxFreeAmount?: number;
+  currency?: string;
+  refundReceiveAccount?: {
+    bank: string;
+    accountNumber: string;
+    holderName: string;
+  };
+  idempotencyKey?: string;
+}
+
+export interface CancelPaymentResponse {
+  paymentKey: string;
+  orderId: string;
+  orderName: string;
+  status: string;
+  totalAmount: number;
+  balanceAmount: number;
+  cancels: Array<{
+    transactionKey: string;
+    cancelReason: string;
+    cancelAmount: number;
+    canceledAt: string;
+    cancelStatus: string;
+  }>;
+}
+
+export interface IssueCashReceiptRequest {
+  amount: number;
+  orderId: string;
+  orderName: string;
+  type: '소득공제' | '지출증빙';
+  customerIdentityNumber: string;
+  taxFreeAmount?: number;
+}
+
+export interface CancelCashReceiptRequest {
+  amount?: number;
+}
+
+export interface CashReceiptResponse {
+  receiptKey: string;
+  orderId: string;
+  orderName: string;
+  type: string;
+  issueNumber?: string;
+  receiptUrl?: string;
+  businessNumber?: string;
+  transactionType: 'CONFIRM' | 'CANCEL';
+  amount: number;
+  taxFreeAmount?: number;
+  taxExemptionAmount?: number;
+  issueStatus: 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  requestedAt: string;
+  customerIdentityNumber: string;
+  failure?: {
+    code: string;
+    message: string;
+  };
+}
+
+export interface CashReceiptListResponse {
+  hasNext: boolean;
+  lastCursor?: number;
+  data: CashReceiptResponse[];
+}
+
 

@@ -10,6 +10,7 @@ import type {
   PaymentHistoryResponse,
   PaymentDetailResponse,
   PageApiResponse,
+  CancelPaymentRequest,
 } from '@/domain/types/payment.types';
 
 function useAsyncOperation<T, Args extends unknown[]>(
@@ -71,6 +72,11 @@ export const usePayment = () => {
       paymentService.refundPayment(paymentId, request)
   );
 
+  const cancelPaymentAsync = useAsyncOperation(
+    (paymentKey: string, request: CancelPaymentRequest) =>
+      paymentService.cancelPayment(paymentKey, request)
+  );
+
   const loading = useMemo(
     () =>
       createPaymentAsync.loading ||
@@ -79,7 +85,8 @@ export const usePayment = () => {
       getPaymentHistoryAsync.loading ||
       getPaymentHistoryPageAsync.loading ||
       getPaymentDetailAsync.loading ||
-      refundPaymentAsync.loading,
+      refundPaymentAsync.loading ||
+      cancelPaymentAsync.loading,
     [
       createPaymentAsync.loading,
       approvePaymentAsync.loading,
@@ -88,6 +95,7 @@ export const usePayment = () => {
       getPaymentHistoryPageAsync.loading,
       getPaymentDetailAsync.loading,
       refundPaymentAsync.loading,
+      cancelPaymentAsync.loading,
     ]
   );
 
@@ -99,7 +107,8 @@ export const usePayment = () => {
       getPaymentHistoryAsync.error ||
       getPaymentHistoryPageAsync.error ||
       getPaymentDetailAsync.error ||
-      refundPaymentAsync.error,
+      refundPaymentAsync.error ||
+      cancelPaymentAsync.error,
     [
       createPaymentAsync.error,
       approvePaymentAsync.error,
@@ -108,6 +117,7 @@ export const usePayment = () => {
       getPaymentHistoryPageAsync.error,
       getPaymentDetailAsync.error,
       refundPaymentAsync.error,
+      cancelPaymentAsync.error,
     ]
   );
 
@@ -121,6 +131,7 @@ export const usePayment = () => {
     getPaymentHistoryPage: getPaymentHistoryPageAsync.execute,
     getPaymentDetail: getPaymentDetailAsync.execute,
     refundPayment: refundPaymentAsync.execute,
+    cancelPayment: cancelPaymentAsync.execute,
   };
 };
 

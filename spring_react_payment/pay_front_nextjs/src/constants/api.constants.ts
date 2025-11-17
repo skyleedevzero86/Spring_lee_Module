@@ -29,6 +29,18 @@ export const API_ENDPOINTS = {
     HISTORY_PAGE: (page: number, size: number) => `/api/v1/payments/page?page=${page}&size=${size}`,
     DETAIL: (id: number) => `/api/v1/payments/${id}`,
     REFUND: (id: number) => `/api/v1/payments/${id}/refund`,
+    CANCEL: (paymentKey: string) => `/api/v1/payments/${paymentKey}/cancel`,
+  },
+  CASH_RECEIPTS: {
+    BASE: '/api/v1/cash-receipts',
+    ISSUE: '/api/v1/cash-receipts',
+    CANCEL: (receiptKey: string) => `/api/v1/cash-receipts/${receiptKey}/cancel`,
+    LIST: (requestDate: string, cursor?: number, limit?: number) => {
+      const params = new URLSearchParams({ requestDate });
+      if (cursor !== undefined) params.append('cursor', cursor.toString());
+      if (limit !== undefined) params.append('limit', limit.toString());
+      return `/api/v1/cash-receipts?${params.toString()}`;
+    },
   },
 } as const;
 

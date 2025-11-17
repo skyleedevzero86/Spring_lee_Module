@@ -14,6 +14,8 @@ import type {
   RefundPaymentRequest,
   RefundPaymentResponse,
   PageApiResponse,
+  CancelPaymentRequest,
+  CancelPaymentResponse,
 } from '@/domain/types/payment.types';
 
 class PaymentApi {
@@ -66,6 +68,16 @@ class PaymentApi {
   ): Promise<RefundPaymentResponse> {
     return apiClient.post<RefundPaymentResponse>(
       API_ENDPOINTS.PAYMENTS.REFUND(paymentId),
+      request
+    );
+  }
+
+  async cancelPayment(
+    paymentKey: string,
+    request: CancelPaymentRequest
+  ): Promise<CancelPaymentResponse> {
+    return apiClient.post<CancelPaymentResponse>(
+      API_ENDPOINTS.PAYMENTS.CANCEL(paymentKey),
       request
     );
   }

@@ -6,6 +6,9 @@ import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { paymentApi } from '@/infrastructure/api/payment.api';
 import { TokenManager } from '@/lib/utils';
+import { exportPaymentsToExcel } from '@/lib/utils';
+import { PaymentStatusPieChart } from '@/components/admin/PaymentStatusPieChart';
+import { PaymentTrendLineChart } from '@/components/admin/PaymentTrendLineChart';
 import type { PaymentHistoryResponse, PageApiResponse } from '@/domain/types/payment.types';
 import Link from 'next/link';
 
@@ -15,15 +18,19 @@ function AdminDashboardContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [size] = useState(20);
+  const [size] = useState(15);
   const [pageInfo, setPageInfo] = useState<PageApiResponse<PaymentHistoryResponse> | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [mounted, setMounted] = useState(false);
+  const [allPayments, setAllPayments] = useState<PaymentHistoryResponse[]>([]);
+  const [loadingAllPayments, setLoadingAllPayments] = useState(false);
   const [stats, setStats] = useState({
     totalAmount: 0,
     totalCount: 0,
     completedCount: 0,
     pendingCount: 0,
+    failedCount: 0,
+    cancelledCount: 0,
   });
 
   const loadPayments = useCallback(async () => {
@@ -47,12 +54,16 @@ function AdminDashboardContent() {
       const totalAmount = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
       const completedPayments = allPayments.filter((p) => p.status === 'COMPLETED');
       const pendingPayments = allPayments.filter((p) => p.status === 'PENDING');
+      const failedPayments = allPayments.filter((p) => p.status === 'FAILED');
+      const cancelledPayments = allPayments.filter((p) => p.status === 'CANCELLED');
       
       setStats({
         totalAmount,
         totalCount: response.totalElements,
         completedCount: completedPayments.length,
         pendingCount: pendingPayments.length,
+        failedCount: failedPayments.length,
+        cancelledCount: cancelledPayments.length,
       });
     } catch (err) {
       console.error('결제 내역 로드 실패:', err);
@@ -65,6 +76,43 @@ function AdminDashboardContent() {
   // Ensure we're on the client side
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  const loadAllPayments = useCallback(async () => {
+    try {
+      setLoadingAllPayments(true);
+      const allData = await paymentApi.getPaymentHistory();
+      setAllPayments(allData);
+      
+      const totalAmount = allData.reduce((sum, p) => sum + (p.amount || 0), 0);
+      const completedPayments = allData.filter((p) => p.status === 'COMPLETED');
+      const pendingPayments = allData.filter((p) => p.status === 'PENDING');
+      const failedPayments = allData.filter((p) => p.status === 'FAILED');
+      const cancelledPayments = allData.filter((p) => p.status === 'CANCELLED');
+      
+      setStats((prev) => ({
+        ...prev,
+        totalAmount,
+        completedCount: completedPayments.length,
+        pendingCount: pendingPayments.length,
+        failedCount: failedPayments.length,
+        cancelledCount: cancelledPayments.length,
+      }));
+    } catch (err) {
+      console.error('전체 결제 내역 로드 실패:', err);
+    } finally {
+      setLoadingAllPayments(false);
+    }
+  }, []);
+
+  const handleExportExcel = useCallback(async () => {
+    try {
+      const allData = await paymentApi.getPaymentHistory();
+      exportPaymentsToExcel(allData, '결제내역');
+    } catch (err) {
+      console.error('엑셀 다운로드 실패:', err);
+      alert('엑셀 다운로드에 실패했습니다.');
+    }
   }, []);
 
   // Check admin role only once on mount (after client-side check)
@@ -80,6 +128,7 @@ function AdminDashboardContent() {
         }
         // Load payments after admin check passes
         loadPayments();
+        loadAllPayments();
       } catch (error) {
         console.error('Admin check failed:', error);
         router.push('/');
@@ -184,6 +233,37 @@ function AdminDashboardContent() {
           </div>
         </div>
 
+        {/* 차트 섹션 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">결제 상태별 분포</h3>
+            {loadingAllPayments ? (
+              <div className="flex items-center justify-center h-[300px]">
+                <LoadingSpinner size="md" />
+              </div>
+            ) : (
+              <PaymentStatusPieChart
+                data={{
+                  completed: stats.completedCount,
+                  pending: stats.pendingCount,
+                  failed: stats.failedCount,
+                  cancelled: stats.cancelledCount,
+                }}
+              />
+            )}
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">결제 추이</h3>
+            {loadingAllPayments ? (
+              <div className="flex items-center justify-center h-[300px]">
+                <LoadingSpinner size="md" />
+              </div>
+            ) : (
+              <PaymentTrendLineChart payments={allPayments} />
+            )}
+          </div>
+        </div>
+
         {/* 필터 및 테이블 */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -208,6 +288,25 @@ function AdminDashboardContent() {
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm"
               >
                 새로고침
+              </button>
+              <button
+                onClick={handleExportExcel}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                엑셀 다운로드
               </button>
             </div>
           </div>

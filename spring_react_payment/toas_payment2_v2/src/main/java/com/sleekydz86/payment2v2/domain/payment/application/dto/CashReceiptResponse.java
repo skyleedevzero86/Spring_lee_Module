@@ -1,0 +1,34 @@
+package com.sleekydz86.payment2v2.domain.payment.application.dto;
+
+import lombok.Builder;
+import lombok.Getter;
+
+import java.math.BigDecimal;
+
+@Getter
+@Builder
+public class CashReceiptResponse {
+    private String receiptKey;
+    private String orderId;
+    private String orderName;
+    private String type;
+    private String issueNumber;
+    private String receiptUrl;
+    private String businessNumber;
+    private String transactionType; // CONFIRM, CANCEL
+    private BigDecimal amount;
+    private BigDecimal taxFreeAmount;
+    private BigDecimal taxExemptionAmount;
+    private String issueStatus; // IN_PROGRESS, COMPLETED, FAILED
+    private String requestedAt;
+    private String customerIdentityNumber;
+    private FailureInfo failure;
+
+    @Getter
+    @Builder
+    public static class FailureInfo {
+        private String code;
+        private String message;
+    }
+}
+
