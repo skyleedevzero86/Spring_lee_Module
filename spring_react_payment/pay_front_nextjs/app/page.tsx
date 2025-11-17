@@ -6,9 +6,19 @@ import { useEffect, useState } from 'react';
 
 export default function HomePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    setIsAuthenticated(TokenManager.isAuthenticated());
+    const checkAuth = async () => {
+      const authenticated = TokenManager.isAuthenticated();
+      setIsAuthenticated(authenticated);
+      
+      if (authenticated) {
+        const role = await TokenManager.getUserRole();
+        setIsAdmin(role === 'ADMIN');
+      }
+    };
+    checkAuth();
   }, []);
 
   return (
@@ -34,12 +44,22 @@ export default function HomePage() {
               </Link>
             </>
           ) : (
-            <Link
-              href="/payments"
-              className="block bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition"
-            >
-              결제 관리
-            </Link>
+            <>
+              <Link
+                href="/payments"
+                className="block bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition"
+              >
+                결제 관리
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="block bg-purple-600 text-white px-6 py-3 rounded-md hover:bg-purple-700 transition"
+                >
+                  관리자 대시보드
+                </Link>
+              )}
+            </>
           )}
         </div>
       </div>

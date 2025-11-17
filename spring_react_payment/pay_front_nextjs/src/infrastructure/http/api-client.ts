@@ -5,8 +5,8 @@ import {
   TokenManager,
   sanitizeObject,
   sanitizeInput,
-  CsrfTokenManager,
   logger,
+  CsrfTokenManager,
 } from '@/lib/utils';
 import { API_TIMEOUT, STORAGE_KEYS } from '@/constants/api.constants';
 
@@ -106,6 +106,16 @@ class ApiClient {
               method,
               data,
             });
+            
+            const errorCode = data?.code;
+            if (errorCode === 'C002') {
+              logger.warn('서버 내부 오류 (C002) - 캐시 문제일 수 있음', {
+                url,
+                method,
+                code: errorCode,
+                message: data?.message,
+              });
+            }
           }
 
           if (status === 401) {
@@ -116,6 +126,22 @@ class ApiClient {
           }
 
           const errorResponse = error.response.data;
+          
+          if (status === 429) {
+            const retryAfterHeader = error.response.headers['retry-after'];
+            const retryAfter = retryAfterHeader 
+              ? parseInt(retryAfterHeader, 10) 
+              : undefined;
+            
+            logger.warn('Rate limit 초과 (429)', {
+              url,
+              method,
+              retryAfter,
+              rateLimitLimit: error.response.headers['x-ratelimit-limit'],
+              rateLimitRemaining: error.response.headers['x-ratelimit-remaining'],
+              rateLimitReset: error.response.headers['x-ratelimit-reset'],
+            });
+          }
           
           if (status === 500) {
             const message = errorResponse?.message || '서버 내부 오류가 발생했습니다.';
@@ -134,9 +160,15 @@ class ApiClient {
             );
           }
           
+          const retryAfterHeader = error.response.headers['retry-after'];
+          const retryAfter = retryAfterHeader 
+            ? parseInt(retryAfterHeader, 10) 
+            : undefined;
+          
           const apiError = ApiError.fromResponse(
             errorResponse,
-            status
+            status,
+            retryAfter
           );
           return Promise.reject(apiError);
         }
@@ -252,12 +284,28 @@ class ApiClient {
   async get<T>(url: string, config?: InternalAxiosRequestConfig): Promise<T> {
     return withRetry(
       async () => {
-        const response = await this.client.get<T>(url, config);
-        return response.data;
+        try {
+          const response = await this.client.get<T>(url, config);
+          return response.data;
+        } catch (error) {
+          if (axios.isAxiosError(error) && error.response?.status === 500) {
+            const errorData = error.response.data as any;
+            if (errorData?.code === 'C002') {
+              logger.warn('서버 내부 오류 (C002) - 재시도하지 않음', {
+                url,
+                code: errorData.code,
+                message: errorData.message,
+              });
+              throw error;
+            }
+          }
+          throw error;
+        }
       },
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
-        retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+        retryableStatusCodes: [408, 429, 502, 503, 504],
+        maxRetries: 2,
       }
     );
   }
@@ -277,6 +325,8 @@ class ApiClient {
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
         retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+        // 429 에러는 Retry-After 헤더가 있을 때만 재시도
+        maxRetries: 2, // 429 에러는 최대 2번만 재시도
       }
     );
   }
@@ -295,6 +345,8 @@ class ApiClient {
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
         retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+        // 429 에러는 Retry-After 헤더가 있을 때만 재시도
+        maxRetries: 2, // 429 에러는 최대 2번만 재시도
       }
     );
   }
@@ -313,6 +365,8 @@ class ApiClient {
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
         retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+        // 429 에러는 Retry-After 헤더가 있을 때만 재시도
+        maxRetries: 2, // 429 에러는 최대 2번만 재시도
       }
     );
   }
@@ -329,6 +383,8 @@ class ApiClient {
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
         retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+        // 429 에러는 Retry-After 헤더가 있을 때만 재시도
+        maxRetries: 2, // 429 에러는 최대 2번만 재시도
       }
     );
   }

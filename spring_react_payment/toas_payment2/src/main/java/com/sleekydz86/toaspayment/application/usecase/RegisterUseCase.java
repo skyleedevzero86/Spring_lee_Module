@@ -36,3 +36,4 @@ public class RegisterUseCase {
                 new RegisterResponse.RegisterData(user.getId(), user.getEmail(), user.getName()));
     }
 }
+

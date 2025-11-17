@@ -1,6 +1,6 @@
 package com.sleekydz86.payment2v2.global.util;
 
-import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.TossPaymentClientException;
+import com.sleekydz86.payment2v2.global.exception.TossPaymentClientException;
 import com.sleekydz86.payment2v2.global.exception.BusinessException;
 import com.sleekydz86.payment2v2.global.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;

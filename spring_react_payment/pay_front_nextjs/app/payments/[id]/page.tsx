@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePayment } from '@/hooks/use-payment';
 import { usePaymentStore } from '@/store/payment.store';
@@ -17,12 +17,25 @@ function PaymentDetailPageContent() {
   const { getPaymentDetail, loading, error } = usePayment();
   const { paymentDetail } = usePaymentStore();
   const [refundLoading, setRefundLoading] = useState(false);
+  const hasLoadedRef = useRef<number | null>(null);
+  const getPaymentDetailRef = useRef(getPaymentDetail);
 
   useEffect(() => {
-    if (paymentId) {
-      getPaymentDetail(paymentId);
+    getPaymentDetailRef.current = getPaymentDetail;
+  }, [getPaymentDetail]);
+
+  useEffect(() => {
+    if (hasLoadedRef.current !== paymentId) {
+      hasLoadedRef.current = paymentId;
+      
+      if (paymentId) {
+        getPaymentDetailRef.current(paymentId).catch((err) => {
+          console.error('결제 상세 조회 실패:', err);
+          hasLoadedRef.current = null;
+        });
+      }
     }
-  }, [paymentId, getPaymentDetail]);
+  }, [paymentId]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

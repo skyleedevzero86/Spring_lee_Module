@@ -160,3 +160,4 @@ class MemberRepositoryTest {
         assertThat(found.get().getEmailValue()).isEqualTo("user@example.com");
     }
 
+

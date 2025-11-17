@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentApi } from '@/infrastructure/api/payment.api';
 import { paymentService } from '@/application/services/payment.service';
 import { ApiError } from '@/domain/types/error.types';
+import { logger } from '@/lib/utils';
 import type {
   CreatePaymentRequest,
   PaymentResponse,

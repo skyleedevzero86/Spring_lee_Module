@@ -59,64 +59,72 @@ export const PaymentHistoryList = () => {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+    <div className="w-full overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-300">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-900 sm:px-6">
               주문번호
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-900 sm:px-6">
               상품 명
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-900 sm:px-6">
               금액
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-900 sm:px-6">
               상태
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-900 sm:px-6">
               결제수단
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-900 sm:px-6">
               생성일
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3.5 text-left text-xs font-semibold text-gray-900 sm:px-6">
               작업
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-200 bg-white">
           {paymentHistory.map((payment) => (
-            <tr key={payment.id}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {payment.orderNo}
+            <tr key={payment.id} className="hover:bg-gray-50">
+              <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-900 sm:px-6">
+                <div className="max-w-xs truncate" title={payment.orderNo}>
+                  {payment.orderNo}
+                </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-900 sm:px-6">
                 {payment.productDesc}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-900 sm:px-6">
                 {payment.amount.toLocaleString()}원
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="whitespace-nowrap px-4 py-4 text-sm sm:px-6">
                 <span
-                  className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                    payment.status
-                  )}`}
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(payment.status)}`}
                 >
                   {payment.status}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500 sm:px-6">
                 {payment.payMethod || '-'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {new Date(payment.createdAt).toLocaleString('ko-KR')}
+              <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500 sm:px-6">
+                {new Date(payment.createdAt).toLocaleString('ko-KR', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: true,
+                })}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <td className="whitespace-nowrap px-4 py-4 text-sm font-medium sm:px-6">
                 <Link
                   href={`/payments/${payment.id}`}
-                  className="text-blue-600 hover:text-blue-900"
+                  className="text-blue-600 hover:text-blue-900 transition-colors"
                 >
                   상세보기
                 </Link>

@@ -7,3 +7,4 @@ public interface GetPaymentStatusUseCase {
     PaymentStatusResponse getPaymentStatus(GetPaymentStatusCommand command);
 }
 
+

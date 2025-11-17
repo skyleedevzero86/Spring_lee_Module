@@ -1,10 +1,14 @@
 package com.sleekydz86.payment2v2.domain.payment.application.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CardInfo {
     private Boolean noInterest;
     private Integer spreadOut;

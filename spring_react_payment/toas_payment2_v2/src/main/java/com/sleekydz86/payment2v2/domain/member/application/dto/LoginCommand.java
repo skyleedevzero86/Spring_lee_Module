@@ -10,3 +10,4 @@ public class LoginCommand {
     private String password;
 }
 
+

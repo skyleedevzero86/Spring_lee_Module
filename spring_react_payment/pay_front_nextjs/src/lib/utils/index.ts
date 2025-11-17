@@ -10,4 +10,5 @@ export {
 } from './service-helper';
 export * from './input-validator';
 export { generateOrderNo, resetOrderNoGenerator } from './order-number-generator';
+export { logger } from '../logger/logger';
 

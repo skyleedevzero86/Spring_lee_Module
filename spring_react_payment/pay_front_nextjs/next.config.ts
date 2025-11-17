@@ -13,11 +13,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   outputFileTracingRoot: projectRoot,
-  
   generateEtags: false,
   onDemandEntries: {
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -26,25 +25,16 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-slot'],
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-slot', '@tanstack/react-query'],
   },
   turbopack: {},
   webpack: (config, { isServer, dev }) => {
     if (dev) {
-      config.cache = false;
       config.watchOptions = {
         poll: 1000,
-        aggregateTimeout: 500,
+        aggregateTimeout: 300,
         ignored: /node_modules/,
         followSymlinks: false,
-      };
-      config.snapshot = {
-        ...config.snapshot,
-        managedPaths: [],
-        immutablePaths: [],
-        buildDependencies: {
-          hash: false,
-        },
       };
       config.infrastructureLogging = {
         level: 'error',
@@ -67,51 +57,83 @@ const nextConfig: NextConfig = {
           config.externals = [originalExternals, '@tanstack/react-query-devtools'];
         }
       }
-    }
-    
-    if (!isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            default: false,
-            vendors: false,
-            framework: {
-              name: 'framework',
-              chunks: 'all',
-              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
-              priority: 40,
-              enforce: true,
-            },
-            lib: {
-              test(module: { resource?: string }) {
-                return module.resource?.includes('node_modules') && !module.resource?.includes('react');
+      
+      if (!isServer) {
+        config.optimization = {
+          ...config.optimization,
+          splitChunks: {
+            chunks: 'all',
+            cacheGroups: {
+              default: {
+                minChunks: 2,
+                priority: -20,
+                reuseExistingChunk: true,
               },
-              name(module: { resource?: string }) {
-                const packageName = module.resource?.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)?.[1];
-                return `npm.${packageName?.replace('@', '')}`;
+              vendors: {
+                test: /[\\/]node_modules[\\/]/,
+                priority: -10,
+                reuseExistingChunk: true,
               },
-              priority: 30,
-              minChunks: 1,
-              reuseExistingChunk: true,
-            },
-            commons: {
-              name: 'commons',
-              minChunks: 2,
-              priority: 20,
-            },
-            shared: {
-              name(module: { resource?: string }, chunks: { name: string }[]) {
-                return chunks.map((chunk) => chunk.name).join('~');
-              },
-              priority: 10,
-              minChunks: 2,
-              reuseExistingChunk: true,
             },
           },
-        },
-      };
+        };
+      }
+    } else {
+      if (!isServer) {
+        config.optimization = {
+          ...config.optimization,
+          splitChunks: {
+            chunks: 'all',
+            cacheGroups: {
+              default: false,
+              vendors: false,
+              framework: {
+                name: 'framework',
+                chunks: 'all',
+                test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+                priority: 40,
+                enforce: true,
+              },
+              reactQuery: {
+                name: 'react-query',
+                test: /[\\/]node_modules[\\/]@tanstack[\\/]react-query[\\/]/,
+                priority: 35,
+                chunks: 'all',
+                enforce: true,
+              },
+              lib: {
+                test(module: { resource?: string }) {
+                  return (
+                    module.resource?.includes('node_modules') &&
+                    !module.resource?.includes('react') &&
+                    !module.resource?.includes('@tanstack/react-query')
+                  );
+                },
+                name(module: { resource?: string }) {
+                  const packageName = module.resource?.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)?.[1];
+                  return `npm.${packageName?.replace('@', '')}`;
+                },
+                priority: 30,
+                minChunks: 1,
+                reuseExistingChunk: true,
+              },
+              commons: {
+                name: 'commons',
+                minChunks: 2,
+                priority: 20,
+              },
+              shared: {
+                name(module: { resource?: string }, chunks: { name: string }[]) {
+                  return chunks.map((chunk) => chunk.name).join('~');
+                },
+                priority: 10,
+                minChunks: 2,
+                reuseExistingChunk: true,
+              },
+            },
+          },
+        };
+      }
     }
     return config;
   },

@@ -19,10 +19,17 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.springframework.core.env.Environment;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig implements WebMvcConfigurer {
+    
+    private final Environment environment;
+    
+    public SecurityConfig(Environment environment) {
+        this.environment = environment;
+    }
 
     @Bean
     public org.springframework.security.authentication.AuthenticationManager authenticationManager(
@@ -97,7 +104,18 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Bean
     public RateLimitInterceptor rateLimitInterceptor() {
-        return new RateLimitInterceptor();
+        boolean isDev = Arrays.asList(environment.getActiveProfiles()).contains("dev") ||
+                       Arrays.asList(environment.getActiveProfiles()).contains("development") ||
+                       !Arrays.asList(environment.getActiveProfiles()).contains("prod");
+        
+        int maxRequests = isDev ? 500 : 100;
+        long windowMs = 60000;
+        
+        org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SecurityConfig.class);
+        log.info("Rate Limit 설정: maxRequests={}, windowMs={}ms, isDev={}", 
+            maxRequests, windowMs, isDev);
+        
+        return new RateLimitInterceptor(maxRequests, windowMs);
     }
 
     @Override
@@ -152,9 +170,19 @@ public class SecurityConfig implements WebMvcConfigurer {
     }
 
     public static class RateLimitInterceptor implements HandlerInterceptor {
-        private static final int MAX_REQUESTS = 100;
-        private static final long WINDOW_MS = 60000;
+        private final int MAX_REQUESTS;
+        private final long WINDOW_MS;
         private final ConcurrentHashMap<String, RequestWindow> requestCounts = new ConcurrentHashMap<>();
+        private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RateLimitInterceptor.class);
+        
+        public RateLimitInterceptor() {
+            this(100, 60000);
+        }
+        
+        public RateLimitInterceptor(int maxRequests, long windowMs) {
+            this.MAX_REQUESTS = maxRequests;
+            this.WINDOW_MS = windowMs;
+        }
 
         @Override
         public boolean preHandle(
@@ -171,10 +199,40 @@ public class SecurityConfig implements WebMvcConfigurer {
                 window.reset(now);
             }
 
-            if (window.count.incrementAndGet() > MAX_REQUESTS) {
+            int currentCount = window.count.incrementAndGet();
+            if (currentCount > MAX_REQUESTS) {
+                long remainingTime = WINDOW_MS - (now - window.startTime);
+                long retryAfterSeconds = (remainingTime / 1000) + 1;
+                
                 response.setStatus(429);
+                response.setHeader("Retry-After", String.valueOf(retryAfterSeconds));
+                response.setHeader("X-RateLimit-Limit", String.valueOf(MAX_REQUESTS));
+                response.setHeader("X-RateLimit-Remaining", "0");
+                response.setHeader("X-RateLimit-Reset", String.valueOf(window.startTime + WINDOW_MS));
+                response.setContentType("application/json");
+                
+                log.warn("Rate limit 초과: clientId={}, count={}, limit={}, retryAfter={}초", 
+                    clientId, currentCount, MAX_REQUESTS, retryAfterSeconds);
+                
+                try {
+                    response.getWriter().write(
+                        String.format(
+                            "{\"timestamp\":\"%s\",\"code\":\"RATE_LIMIT_EXCEEDED\",\"message\":\"요청 한도를 초과했습니다. %d초 후 다시 시도해주세요.\",\"detail\":\"1분에 %d개 요청까지 허용됩니다.\"}",
+                            java.time.Instant.now().toString(),
+                            retryAfterSeconds,
+                            MAX_REQUESTS
+                        )
+                    );
+                } catch (IOException e) {
+                    log.error("Rate limit 에러 응답 작성 실패", e);
+                }
+                
                 return false;
             }
+
+            response.setHeader("X-RateLimit-Limit", String.valueOf(MAX_REQUESTS));
+            response.setHeader("X-RateLimit-Remaining", String.valueOf(MAX_REQUESTS - currentCount));
+            response.setHeader("X-RateLimit-Reset", String.valueOf(window.startTime + WINDOW_MS));
 
             return true;
         }

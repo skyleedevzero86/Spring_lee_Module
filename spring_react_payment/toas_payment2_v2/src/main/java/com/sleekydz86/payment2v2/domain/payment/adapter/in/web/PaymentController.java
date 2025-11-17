@@ -38,6 +38,7 @@ import com.sleekydz86.payment2v2.global.util.LoggingUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -60,6 +61,7 @@ public class PaymentController {
     private final GetPaymentDetailUseCase getPaymentDetailUseCase;
     private final RefundPaymentUseCase refundPaymentUseCase;
     private final PaymentWebMapper paymentWebMapper;
+    private final CacheManager cacheManager;
 
     @PostMapping
     public ResponseEntity<PaymentApiResponse> createPayment(
@@ -134,9 +136,26 @@ public class PaymentController {
         if (userRole == null || userRole.isBlank()) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "사용자 역할이 필요합니다.");
         }
-        PaymentDetailResponse response = getPaymentDetailUseCase.getPaymentDetail(paymentId, userId, userRole);
-        PaymentDetailApiResponse apiResponse = paymentWebMapper.toDetailApiResponse(response);
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+        
+        try {
+            PaymentDetailResponse response = getPaymentDetailUseCase.getPaymentDetail(paymentId, userId, userRole);
+            PaymentDetailApiResponse apiResponse = paymentWebMapper.toDetailApiResponse(response);
+            return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+        } catch (ClassCastException e) {
+            // 캐시에서 LinkedHashMap을 PaymentDetailResponse로 캐스팅 실패 시 캐시 무효화
+            log.warn("캐시 타입 불일치 감지, 캐시 무효화: paymentId={}, userId={}, userRole={}", 
+                    paymentId, userId, userRole, e);
+            String cacheKey = paymentId + "_" + userId + "_" + userRole;
+            var cache = cacheManager.getCache("paymentDetail");
+            if (cache != null) {
+                cache.evict(cacheKey);
+                log.info("캐시 무효화 완료: key={}", cacheKey);
+            }
+            // 재시도
+            PaymentDetailResponse response = getPaymentDetailUseCase.getPaymentDetail(paymentId, userId, userRole);
+            PaymentDetailApiResponse apiResponse = paymentWebMapper.toDetailApiResponse(response);
+            return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+        }
     }
 
     @PostMapping("/{paymentId}/refund")

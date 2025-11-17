@@ -34,6 +34,21 @@ function shouldRetry(
   retryableErrorCodes: string[]
 ): boolean {
   if (error instanceof ApiError) {
+    const nonRetryableErrorCodes = ['C002', 'VALIDATION_ERROR', 'AUTHENTICATION_ERROR', 'AUTHORIZATION_ERROR'];
+    if (nonRetryableErrorCodes.includes(error.code)) {
+      return false;
+    }
+
+    if (error.statusCode >= 400 && error.statusCode < 500) {
+      if (error.statusCode === 408 || error.statusCode === 429) {
+        if (error.statusCode === 429) {
+          return error.retryAfter !== undefined && error.retryAfter > 0;
+        }
+        return true;
+      }
+      return false;
+    }
+
     if (retryableErrorCodes.includes(error.code)) {
       return true;
     }
@@ -42,6 +57,20 @@ function shouldRetry(
     }
   }
   return false;
+}
+
+function getRetryDelay(
+  error: unknown,
+  attempt: number,
+  initialDelay: number,
+  maxDelay: number,
+  backoffMultiplier: number
+): number {
+  if (error instanceof ApiError && error.statusCode === 429 && error.retryAfter) {
+    return Math.min(error.retryAfter * 1000 + 100, maxDelay);
+  }
+  
+  return calculateDelay(attempt, initialDelay, maxDelay, backoffMultiplier);
 }
 
 export async function withRetry<T>(
@@ -65,7 +94,8 @@ export async function withRetry<T>(
         throw error;
       }
 
-      const delay = calculateDelay(
+      const delay = getRetryDelay(
+        error,
         attempt,
         config.initialDelay,
         config.maxDelay,
@@ -78,4 +108,3 @@ export async function withRetry<T>(
 
   throw lastError;
 }
-

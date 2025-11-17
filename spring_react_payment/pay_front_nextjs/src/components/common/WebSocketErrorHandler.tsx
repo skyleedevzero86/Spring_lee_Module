@@ -11,17 +11,29 @@ export function WebSocketErrorHandler() {
     const originalError = console.error;
 
     console.error = (...args: any[]) => {
-      const errorMessage = args[0]?.toString() || '';
-      
-      if (
-        errorMessage.includes('WebSocket connection to') &&
-        errorMessage.includes('_next/webpack-hmr') &&
-        errorMessage.includes('failed')
-      ) {
-        return;
-      }
+      try {
+        const errorMessage = args[0]?.toString() || '';
+        
+        if (
+          errorMessage.includes('WebSocket connection to') &&
+          errorMessage.includes('_next/webpack-hmr') &&
+          errorMessage.includes('failed')
+        ) {
+          return;
+        }
 
-      originalError.apply(console, args);
+        if (typeof originalError === 'function') {
+          originalError.apply(console, args);
+        } else {
+          originalError(...args);
+        }
+      } catch (e) {
+        try {
+          originalError(...args);
+        } catch (fallbackError) {
+          console.warn('Error handler failed', fallbackError);
+        }
+      }
     };
 
     return () => {

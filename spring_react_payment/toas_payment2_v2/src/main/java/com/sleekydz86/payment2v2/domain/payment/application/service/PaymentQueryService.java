@@ -152,7 +152,11 @@ public class PaymentQueryService implements GetPaymentHistoryUseCase, GetPayment
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "paymentDetail", key = "#paymentIdValue + '_' + #userIdValue + '_' + #userRoleValue")
+    @Cacheable(
+            value = "paymentDetail", 
+            key = "#paymentIdValue + '_' + #userIdValue + '_' + #userRoleValue",
+            unless = "#result == null"
+    )
     public PaymentDetailResponse getPaymentDetail(Long paymentIdValue, Long userIdValue, String userRoleValue) {
         return LoggingUtil.executeWithContext(Map.of(
                 LOG_PAYMENT_ID, paymentIdValue != null ? String.valueOf(paymentIdValue) : "알수없음",

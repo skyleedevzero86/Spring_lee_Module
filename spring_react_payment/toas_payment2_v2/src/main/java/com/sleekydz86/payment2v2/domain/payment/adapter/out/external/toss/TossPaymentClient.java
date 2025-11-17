@@ -10,6 +10,7 @@ import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.To
 import com.sleekydz86.payment2v2.domain.payment.adapter.out.external.toss.dto.TossPaymentStatusResponse;
 import com.sleekydz86.payment2v2.domain.payment.application.port.out.PaymentGatewayPort;
 import com.sleekydz86.payment2v2.global.config.TossPaymentProperties;
+import com.sleekydz86.payment2v2.global.exception.TossPaymentClientException;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
