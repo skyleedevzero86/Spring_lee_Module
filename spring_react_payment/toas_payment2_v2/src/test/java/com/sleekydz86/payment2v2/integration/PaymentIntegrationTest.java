@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@DisplayName("결제 통합 테스트")
+@DisplayName("결제 ?�합 ?�스??)
 class PaymentIntegrationTest {
 
     @Autowired
@@ -51,21 +51,21 @@ class PaymentIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        testMember = memberRepository.save(MemberFixture.일반_사용자());
+        testMember = memberRepository.save(MemberFixture.?�반_?�용??));
     }
 
     @Test
-    @DisplayName("결제 생성부터 조회까지 전체 플로우가 정상적으로 동작한다")
-    void 결제_생성부터_조회까지_전체_플로우가_정상적으로_동작한다() throws Exception {
-        // given
+    @DisplayName("결제 ?�성부??조회까�? ?�체 ?�로?��? ?�상?�으�??�작?�다")
+    void 결제_?�성부??조회까�?_?�체_?�로?��?_?�상?�으�??�작?�다() throws Exception {
+
         String orderNo = "ORDER-INTEGRATION-001";
-        Payment payment = PaymentFixture.기본_결제_생성()
+        Payment payment = PaymentFixture.기본_결제_?�성()
                 .orderNo(orderNo)
                 .userId(testMember.getId())
                 .build();
         payment = paymentRepository.save(payment);
 
-        // when & then - 결제 상세 조회
+ & then - 결제 ?�세 조회
         mockMvc.perform(get("/api/v1/payments/{paymentId}", payment.getId())
                         .header(HeaderConstants.USER_ID_HEADER, testMember.getId())
                         .header(HeaderConstants.USER_ROLE_HEADER, "USER"))
@@ -76,18 +76,18 @@ class PaymentIntegrationTest {
     }
 
     @Test
-    @DisplayName("사용자별 결제 이력 조회가 정상적으로 동작한다")
-    void 사용자별_결제_이력_조회가_정상적으로_동작한다() throws Exception {
-        // given
-        Payment payment1 = PaymentFixture.기본_결제_생성()
+    @DisplayName("?�용?�별 결제 ?�력 조회가 ?�상?�으�??�작?�다")
+    void ?�용?�별_결제_?�력_조회가_?�상?�으�??�작?�다() throws Exception {
+
+        Payment payment1 = PaymentFixture.기본_결제_?�성()
                 .orderNo("ORDER-001")
                 .userId(testMember.getId())
                 .build();
-        Payment payment2 = PaymentFixture.기본_결제_생성()
+        Payment payment2 = PaymentFixture.기본_결제_?�성()
                 .orderNo("ORDER-002")
                 .userId(testMember.getId())
                 .build();
-        Payment payment3 = PaymentFixture.기본_결제_생성()
+        Payment payment3 = PaymentFixture.기본_결제_?�성()
                 .orderNo("ORDER-003")
                 .userId(testMember.getId() + 1)
                 .build();
@@ -96,7 +96,7 @@ class PaymentIntegrationTest {
         paymentRepository.save(payment2);
         paymentRepository.save(payment3);
 
-        // when & then
+ & then
         mockMvc.perform(get("/api/v1/payments")
                         .header(HeaderConstants.USER_ID_HEADER, testMember.getId())
                         .header(HeaderConstants.USER_ROLE_HEADER, "USER"))
@@ -107,14 +107,14 @@ class PaymentIntegrationTest {
     }
 
     @Test
-    @DisplayName("관리자는 모든 결제 이력을 조회할 수 있다")
-    void 관리자는_모든_결제_이력을_조회할_수_있다() throws Exception {
-        // given
-        Payment payment1 = PaymentFixture.기본_결제_생성()
+    @DisplayName("관리자??모든 결제 ?�력??조회?????�다")
+    void 관리자??모든_결제_?�력??조회?????�다() throws Exception {
+
+        Payment payment1 = PaymentFixture.기본_결제_?�성()
                 .orderNo("ORDER-001")
                 .userId(testMember.getId())
                 .build();
-        Payment payment2 = PaymentFixture.기본_결제_생성()
+        Payment payment2 = PaymentFixture.기본_결제_?�성()
                 .orderNo("ORDER-002")
                 .userId(testMember.getId() + 1)
                 .build();
@@ -122,7 +122,7 @@ class PaymentIntegrationTest {
         paymentRepository.save(payment1);
         paymentRepository.save(payment2);
 
-        // when & then
+ & then
         mockMvc.perform(get("/api/v1/payments")
                         .header(HeaderConstants.USER_ID_HEADER, testMember.getId())
                         .header(HeaderConstants.USER_ROLE_HEADER, "ADMIN"))
@@ -133,22 +133,21 @@ class PaymentIntegrationTest {
     }
 
     @Test
-    @DisplayName("다른 사용자의 결제는 조회할 수 없다")
-    void 다른_사용자의_결제는_조회할_수_없다() throws Exception {
-        // given
-        Member otherMember = memberRepository.save(MemberFixture.이메일로_생성("other@example.com"));
-        Payment payment = PaymentFixture.기본_결제_생성()
+    @DisplayName("?�른 ?�용?�의 결제??조회?????�다")
+    void ?�른_?�용?�의_결제??조회?????�다() throws Exception {
+
+        Member otherMember = memberRepository.save(MemberFixture.?�메?�로_?�성("other@example.com"));
+        Payment payment = PaymentFixture.기본_결제_?�성()
                 .orderNo("ORDER-001")
                 .userId(otherMember.getId())
                 .build();
         payment = paymentRepository.save(payment);
 
-        // when & then
+ & then
         mockMvc.perform(get("/api/v1/payments/{paymentId}", payment.getId())
                         .header(HeaderConstants.USER_ID_HEADER, testMember.getId())
                         .header(HeaderConstants.USER_ROLE_HEADER, "USER"))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
-}
 

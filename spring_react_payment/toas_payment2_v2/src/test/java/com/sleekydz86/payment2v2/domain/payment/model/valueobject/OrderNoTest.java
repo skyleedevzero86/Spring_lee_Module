@@ -28,7 +28,7 @@ class OrderNoTest {
     @Test
     @DisplayName("null 값으로 OrderNo 객체를 생성하면 예외가 발생한다")
     void null_값으로_OrderNo_객체를_생성하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> OrderNo.of(null))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -38,7 +38,7 @@ class OrderNoTest {
     @Test
     @DisplayName("빈 문자열로 OrderNo 객체를 생성하면 예외가 발생한다")
     void 빈_문자열로_OrderNo_객체를_생성하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> OrderNo.of(""))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -77,9 +77,10 @@ class OrderNoTest {
                 "ORDER-123_456:789"
         };
 
-        // when & then
         for (String orderNo : validOrderNos) {
+            // when
             OrderNo orderNoObj = OrderNo.of(orderNo);
+            // then
             assertThat(orderNoObj.getValue()).isEqualTo(orderNo);
         }
     }
@@ -97,8 +98,8 @@ class OrderNoTest {
                 "ORDER*123"
         };
 
-        // when & then
         for (String orderNo : invalidOrderNos) {
+            // when & then
             assertThatThrownBy(() -> OrderNo.of(orderNo))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorCode")
@@ -132,4 +133,3 @@ class OrderNoTest {
         assertThat(orderNoObj.getValue()).isEqualTo(orderNo);
     }
 }
-

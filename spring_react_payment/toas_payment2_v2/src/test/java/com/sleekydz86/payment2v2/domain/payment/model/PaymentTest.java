@@ -294,5 +294,4 @@ class PaymentTest {
                 .expiredTime(LocalDateTime.now().plusHours(1))
                 .build();
     }
-}
 

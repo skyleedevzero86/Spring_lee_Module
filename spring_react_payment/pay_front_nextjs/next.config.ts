@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: projectRoot,
   
   generateEtags: false,
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -52,11 +56,11 @@ const nextConfig: NextConfig = {
         } else if (typeof originalExternals === 'function') {
           config.externals = [
             originalExternals,
-            ({ request }: { request: string }, callback: any) => {
+            ({ request }: { request: string }, callback: (err: Error | null, result?: string) => void) => {
               if (request && request.includes('@tanstack/react-query-devtools')) {
                 return callback(null, 'commonjs ' + request);
               }
-              callback();
+              callback(null);
             },
           ];
         } else {

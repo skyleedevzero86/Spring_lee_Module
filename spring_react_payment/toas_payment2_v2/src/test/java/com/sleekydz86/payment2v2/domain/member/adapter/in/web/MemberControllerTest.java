@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(MemberController.class)
-@DisplayName("MemberController 테스트")
+@DisplayName("MemberController ?�스??)
 class MemberControllerTest {
 
     @Autowired
@@ -35,25 +35,25 @@ class MemberControllerTest {
     private MemberWebMapper memberWebMapper;
 
     @Test
-    @DisplayName("회원가입 API가 성공적으로 동작한다")
-    void 회원가입_API가_성공적으로_동작한다() throws Exception {
-        // given
+    @DisplayName("?�원가??API가 ?�공?�으�??�작?�다")
+    void ?�원가??API가_?�공?�으�??�작?�다() throws Exception {
+
         RegisterMemberRequest request = new RegisterMemberRequest();
         request.setEmail("test@example.com");
-        request.setName("홍길동");
+        request.setName("?�길??);
         request.setPassword("password123");
 
         RegisterMemberResponse response = RegisterMemberResponse.builder()
                 .id(1L)
                 .email("test@example.com")
-                .name("홍길동")
+                .name("?�길??)
                 .build();
 
         given(memberWebMapper.toCommand(any(RegisterMemberRequest.class))).willReturn(null);
         given(registerMemberUseCase.register(any())).willReturn(response);
         given(memberWebMapper.toApiResponse(response)).willReturn(null);
 
-        // when & then
+ & then
         mockMvc.perform(post("/api/v1/members")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -62,13 +62,13 @@ class MemberControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 API에서 필수 필드 누락 시 400 에러가 발생한다")
-    void 회원가입_API에서_필수_필드_누락_시_400_에러가_발생한다() throws Exception {
-        // given
+    @DisplayName("?�원가??API?�서 ?�수 ?�드 ?�락 ??400 ?�러가 발생?�다")
+    void ?�원가??API?�서_?�수_?�드_?�락_??400_?�러가_발생?�다() throws Exception {
+
         RegisterMemberRequest request = new RegisterMemberRequest();
         request.setEmail("test@example.com");
 
-        // when & then
+ & then
         mockMvc.perform(post("/api/v1/members")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -77,20 +77,19 @@ class MemberControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 API에서 잘못된 이메일 형식 시 400 에러가 발생한다")
-    void 회원가입_API에서_잘못된_이메일_형식_시_400_에러가_발생한다() throws Exception {
-        // given
+    @DisplayName("?�원가??API?�서 ?�못???�메???�식 ??400 ?�러가 발생?�다")
+    void ?�원가??API?�서_?�못???�메???�식_??400_?�러가_발생?�다() throws Exception {
+
         RegisterMemberRequest request = new RegisterMemberRequest();
         request.setEmail("invalid-email");
-        request.setName("홍길동");
+        request.setName("?�길??);
         request.setPassword("password123");
 
-        // when & then
+ & then
         mockMvc.perform(post("/api/v1/members")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
-}
 

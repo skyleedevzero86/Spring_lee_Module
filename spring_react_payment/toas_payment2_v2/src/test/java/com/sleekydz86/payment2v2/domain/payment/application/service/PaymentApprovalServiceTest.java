@@ -29,7 +29,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PaymentApprovalService 단위 테스트")
+@DisplayName("PaymentApprovalService ?�위 ?�스??)
 class PaymentApprovalServiceTest {
 
     @Mock
@@ -51,18 +51,20 @@ class PaymentApprovalServiceTest {
     private PaymentApprovalService paymentApprovalService;
 
     @Test
-    @DisplayName("결제 승인이 성공적으로 완료된다")
-    void 결제_승인이_성공적으로_완료된다() {
+    @DisplayName("결제 ?�인???�공?�으�??�료?�다")
+    void 결제_?�인???�공?�으�??�료?�다() {
+
         // given
         ApprovePaymentCommand command = ApprovePaymentCommand.builder()
                 .payToken("test-pay-token-123")
                 .orderNo("ORDER-001")
                 .build();
 
-        Payment payment = PaymentFixture.대기중인_결제();
+        Payment payment = PaymentFixture.?�기중??결제();
+        // when
         ReflectionTestUtils.setField(payment, "id", 1L);
 
-        TossPaymentExecuteResponse executeResponse = TossPaymentFixture.성공한_결제_승인_응답();
+        TossPaymentExecuteResponse executeResponse = TossPaymentFixture.?�공??결제_?�인_?�답();
         PaymentApprovalResponse expectedResponse = PaymentApprovalResponse.builder()
                 .id(1L)
                 .orderNo("ORDER-001")
@@ -75,8 +77,9 @@ class PaymentApprovalServiceTest {
         given(paymentRepository.save(any(Payment.class))).willReturn(payment);
         given(paymentResponseMapper.toApprovalResponse(any(Payment.class))).willReturn(expectedResponse);
 
-        // when
+
         PaymentApprovalResponse result = paymentApprovalService.approvePayment(command);
+
 
         // then
         assertThat(result).isNotNull();
@@ -91,20 +94,22 @@ class PaymentApprovalServiceTest {
     }
 
     @Test
-    @DisplayName("이미 완료된 결제는 승인할 수 없다")
-    void 이미_완료된_결제는_승인할_수_없다() {
+    @DisplayName("?��? ?�료??결제???�인?????�다")
+    void ?��?_?�료??결제???�인?????�다() {
+
         // given
         ApprovePaymentCommand command = ApprovePaymentCommand.builder()
                 .payToken("test-pay-token-123")
                 .orderNo("ORDER-001")
                 .build();
 
-        Payment payment = PaymentFixture.완료된_결제();
+        Payment payment = PaymentFixture.?�료??결제();
+        // when
         ReflectionTestUtils.setField(payment, "id", 1L);
 
         given(paymentRepository.findByPayToken("test-pay-token-123")).willReturn(Optional.of(payment));
 
-        // when & then
+        // then
         assertThatThrownBy(() -> paymentApprovalService.approvePayment(command))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -115,8 +120,9 @@ class PaymentApprovalServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 결제는 승인할 수 없다")
-    void 존재하지_않는_결제는_승인할_수_없다() {
+    @DisplayName("존재?��? ?�는 결제???�인?????�다")
+    void 존재?��?_?�는_결제???�인?????�다() {
+
         // given
         ApprovePaymentCommand command = ApprovePaymentCommand.builder()
                 .payToken("invalid-token")
@@ -134,5 +140,4 @@ class PaymentApprovalServiceTest {
 
         verify(paymentGatewayPort, never()).executePayment(any());
     }
-}
 

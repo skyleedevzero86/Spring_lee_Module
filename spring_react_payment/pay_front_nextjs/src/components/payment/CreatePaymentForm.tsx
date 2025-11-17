@@ -18,14 +18,6 @@ export const CreatePaymentForm = memo(() => {
   const defaultValues = useMemo(
     () => ({
       amountTaxFree: 0,
-      retUrl:
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/payments/success`
-          : '',
-      retCancelUrl:
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/payments/cancel`
-          : '',
     }),
     []
   );

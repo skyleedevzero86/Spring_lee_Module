@@ -59,8 +59,8 @@ class MemberTest {
     }
 
     @Test
-    @DisplayName("비밀번호 일치 확인이 정상적으로 동작한다")
-    void 비밀번호_일치_확인이_정상적으로_동작한다() {
+    @DisplayName("비밀번호 일치 인증이 정상적으로 동작한다")
+    void 비밀번호_일치_인증이_정상적으로_동작한다() {
         // given
         Member member = Member.create(
                 Email.of("test@example.com"),
@@ -79,8 +79,8 @@ class MemberTest {
     }
 
     @Test
-    @DisplayName("비밀번호 불일치 확인이 정상적으로 동작한다")
-    void 비밀번호_불일치_확인이_정상적으로_동작한다() {
+    @DisplayName("비밀번호 불일치 인증이 정상적으로 동작한다")
+    void 비밀번호_불일치_인증이_정상적으로_동작한다() {
         // given
         Member member = Member.create(
                 Email.of("test@example.com"),
@@ -117,4 +117,3 @@ class MemberTest {
         assertThat(member.matchesPassword("new-raw-password", passwordEncoder)).isTrue();
     }
 }
-

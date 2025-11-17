@@ -30,7 +30,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("MemberService 단위 테스트")
+@DisplayName("MemberService ?�위 ?�스??)
 class MemberServiceTest {
 
     @Mock
@@ -46,22 +46,24 @@ class MemberServiceTest {
     private MemberService memberService;
 
     @Test
-    @DisplayName("회원가입이 성공적으로 완료된다")
-    void 회원가입이_성공적으로_완료된다() {
+    @DisplayName("?�원가?�이 ?�공?�으�??�료?�다")
+    void ?�원가?�이_?�공?�으�??�료?�다() {
+
         // given
         RegisterMemberCommand command = RegisterMemberCommand.builder()
                 .email("test@example.com")
-                .name("홍길동")
+                .name("?�길??)
                 .password("password123")
                 .build();
 
-        Member savedMember = MemberFixture.일반_사용자();
+        Member savedMember = MemberFixture.?�반_?�용??);
+        // when
         ReflectionTestUtils.setField(savedMember, "id", 1L);
 
         RegisterMemberResponse expectedResponse = RegisterMemberResponse.builder()
                 .id(1L)
                 .email("test@example.com")
-                .name("홍길동")
+                .name("?�길??)
                 .build();
 
         given(memberRepository.existsByEmail("test@example.com")).willReturn(false);
@@ -69,14 +71,15 @@ class MemberServiceTest {
         given(memberRepository.save(any(Member.class))).willReturn(savedMember);
         given(memberMapper.toRegisterResponse(savedMember)).willReturn(expectedResponse);
 
-        // when
+
         RegisterMemberResponse result = memberService.register(command);
+
 
         // then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getEmail()).isEqualTo("test@example.com");
-        assertThat(result.getName()).isEqualTo("홍길동");
+        assertThat(result.getName()).isEqualTo("?�길??);
 
         verify(memberRepository, times(1)).existsByEmail("test@example.com");
         verify(passwordEncoder, times(1)).encode("password123");
@@ -84,12 +87,13 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("이미 존재하는 이메일로 회원가입 시 예외가 발생한다")
-    void 이미_존재하는_이메일로_회원가입_시_예외가_발생한다() {
+    @DisplayName("?��? 존재?�는 ?�메?�로 ?�원가?????�외가 발생?�다")
+    void ?��?_존재?�는_?�메?�로_?�원가?????�외가_발생?�다() {
+
         // given
         RegisterMemberCommand command = RegisterMemberCommand.builder()
                 .email("existing@example.com")
-                .name("홍길동")
+                .name("?�길??)
                 .password("password123")
                 .build();
 
@@ -106,38 +110,42 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("이메일로 회원 조회가 성공적으로 완료된다")
-    void 이메일로_회원_조회가_성공적으로_완료된다() {
+    @DisplayName("?�메?�로 ?�원 조회가 ?�공?�으�??�료?�다")
+    void ?�메?�로_?�원_조회가_?�공?�으�??�료?�다() {
+
         // given
         String email = "test@example.com";
-        Member member = MemberFixture.일반_사용자();
+        Member member = MemberFixture.?�반_?�용??);
+        // when
         ReflectionTestUtils.setField(member, "id", 1L);
 
         FindMemberResponse expectedResponse = FindMemberResponse.builder()
                 .id(1L)
                 .email("test@example.com")
-                .name("홍길동")
+                .name("?�길??)
                 .role("USER")
                 .build();
 
         given(memberRepository.findByEmail(email)).willReturn(Optional.of(member));
         given(memberMapper.toFindResponse(member)).willReturn(expectedResponse);
 
-        // when
+
         FindMemberResponse result = memberService.findByEmail(email);
+
 
         // then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getEmail()).isEqualTo("test@example.com");
-        assertThat(result.getName()).isEqualTo("홍길동");
+        assertThat(result.getName()).isEqualTo("?�길??);
 
         verify(memberRepository, times(1)).findByEmail(email);
     }
 
     @Test
-    @DisplayName("존재하지 않는 이메일로 조회 시 예외가 발생한다")
-    void 존재하지_않는_이메일로_조회_시_예외가_발생한다() {
+    @DisplayName("존재?��? ?�는 ?�메?�로 조회 ???�외가 발생?�다")
+    void 존재?��?_?�는_?�메?�로_조회_???�외가_발생?�다() {
+
         // given
         String email = "notfound@example.com";
         given(memberRepository.findByEmail(email)).willReturn(Optional.empty());
@@ -152,92 +160,95 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("이름으로 회원 검색이 성공적으로 완료된다")
-    void 이름으로_회원_검색이_성공적으로_완료된다() {
+    @DisplayName("?�름?�로 ?�원 검?�이 ?�공?�으�??�료?�다")
+    void ?�름?�로_?�원_검?�이_?�공?�으�??�료?�다() {
+
         // given
-        String name = "홍길동";
-        Member member1 = MemberFixture.일반_사용자();
-        Member member2 = MemberFixture.이메일로_생성("test2@example.com");
+        String name = "?�길??;
+        Member member1 = MemberFixture.?�반_?�용??);
+        Member member2 = MemberFixture.?�메?�로_?�성("test2@example.com");
         List<Member> members = List.of(member1, member2);
 
         SearchMemberResponse response1 = SearchMemberResponse.builder()
                 .id(1L)
                 .email("user@example.com")
-                .name("홍길동")
+                .name("?�길??)
                 .build();
         SearchMemberResponse response2 = SearchMemberResponse.builder()
                 .id(2L)
                 .email("test2@example.com")
-                .name("테스트 사용자")
+                .name("?�스???�용??)
                 .build();
 
-        given(memberRepository.findByNameContainingIgnoreCase("홍길동")).willReturn(members);
+        given(memberRepository.findByNameContainingIgnoreCase("?�길??)).willReturn(members);
         given(memberMapper.toSearchResponse(member1)).willReturn(response1);
         given(memberMapper.toSearchResponse(member2)).willReturn(response2);
 
-        // when
+
         List<SearchMemberResponse> result = memberService.searchByName(name);
 
-        // then
+
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getName()).isEqualTo("홍길동");
+        assertThat(result.get(0).getName()).isEqualTo("?�길??);
 
-        verify(memberRepository, times(1)).findByNameContainingIgnoreCase("홍길동");
+        verify(memberRepository, times(1)).findByNameContainingIgnoreCase("?�길??);
     }
 
     @Test
-    @DisplayName("이름으로 페이징 검색이 성공적으로 완료된다")
-    void 이름으로_페이징_검색이_성공적으로_완료된다() {
+    @DisplayName("?�름?�로 ?�이�?검?�이 ?�공?�으�??�료?�다")
+    void ?�름?�로_?�이�?검?�이_?�공?�으�??�료?�다() {
+
         // given
-        String name = "홍길동";
+        String name = "?�길??;
         Pageable pageable = PageRequest.of(0, 10);
-        Member member = MemberFixture.일반_사용자();
+        Member member = MemberFixture.?�반_?�용??);
         Page<Member> memberPage = new PageImpl<>(List.of(member), pageable, 1);
 
         SearchMemberResponse response = SearchMemberResponse.builder()
                 .id(1L)
                 .email("user@example.com")
-                .name("홍길동")
+                .name("?�길??)
                 .build();
 
-        given(memberRepository.findByNameContainingIgnoreCase("홍길동", pageable)).willReturn(memberPage);
+        given(memberRepository.findByNameContainingIgnoreCase("?�길??, pageable)).willReturn(memberPage);
         given(memberMapper.toSearchResponse(member)).willReturn(response);
 
-        // when
+
         PageResponse<SearchMemberResponse> result = memberService.searchByName(name, pageable);
 
-        // then
+
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getTotalElements()).isEqualTo(1);
         assertThat(result.getPage()).isEqualTo(0);
         assertThat(result.getSize()).isEqualTo(10);
 
-        verify(memberRepository, times(1)).findByNameContainingIgnoreCase("홍길동", pageable);
+        verify(memberRepository, times(1)).findByNameContainingIgnoreCase("?�길??, pageable);
     }
 
     @Test
-    @DisplayName("비밀번호 재설정이 성공적으로 완료된다")
-    void 비밀번호_재설정이_성공적으로_완료된다() {
+    @DisplayName("비�?번호 ?�설?�이 ?�공?�으�??�료?�다")
+    void 비�?번호_?�설?�이_?�공?�으�??�료?�다() {
+
         // given
         ResetPasswordCommand command = ResetPasswordCommand.builder()
                 .email("test@example.com")
                 .newPassword("newPassword123")
                 .build();
 
-        Member member = MemberFixture.일반_사용자();
+        Member member = MemberFixture.?�반_?�용??);
         given(memberRepository.findByEmail("test@example.com")).willReturn(Optional.of(member));
         given(passwordEncoder.encode("newPassword123")).willReturn("$2a$10$newEncodedPasswordHash");
         given(memberRepository.save(any(Member.class))).willReturn(member);
 
-        // when
+
         ResetPasswordResponse result = memberService.resetPassword(command);
 
-        // then
+
         assertThat(result).isNotNull();
         assertThat(result.getEmail()).isEqualTo("test@example.com");
-        assertThat(result.getMessage()).contains("성공적으로 재설정");
+        assertThat(result.getMessage()).contains("?�공?�으�??�설??);
 
         verify(memberRepository, times(1)).findByEmail("test@example.com");
         verify(passwordEncoder, times(1)).encode("newPassword123");
@@ -245,8 +256,9 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 이메일로 비밀번호 재설정 시 예외가 발생한다")
-    void 존재하지_않는_이메일로_비밀번호_재설정_시_예외가_발생한다() {
+    @DisplayName("존재?��? ?�는 ?�메?�로 비�?번호 ?�설?????�외가 발생?�다")
+    void 존재?��?_?�는_?�메?�로_비�?번호_?�설?????�외가_발생?�다() {
+
         // given
         ResetPasswordCommand command = ResetPasswordCommand.builder()
                 .email("notfound@example.com")
@@ -264,5 +276,4 @@ class MemberServiceTest {
         verify(passwordEncoder, never()).encode(anyString());
         verify(memberRepository, never()).save(any(Member.class));
     }
-}
 

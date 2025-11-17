@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PaymentController.class)
-@DisplayName("PaymentController 테스트")
+@DisplayName("PaymentController ?�스??)
 class PaymentControllerTest {
 
     @Autowired
@@ -40,12 +40,12 @@ class PaymentControllerTest {
     private PaymentWebMapper paymentWebMapper;
 
     @Test
-    @DisplayName("결제 생성 API가 성공적으로 동작한다")
-    void 결제_생성_API가_성공적으로_동작한다() throws Exception {
-        // given
+    @DisplayName("결제 ?�성 API가 ?�공?�으�??�작?�다")
+    void 결제_?�성_API가_?�공?�으�??�작?�다() throws Exception {
+
         CreatePaymentRequest request = new CreatePaymentRequest();
         request.setOrderNo("ORDER-001");
-        request.setProductDesc("테스트 상품");
+        request.setProductDesc("?�스???�품");
         request.setAmount(new BigDecimal("10000"));
         request.setAmountTaxFree(new BigDecimal("0"));
         request.setRetUrl("https://example.com/return");
@@ -63,7 +63,7 @@ class PaymentControllerTest {
         given(createPaymentUseCase.createPayment(any())).willReturn(response);
         given(paymentWebMapper.toApiResponse(response)).willReturn(null);
 
-        // when & then
+ & then
         mockMvc.perform(post("/api/v1/payments")
                         .header(HeaderConstants.USER_ID_HEADER, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -73,13 +73,13 @@ class PaymentControllerTest {
     }
 
     @Test
-    @DisplayName("결제 생성 API에서 필수 필드 누락 시 400 에러가 발생한다")
-    void 결제_생성_API에서_필수_필드_누락_시_400_에러가_발생한다() throws Exception {
-        // given
+    @DisplayName("결제 ?�성 API?�서 ?�수 ?�드 ?�락 ??400 ?�러가 발생?�다")
+    void 결제_?�성_API?�서_?�수_?�드_?�락_??400_?�러가_발생?�다() throws Exception {
+
         CreatePaymentRequest request = new CreatePaymentRequest();
         request.setOrderNo("ORDER-001");
 
-        // when & then
+ & then
         mockMvc.perform(post("/api/v1/payments")
                         .header(HeaderConstants.USER_ID_HEADER, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,24 +89,23 @@ class PaymentControllerTest {
     }
 
     @Test
-    @DisplayName("결제 생성 API에서 사용자 ID 헤더 누락 시 400 에러가 발생한다")
-    void 결제_생성_API에서_사용자_ID_헤더_누락_시_400_에러가_발생한다() throws Exception {
-        // given
+    @DisplayName("결제 ?�성 API?�서 ?�용??ID ?�더 ?�락 ??400 ?�러가 발생?�다")
+    void 결제_?�성_API?�서_?�용??ID_?�더_?�락_??400_?�러가_발생?�다() throws Exception {
+
         CreatePaymentRequest request = new CreatePaymentRequest();
         request.setOrderNo("ORDER-001");
-        request.setProductDesc("테스트 상품");
+        request.setProductDesc("?�스???�품");
         request.setAmount(new BigDecimal("10000"));
         request.setAmountTaxFree(new BigDecimal("0"));
         request.setRetUrl("https://example.com/return");
         request.setRetCancelUrl("https://example.com/cancel");
         request.setExpiredTime(LocalDateTime.now().plusHours(1));
 
-        // when & then
+ & then
         mockMvc.perform(post("/api/v1/payments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
-}
 

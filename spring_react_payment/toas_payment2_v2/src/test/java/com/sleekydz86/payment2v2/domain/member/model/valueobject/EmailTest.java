@@ -25,8 +25,8 @@ class EmailTest {
     }
 
     @Test
-    @DisplayName("이메일은 소문자로 변환되어 저장된다")
-    void 이메일은_소문자로_변환되어_저장된다() {
+    @DisplayName("이메일이 대문자로 변환되어 소문자로 저장된다")
+    void 이메일이_대문자로_변환되어_소문자로_저장된다() {
         // given
         String emailValue = "TEST@EXAMPLE.COM";
 
@@ -53,7 +53,7 @@ class EmailTest {
     @Test
     @DisplayName("null 값으로 Email 객체를 생성하면 예외가 발생한다")
     void null_값으로_Email_객체를_생성하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> Email.of(null))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -63,7 +63,7 @@ class EmailTest {
     @Test
     @DisplayName("빈 문자열로 Email 객체를 생성하면 예외가 발생한다")
     void 빈_문자열로_Email_객체를_생성하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> Email.of(""))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -89,8 +89,8 @@ class EmailTest {
     }
 
     @Test
-    @DisplayName("올바르지 않은 형식의 이메일로 Email 객체를 생성하면 예외가 발생한다")
-    void 올바르지_않은_형식의_이메일로_Email_객체를_생성하면_예외가_발생한다() {
+    @DisplayName("잘못된 형식의 이메일로 Email 객체를 생성하면 예외가 발생한다")
+    void 잘못된_형식의_이메일로_Email_객체를_생성하면_예외가_발생한다() {
         // given
         String[] invalidEmails = {
                 "invalid-email",
@@ -103,8 +103,8 @@ class EmailTest {
                 "test@exam ple.com"
         };
 
-        // when & then
         for (String invalidEmail : invalidEmails) {
+            // when & then
             assertThatThrownBy(() -> Email.of(invalidEmail))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorCode")
@@ -124,9 +124,10 @@ class EmailTest {
                 "a@b.co"
         };
 
-        // when & then
         for (String validEmail : validEmails) {
+            // when
             Email email = Email.of(validEmail);
+            // then
             assertThat(email.getValue()).isEqualTo(validEmail.toLowerCase());
         }
     }
@@ -144,4 +145,3 @@ class EmailTest {
         assertThat(email.getValue()).isEqualTo(longEmail.toLowerCase());
     }
 }
-

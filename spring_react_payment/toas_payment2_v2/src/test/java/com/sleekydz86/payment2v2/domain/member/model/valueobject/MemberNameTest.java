@@ -41,7 +41,7 @@ class MemberNameTest {
     @Test
     @DisplayName("null 값으로 MemberName 객체를 생성하면 예외가 발생한다")
     void null_값으로_MemberName_객체를_생성하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> MemberName.of(null))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -51,7 +51,7 @@ class MemberNameTest {
     @Test
     @DisplayName("빈 문자열로 MemberName 객체를 생성하면 예외가 발생한다")
     void 빈_문자열로_MemberName_객체를_생성하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> MemberName.of(""))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -106,13 +106,12 @@ class MemberNameTest {
     @DisplayName("한글과 영문이 혼합된 이름으로 MemberName 객체를 생성할 수 있다")
     void 한글과_영문이_혼합된_이름으로_MemberName_객체를_생성할_수_있다() {
         // given
-        String nameValue = "홍길동 Hong";
+        String nameValue = "홍길동Hong";
 
         // when
         MemberName memberName = MemberName.of(nameValue);
 
         // then
-        assertThat(memberName.getValue()).isEqualTo("홍길동 Hong");
+        assertThat(memberName.getValue()).isEqualTo("홍길동Hong");
     }
 }
-

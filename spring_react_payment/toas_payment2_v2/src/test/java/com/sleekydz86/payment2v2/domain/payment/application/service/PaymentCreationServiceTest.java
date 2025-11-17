@@ -183,6 +183,7 @@ class PaymentCreationServiceTest {
                 .build();
 
         Payment savedPayment = PaymentFixture.기본_결제_생성().build();
+        // when
         ReflectionTestUtils.setField(savedPayment, "id", 1L);
 
         TossPaymentRequest tossRequest = TossPaymentRequest.builder().build();
@@ -213,5 +214,4 @@ class PaymentCreationServiceTest {
         assertThat(capturedEvent.getUserId()).isEqualTo(1L);
         assertThat(capturedEvent.getProductDesc()).isEqualTo("테스트 상품");
     }
-}
 

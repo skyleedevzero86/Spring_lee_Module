@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { QueryProvider } from '@/app/providers/QueryProvider';
+import { WebSocketErrorHandler } from '@/components/common/WebSocketErrorHandler';
 
 export const metadata: Metadata = {
   title: "토스 페이먼츠 결제 시스템",
@@ -21,6 +22,7 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body className="antialiased">
         <QueryProvider>
+          <WebSocketErrorHandler />
           {children}
         </QueryProvider>
       </body>

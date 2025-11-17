@@ -16,10 +16,8 @@ class DateTimeUtilTest {
         // given
         LocalDateTime dateTime = LocalDateTime.of(2024, 1, 15, 14, 30, 45);
 
-        // when
         String formatted = DateTimeUtil.format(dateTime);
 
-        // then
         assertThat(formatted).isEqualTo("2024-01-15 14:30:45");
     }
 
@@ -29,10 +27,8 @@ class DateTimeUtilTest {
         // given
         LocalDateTime dateTime = null;
 
-        // when
         String formatted = DateTimeUtil.format(dateTime);
 
-        // then
         assertThat(formatted).isNull();
     }
 
@@ -42,10 +38,8 @@ class DateTimeUtilTest {
         // given
         String dateTimeString = "2024-01-15 14:30:45";
 
-        // when
         LocalDateTime parsed = DateTimeUtil.parse(dateTimeString);
 
-        // then
         assertThat(parsed).isEqualTo(LocalDateTime.of(2024, 1, 15, 14, 30, 45));
     }
 
@@ -55,10 +49,8 @@ class DateTimeUtilTest {
         // given
         String dateTimeString = null;
 
-        // when
         LocalDateTime parsed = DateTimeUtil.parse(dateTimeString);
 
-        // then
         assertThat(parsed).isNull();
     }
 
@@ -68,10 +60,8 @@ class DateTimeUtilTest {
         // given
         String dateTimeString = "";
 
-        // when
         LocalDateTime parsed = DateTimeUtil.parse(dateTimeString);
 
-        // then
         assertThat(parsed).isNull();
     }
 
@@ -81,11 +71,9 @@ class DateTimeUtilTest {
         // given
         LocalDateTime original = LocalDateTime.of(2024, 1, 15, 14, 30, 45);
 
-        // when
         String formatted = DateTimeUtil.format(original);
         LocalDateTime parsed = DateTimeUtil.parse(formatted);
 
-        // then
         assertThat(parsed).isEqualTo(original);
     }
 
@@ -105,9 +93,10 @@ class DateTimeUtilTest {
                 "2024-06-15 12:30:00"
         };
 
-        // when & then
         for (int i = 0; i < dateTimes.length; i++) {
+            // when
             String formatted = DateTimeUtil.format(dateTimes[i]);
+            // then
             assertThat(formatted).isEqualTo(expected[i]);
         }
     }

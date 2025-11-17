@@ -132,7 +132,6 @@ class ApiClient {
           const url = error.config?.url || '알 수 없음';
           const fullUrl = `${baseURL}${url}`;
           
-          // 상세한 에러 정보 로깅
           logger.error('Network Error', {
             url: error.config?.url,
             method: error.config?.method,

@@ -57,5 +57,4 @@ public class TossPaymentFixture {
         response.setAmount(10000);
         return response;
     }
-}
 

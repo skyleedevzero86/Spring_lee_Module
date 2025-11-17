@@ -19,7 +19,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@DisplayName("PaymentRepository 통합 테스트")
+@DisplayName("PaymentRepository ?�합 ?�스??)
 class PaymentRepositoryTest {
 
     @Autowired
@@ -29,30 +29,34 @@ class PaymentRepositoryTest {
     private PaymentJpaRepository paymentRepository;
 
     @Test
-    @DisplayName("결제를 저장하고 조회할 수 있다")
-    void 결제를_저장하고_조회할_수_있다() {
+    @DisplayName("결제�??�?�하�?조회?????�다")
+    void 결제�??�?�하�?조회?????�다() {
+
         // given
-        Payment payment = PaymentFixture.기본_결제_생성().build();
+        Payment payment = PaymentFixture.기본_결제_?�성().build();
         payment = entityManager.persistAndFlush(payment);
 
-        // when
+
         Optional<Payment> found = paymentRepository.findById(payment.getId());
 
-        // then
+
         assertThat(found).isPresent();
         assertThat(found.get().getOrderNoValue()).isEqualTo("ORDER-001");
         assertThat(found.get().getAmount()).isEqualByComparingTo(new BigDecimal("10000"));
     }
 
     @Test
-    @DisplayName("주문번호로 결제를 조회할 수 있다")
-    void 주문번호로_결제를_조회할_수_있다() {
+    @DisplayName("주문번호�?결제�?조회?????�다")
+    void 주문번호�?결제�?조회?????�다() {
+
         // given
-        Payment payment = PaymentFixture.기본_결제_생성().build();
+        Payment payment = PaymentFixture.기본_결제_?�성().build();
+        // when
         entityManager.persistAndFlush(payment);
 
-        // when
+
         Optional<Payment> found = paymentRepository.findByOrderNo("ORDER-001");
+
 
         // then
         assertThat(found).isPresent();
@@ -60,15 +64,18 @@ class PaymentRepositoryTest {
     }
 
     @Test
-    @DisplayName("주문번호 중복 확인이 정상적으로 동작한다")
-    void 주문번호_중복_확인이_정상적으로_동작한다() {
+    @DisplayName("주문번호 중복 ?�인???�상?�으�??�작?�다")
+    void 주문번호_중복_?�인???�상?�으�??�작?�다() {
+
         // given
-        Payment payment = PaymentFixture.기본_결제_생성().build();
+        Payment payment = PaymentFixture.기본_결제_?�성().build();
+        // when
         entityManager.persistAndFlush(payment);
 
-        // when
+
         boolean exists = paymentRepository.existsByOrderNo("ORDER-001");
         boolean notExists = paymentRepository.existsByOrderNo("ORDER-002");
+
 
         // then
         assertThat(exists).isTrue();
@@ -76,24 +83,27 @@ class PaymentRepositoryTest {
     }
 
     @Test
-    @DisplayName("사용자 ID로 결제 목록을 조회할 수 있다")
-    void 사용자_ID로_결제_목록을_조회할_수_있다() {
+    @DisplayName("?�용??ID�?결제 목록??조회?????�다")
+    void ?�용??ID�?결제_목록??조회?????�다() {
+
         // given
-        Payment payment1 = PaymentFixture.기본_결제_생성().build();
-        Payment payment2 = PaymentFixture.기본_결제_생성()
+        Payment payment1 = PaymentFixture.기본_결제_?�성().build();
+        Payment payment2 = PaymentFixture.기본_결제_?�성()
                 .orderNo("ORDER-002")
                 .build();
-        Payment payment3 = PaymentFixture.기본_결제_생성()
+        Payment payment3 = PaymentFixture.기본_결제_?�성()
                 .userId(2L)
                 .orderNo("ORDER-003")
                 .build();
 
+        // when
         entityManager.persistAndFlush(payment1);
         entityManager.persistAndFlush(payment2);
         entityManager.persistAndFlush(payment3);
 
-        // when
+
         List<Payment> payments = paymentRepository.findAllByUserIdOrderByCreatedAtDesc(1L);
+
 
         // then
         assertThat(payments).hasSize(2);
@@ -102,22 +112,25 @@ class PaymentRepositoryTest {
     }
 
     @Test
-    @DisplayName("사용자 ID로 페이징 조회가 정상적으로 동작한다")
-    void 사용자_ID로_페이징_조회가_정상적으로_동작한다() {
-        // given
+    @DisplayName("?�용??ID�??�이�?조회가 ?�상?�으�??�작?�다")
+    void ?�용??ID�??�이�?조회가_?�상?�으�??�작?�다() {
+
         for (int i = 1; i <= 25; i++) {
-            Payment payment = PaymentFixture.기본_결제_생성()
+            // given
+            Payment payment = PaymentFixture.기본_결제_?�성()
                     .orderNo("ORDER-" + String.format("%03d", i))
                     .build();
+            // when
             entityManager.persistAndFlush(payment);
+        // then
         }
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        // when
+
         Page<Payment> paymentPage = paymentRepository.findAllByUserIdOrderByCreatedAtDesc(1L, pageable);
 
-        // then
+
         assertThat(paymentPage.getContent()).hasSize(10);
         assertThat(paymentPage.getTotalElements()).isEqualTo(25);
         assertThat(paymentPage.getTotalPages()).isEqualTo(3);
@@ -125,14 +138,17 @@ class PaymentRepositoryTest {
     }
 
     @Test
-    @DisplayName("결제 토큰으로 결제를 조회할 수 있다")
-    void 결제_토큰으로_결제를_조회할_수_있다() {
+    @DisplayName("결제 ?�큰?�로 결제�?조회?????�다")
+    void 결제_?�큰?�로_결제�?조회?????�다() {
+
         // given
-        Payment payment = PaymentFixture.대기중인_결제();
+        Payment payment = PaymentFixture.?�기중??결제();
+        // when
         entityManager.persistAndFlush(payment);
 
-        // when
+
         Optional<Payment> found = paymentRepository.findByPayToken("test-pay-token-456");
+
 
         // then
         assertThat(found).isPresent();
@@ -140,14 +156,17 @@ class PaymentRepositoryTest {
     }
 
     @Test
-    @DisplayName("사용자 ID와 결제 ID로 결제를 조회할 수 있다")
-    void 사용자_ID와_결제_ID로_결제를_조회할_수_있다() {
+    @DisplayName("?�용??ID?� 결제 ID�?결제�?조회?????�다")
+    void ?�용??ID?�_결제_ID�?결제�?조회?????�다() {
+
         // given
-        Payment payment = PaymentFixture.기본_결제_생성().build();
+        Payment payment = PaymentFixture.기본_결제_?�성().build();
+        // when
         entityManager.persistAndFlush(payment);
 
-        // when
+
         Optional<Payment> found = paymentRepository.findByIdAndUserId(payment.getId(), 1L);
+
 
         // then
         assertThat(found).isPresent();
@@ -156,19 +175,18 @@ class PaymentRepositoryTest {
     }
 
     @Test
-    @DisplayName("다른 사용자의 결제는 조회되지 않는다")
-    void 다른_사용자의_결제는_조회되지_않는다() {
-        // given
-        Payment payment = PaymentFixture.기본_결제_생성()
+    @DisplayName("?�른 ?�용?�의 결제??조회?��? ?�는??)
+    void ?�른_?�용?�의_결제??조회?��?_?�는??) {
+
+        Payment payment = PaymentFixture.기본_결제_?�성()
                 .userId(1L)
                 .build();
         entityManager.persistAndFlush(payment);
 
-        // when
+
         Optional<Payment> found = paymentRepository.findByIdAndUserId(payment.getId(), 2L);
 
-        // then
+
         assertThat(found).isEmpty();
     }
-}
 

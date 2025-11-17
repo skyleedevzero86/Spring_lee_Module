@@ -30,7 +30,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PaymentRefundService 단위 테스트")
+@DisplayName("PaymentRefundService ?�위 ?�스??)
 class PaymentRefundServiceTest {
 
     @Mock
@@ -55,21 +55,23 @@ class PaymentRefundServiceTest {
     private PaymentRefundService paymentRefundService;
 
     @Test
-    @DisplayName("환불이 성공적으로 완료된다")
-    void 환불이_성공적으로_완료된다() {
+    @DisplayName("?�불???�공?�으�??�료?�다")
+    void ?�불???�공?�으�??�료?�다() {
+
         // given
         RefundPaymentCommand command = RefundPaymentCommand.builder()
                 .paymentId(1L)
                 .refundNo("REFUND-001")
                 .amount(new BigDecimal("10000"))
-                .reason("고객 요청")
+                .reason("고객 ?�청")
                 .build();
 
-        Payment payment = PaymentFixture.완료된_결제();
+        Payment payment = PaymentFixture.?�료??결제();
+        // when
         ReflectionTestUtils.setField(payment, "id", 1L);
 
         TossPaymentRefundRequest refundRequest = TossPaymentRefundRequest.builder().build();
-        TossPaymentRefundResponse refundResponse = TossPaymentFixture.성공한_환불_응답();
+        TossPaymentRefundResponse refundResponse = TossPaymentFixture.?�공???�불_?�답();
         RefundPaymentResponse expectedResponse = RefundPaymentResponse.builder()
                 .paymentId(1L)
                 .refundNo("REFUND-001")
@@ -83,8 +85,9 @@ class PaymentRefundServiceTest {
         given(paymentResponseMapper.toRefundResponse(any(Payment.class), any(TossPaymentRefundResponse.class)))
                 .willReturn(expectedResponse);
 
-        // when
+
         RefundPaymentResponse result = paymentRefundService.refundPayment(command);
+
 
         // then
         assertThat(result).isNotNull();
@@ -99,8 +102,9 @@ class PaymentRefundServiceTest {
     }
 
     @Test
-    @DisplayName("환불 불가능한 상태의 결제는 환불할 수 없다")
-    void 환불_불가능한_상태의_결제는_환불할_수_없다() {
+    @DisplayName("?�불 불�??�한 ?�태??결제???�불?????�다")
+    void ?�불_불�??�한_?�태??결제???�불?????�다() {
+
         // given
         RefundPaymentCommand command = RefundPaymentCommand.builder()
                 .paymentId(1L)
@@ -108,12 +112,13 @@ class PaymentRefundServiceTest {
                 .amount(new BigDecimal("10000"))
                 .build();
 
-        Payment payment = PaymentFixture.대기중인_결제();
+        Payment payment = PaymentFixture.?�기중??결제();
+        // when
         ReflectionTestUtils.setField(payment, "id", 1L);
 
         given(paymentRepository.findById(1L)).willReturn(Optional.of(payment));
 
-        // when & then
+        // then
         assertThatThrownBy(() -> paymentRefundService.refundPayment(command))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -124,8 +129,9 @@ class PaymentRefundServiceTest {
     }
 
     @Test
-    @DisplayName("환불 금액이 결제 금액을 초과하면 예외가 발생한다")
-    void 환불_금액이_결제_금액을_초과하면_예외가_발생한다() {
+    @DisplayName("?�불 금액??결제 금액??초과?�면 ?�외가 발생?�다")
+    void ?�불_금액??결제_금액??초과?�면_?�외가_발생?�다() {
+
         // given
         RefundPaymentCommand command = RefundPaymentCommand.builder()
                 .paymentId(1L)
@@ -133,12 +139,13 @@ class PaymentRefundServiceTest {
                 .amount(new BigDecimal("20000"))
                 .build();
 
-        Payment payment = PaymentFixture.완료된_결제();
+        Payment payment = PaymentFixture.?�료??결제();
+        // when
         ReflectionTestUtils.setField(payment, "id", 1L);
 
         given(paymentRepository.findById(1L)).willReturn(Optional.of(payment));
 
-        // when & then
+        // then
         assertThatThrownBy(() -> paymentRefundService.refundPayment(command))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -148,8 +155,9 @@ class PaymentRefundServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 결제는 환불할 수 없다")
-    void 존재하지_않는_결제는_환불할_수_없다() {
+    @DisplayName("존재?��? ?�는 결제???�불?????�다")
+    void 존재?��?_?�는_결제???�불?????�다() {
+
         // given
         RefundPaymentCommand command = RefundPaymentCommand.builder()
                 .paymentId(999L)
@@ -167,5 +175,4 @@ class PaymentRefundServiceTest {
 
         verify(paymentGatewayPort, never()).refundPayment(any());
     }
-}
 

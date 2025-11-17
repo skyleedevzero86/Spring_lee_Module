@@ -33,20 +33,6 @@ export const createPaymentSchema = z.object({
   amountVat: z.number().min(0, '부가세는 0원 이상이어야 합니다').optional(),
   amountServiceFee: z.number().min(0, '봉사료는 0원 이상이어야 합니다').optional(),
   disposableCupDeposit: z.number().min(0, '일회용컵 보증금은 0원 이상이어야 합니다').optional(),
-  retUrl: z
-    .string()
-    .min(1, '결제 완료 URL은 필수입니다')
-    .max(255, '결제 완료 URL은 255자 이하여야 합니다')
-    .refine(urlRefine, '올바른 URL 형식이 아닙니다.')
-    .refine(sqlInjectionRefine, 'URL에 사용할 수 없는 문자가 포함되어 있습니다.')
-    .refine(xssRefine, 'URL에 사용할 수 없는 문자가 포함되어 있습니다.'),
-  retCancelUrl: z
-    .string()
-    .min(1, '결제 취소 URL은 필수입니다')
-    .max(255, '결제 취소 URL은 255자 이하여야 합니다')
-    .refine(urlRefine, '올바른 URL 형식이 아닙니다.')
-    .refine(sqlInjectionRefine, 'URL에 사용할 수 없는 문자가 포함되어 있습니다.')
-    .refine(xssRefine, 'URL에 사용할 수 없는 문자가 포함되어 있습니다.'),
   retAppScheme: z.string().max(255, '앱 스킴은 255자 이하여야 합니다').optional(),
   autoExecute: z.boolean().optional(),
   resultCallback: z.string().max(500, '결제 결과 콜백 URL은 500자 이하여야 합니다').optional(),

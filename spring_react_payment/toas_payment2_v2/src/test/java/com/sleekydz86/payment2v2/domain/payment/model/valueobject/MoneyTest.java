@@ -30,7 +30,7 @@ class MoneyTest {
     @Test
     @DisplayName("null 값으로 Money 객체를 생성하면 예외가 발생한다")
     void null_값으로_Money_객체를_생성하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> Money.of(null))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -66,7 +66,7 @@ class MoneyTest {
     @Test
     @DisplayName("0원 Money 객체를 생성할 수 있다")
     void 영원_Money_객체를_생성할_수_있다() {
-        // given & when
+        // given
         Money zero = Money.zero();
 
         // then
@@ -134,8 +134,8 @@ class MoneyTest {
     }
 
     @Test
-    @DisplayName("소수점이 있는 금액도 정상적으로 처리된다")
-    void 소수점이_있는_금액도_정상적으로_처리된다() {
+    @DisplayName("소수점이 있는 금액을 정상적으로 처리한다")
+    void 소수점이_있는_금액을_정상적으로_처리한다() {
         // given
         BigDecimal value = new BigDecimal("12345.678");
 

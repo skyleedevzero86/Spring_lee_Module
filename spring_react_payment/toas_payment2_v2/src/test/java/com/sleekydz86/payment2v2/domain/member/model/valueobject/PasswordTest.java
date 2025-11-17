@@ -27,7 +27,7 @@ class PasswordTest {
     @Test
     @DisplayName("null 값으로 Password 객체를 생성하면 예외가 발생한다")
     void null_값으로_Password_객체를_생성하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> Password.ofEncoded(null))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -37,7 +37,7 @@ class PasswordTest {
     @Test
     @DisplayName("빈 문자열로 Password 객체를 생성하면 예외가 발생한다")
     void 빈_문자열로_Password_객체를_생성하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> Password.ofEncoded(""))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -55,14 +55,14 @@ class PasswordTest {
         // given
         String validPassword = "password123";
 
-        // when & then
+        // when
         Password.validateRaw(validPassword);
     }
 
     @Test
     @DisplayName("null 값으로 원본 비밀번호 검증하면 예외가 발생한다")
     void null_값으로_원본_비밀번호_검증하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> Password.validateRaw(null))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -72,7 +72,7 @@ class PasswordTest {
     @Test
     @DisplayName("빈 문자열로 원본 비밀번호 검증하면 예외가 발생한다")
     void 빈_문자열로_원본_비밀번호_검증하면_예외가_발생한다() {
-        // given & when & then
+        // when & then
         assertThatThrownBy(() -> Password.validateRaw(""))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -85,8 +85,8 @@ class PasswordTest {
     }
 
     @Test
-    @DisplayName("최소 길이 미만의 원본 비밀번호 검증하면 예외가 발생한다")
-    void 최소_길이_미만의_원본_비밀번호_검증하면_예외가_발생한다() {
+    @DisplayName("최소 길이 미만인 원본 비밀번호 검증하면 예외가 발생한다")
+    void 최소_길이_미만인_원본_비밀번호_검증하면_예외가_발생한다() {
         // given
         String shortPassword = "1234567";
 
@@ -98,12 +98,12 @@ class PasswordTest {
     }
 
     @Test
-    @DisplayName("최소 길이의 원본 비밀번호 검증이 통과한다")
-    void 최소_길이의_원본_비밀번호_검증이_통과한다() {
+    @DisplayName("최소 길이인 원본 비밀번호 검증이 통과한다")
+    void 최소_길이인_원본_비밀번호_검증이_통과한다() {
         // given
         String minLengthPassword = "12345678";
 
-        // when & then
+        // when
         Password.validateRaw(minLengthPassword);
     }
 
@@ -113,8 +113,7 @@ class PasswordTest {
         // given
         String longPassword = "password123456789";
 
-        // when & then
+        // when
         Password.validateRaw(longPassword);
     }
 }
-

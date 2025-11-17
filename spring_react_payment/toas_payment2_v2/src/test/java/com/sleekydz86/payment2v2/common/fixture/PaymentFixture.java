@@ -48,5 +48,4 @@ public class PaymentFixture {
         payment.cancel();
         return payment;
     }
-}
 

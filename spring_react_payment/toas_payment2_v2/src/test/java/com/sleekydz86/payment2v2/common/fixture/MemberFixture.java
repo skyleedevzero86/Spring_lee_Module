@@ -30,5 +30,4 @@ public class MemberFixture {
                 MemberName.of("테스트 사용자")
         );
     }
-}
 
