@@ -384,7 +384,7 @@ public class PaymentService
 
                     log.debug("조회 결과: {}건", payments.size());
                     return payments.stream()
-                            .map(payment -> paymentMapper.toHistoryResponse(payment, isAdmin))
+                            .map(payment -> paymentMapper.toHistoryResponse(payment, isAdmin, null, null))
                             .toList();
                 });
     }
@@ -405,7 +405,7 @@ public class PaymentService
                             : paymentRepository.findAllByUserIdOrderByCreatedAtDesc(userId.getValue(), pageable);
 
                     List<PaymentHistoryResponse> content = paymentPage.getContent().stream()
-                            .map(payment -> paymentMapper.toHistoryResponse(payment, isAdmin))
+                            .map(payment -> paymentMapper.toHistoryResponse(payment, isAdmin, null, null))
                             .toList();
 
                     return PageResponse.<PaymentHistoryResponse>builder()

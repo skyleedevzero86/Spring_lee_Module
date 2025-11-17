@@ -102,6 +102,8 @@ export interface PaymentHistoryResponse {
   payMethod?: string;
   createdAt: string;
   paidTs?: string;
+  userName?: string;
+  userEmail?: string;
 }
 
 export interface PaymentDetailResponse {

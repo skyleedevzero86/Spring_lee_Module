@@ -22,5 +22,7 @@ public class PaymentHistoryResponse {
     private String payMethod;
     private LocalDateTime createdAt;
     private LocalDateTime paidTs;
+    private String userName;
+    private String userEmail;
 }
 

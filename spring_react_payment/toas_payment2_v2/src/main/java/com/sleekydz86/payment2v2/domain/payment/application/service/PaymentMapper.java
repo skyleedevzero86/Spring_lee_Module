@@ -181,7 +181,7 @@ public class PaymentMapper {
         return builder.build();
     }
 
-    public PaymentHistoryResponse toHistoryResponse(Payment payment, boolean isAdmin) {
+    public PaymentHistoryResponse toHistoryResponse(Payment payment, boolean isAdmin, String userName, String userEmail) {
         PaymentHistoryResponse.PaymentHistoryResponseBuilder builder = PaymentHistoryResponse.builder()
                 .id(payment.getId())
                 .orderNo(payment.getOrderNoValue())
@@ -189,7 +189,9 @@ public class PaymentMapper {
                 .amount(payment.getAmount())
                 .status(payment.getStatus().name())
                 .payMethod(payment.getPayMethod())
-                .createdAt(payment.getCreatedAt());
+                .createdAt(payment.getCreatedAt())
+                .userName(userName)
+                .userEmail(userEmail);
         
         if (isAdmin) {
             builder.transactionId(payment.getTransactionId());
