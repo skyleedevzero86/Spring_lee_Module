@@ -69,8 +69,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (options.challenge) {
                 if (typeof options.challenge === 'string') {
                     options.challenge = base64UrlToArrayBuffer(options.challenge);
-                } else if (options.challenge.value && Array.isArray(options.challenge.value)) {
+                } else if (options.challenge.value) {
+                    if (typeof options.challenge.value === 'string') {
+                        options.challenge = base64UrlToArrayBuffer(options.challenge.value);
+                    } else if (Array.isArray(options.challenge.value)) {
                     options.challenge = new Uint8Array(options.challenge.value).buffer;
+                    }
                 } else if (Array.isArray(options.challenge)) {
                     options.challenge = new Uint8Array(options.challenge).buffer;
                 } else if (!(options.challenge instanceof ArrayBuffer)) {
@@ -94,6 +98,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         id: id
                     };
                 });
+            }
+
+            if (options.hints !== undefined) {
+                if (!Array.isArray(options.hints)) {
+                    delete options.hints;
+                } else if (options.hints.length === 0) {
+                    delete options.hints;
+                }
             }
 
             const assertion = await navigator.credentials.get({
