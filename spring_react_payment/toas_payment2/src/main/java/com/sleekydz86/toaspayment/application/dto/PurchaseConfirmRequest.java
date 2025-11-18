@@ -11,8 +11,3 @@ public record PurchaseConfirmRequest(
         @NotNull @Positive Integer amount
 ) {
 }
-
-
-
-
-

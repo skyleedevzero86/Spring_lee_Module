@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class TossPaymentStatusResponse {
-    
+
     @JsonProperty("code")
     private Integer code;
 

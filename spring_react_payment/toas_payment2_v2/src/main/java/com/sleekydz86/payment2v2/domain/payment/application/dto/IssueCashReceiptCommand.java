@@ -11,8 +11,7 @@ public class IssueCashReceiptCommand {
     private BigDecimal amount;
     private String orderId;
     private String orderName;
-    private String type; // 소득공제, 지출증빙
+    private String type;
     private String customerIdentityNumber;
     private BigDecimal taxFreeAmount;
 }
-

@@ -92,4 +92,3 @@ class MemberControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
-

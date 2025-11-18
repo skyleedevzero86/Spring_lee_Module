@@ -75,4 +75,3 @@ public class CreatePaymentRequest {
     @Size(max = 10, message = "할부 제한 타입은 10자 이하여야 합니다.")
     private String installment;
 }
-

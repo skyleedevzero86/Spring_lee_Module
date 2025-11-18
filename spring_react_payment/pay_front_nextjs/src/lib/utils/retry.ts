@@ -14,7 +14,7 @@ const DEFAULT_OPTIONS: Required<RetryOptions> = {
   initialDelay: 1000,
   maxDelay: 10000,
   backoffMultiplier: 2,
-  retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+  retryableStatusCodes: [408, 500, 502, 503, 504], // 429는 제외 (재시도하지 않음)
   retryableErrorCodes: ['NETWORK_ERROR', 'TIMEOUT_ERROR'],
 };
 
@@ -39,11 +39,13 @@ function shouldRetry(
       return false;
     }
 
+    // 429 Rate Limit 에러는 재시도하지 않음 (사용자에게 즉시 알려야 함)
+    if (error.statusCode === 429) {
+      return false;
+    }
+
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      if (error.statusCode === 408 || error.statusCode === 429) {
-        if (error.statusCode === 429) {
-          return error.retryAfter !== undefined && error.retryAfter > 0;
-        }
+      if (error.statusCode === 408) {
         return true;
       }
       return false;

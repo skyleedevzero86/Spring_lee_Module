@@ -150,4 +150,3 @@ class PaymentIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
-

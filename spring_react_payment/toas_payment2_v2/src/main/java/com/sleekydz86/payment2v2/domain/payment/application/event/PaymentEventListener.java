@@ -14,22 +14,21 @@ public class PaymentEventListener {
     @Async("taskExecutor")
     @EventListener
     public void handlePaymentCreated(PaymentCreatedEvent event) {
-        log.info("결제 생성 이벤트 처리: paymentId={}, orderNo={}, userId={}", 
+        log.info("결제 생성 이벤트 처리: paymentId={}, orderNo={}, userId={}",
                 event.getPaymentId(), event.getOrderNo(), event.getUserId());
     }
 
     @Async("taskExecutor")
     @EventListener
     public void handlePaymentCompleted(PaymentCompletedEvent event) {
-        log.info("결제 완료 이벤트 처리: paymentId={}, orderNo={}, amount={}, transactionId={}", 
+        log.info("결제 완료 이벤트 처리: paymentId={}, orderNo={}, amount={}, transactionId={}",
                 event.getPaymentId(), event.getOrderNo(), event.getAmount(), event.getTransactionId());
     }
 
     @Async("taskExecutor")
     @EventListener
     public void handlePaymentRefunded(PaymentRefundedEvent event) {
-        log.info("결제 환불 이벤트 처리: paymentId={}, orderNo={}, refundNo={}, refundedAmount={}", 
+        log.info("결제 환불 이벤트 처리: paymentId={}, orderNo={}, refundNo={}, refundedAmount={}",
                 event.getPaymentId(), event.getOrderNo(), event.getRefundNo(), event.getRefundedAmount());
     }
 }
-

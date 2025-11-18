@@ -32,14 +32,13 @@ class AuthIntegrationTest {
     @Test
     @DisplayName("회원가입 성공")
     void register_success() throws Exception {
-        // given
+
         RegisterRequest request = new RegisterRequest(
                 "test@example.com",
                 "password123",
                 "테스트 사용자"
         );
 
-        // when & then
         mockMvc.perform(post("/api/v1/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -52,7 +51,7 @@ class AuthIntegrationTest {
     @Test
     @DisplayName("중복 이메일 회원가입 실패")
     void register_duplicateEmail_fail() throws Exception {
-        // given
+
         RegisterRequest firstRequest = new RegisterRequest(
                 "duplicate@example.com",
                 "password123",
@@ -68,7 +67,6 @@ class AuthIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(firstRequest)));
 
-        // when & then
         mockMvc.perform(post("/api/v1/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(duplicateRequest)))
@@ -79,7 +77,7 @@ class AuthIntegrationTest {
     @Test
     @DisplayName("로그인 성공")
     void login_success() throws Exception {
-        // given
+
         RegisterRequest registerRequest = new RegisterRequest(
                 "login@example.com",
                 "password123",
@@ -94,7 +92,6 @@ class AuthIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)));
 
-        // when & then
         mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
@@ -107,7 +104,7 @@ class AuthIntegrationTest {
     @Test
     @DisplayName("잘못된 비밀번호 로그인 실패")
     void login_wrongPassword_fail() throws Exception {
-        // given
+
         RegisterRequest registerRequest = new RegisterRequest(
                 "wrong@example.com",
                 "password123",
@@ -122,7 +119,6 @@ class AuthIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)));
 
-        // when & then
         mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
@@ -133,13 +129,12 @@ class AuthIntegrationTest {
     @Test
     @DisplayName("존재하지 않는 이메일 로그인 실패")
     void login_notFoundEmail_fail() throws Exception {
-        // given
+
         LoginRequest loginRequest = new LoginRequest(
                 "notfound@example.com",
                 "password123"
         );
 
-        // when & then
         mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
@@ -147,8 +142,3 @@ class AuthIntegrationTest {
                 .andExpect(jsonPath("$.message").value("이메일 또는 비밀번호가 일치하지 않습니다."));
     }
 }
-
-
-
-
-

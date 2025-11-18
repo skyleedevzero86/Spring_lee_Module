@@ -45,4 +45,3 @@ public class MemberName {
         return value;
     }
 }
-

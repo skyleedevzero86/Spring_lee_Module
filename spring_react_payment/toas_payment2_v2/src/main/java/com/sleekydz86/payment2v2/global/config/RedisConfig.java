@@ -40,7 +40,6 @@ public class RedisConfig {
         this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        // 타입 정보 활성화: 역직렬화 시 정확한 타입으로 복원되도록 함
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                 .allowIfSubType(Object.class)
                 .build();
@@ -114,7 +113,6 @@ public class RedisConfig {
             this.objectMapper.registerModule(new JavaTimeModule());
             this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-            // 타입 정보 활성화: 역직렬화 시 정확한 타입으로 복원되도록 함
             PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                     .allowIfSubType(Object.class)
                     .build();
@@ -141,10 +139,6 @@ public class RedisConfig {
                 if (wrapper != null) {
                     Object value = wrapper.get();
 
-                    // Check for single LinkedHashMap object
-                    // LinkedHashMap typically indicates deserialization without proper type
-                    // information
-                    // We evict it to force regeneration with correct type
                     if (value instanceof LinkedHashMap && !(value instanceof List)) {
                         log.warn("캐시에서 LinkedHashMap 감지 (단일 객체), 캐시 무효화: key={}, cache={}", key, getName());
                         try {
@@ -155,7 +149,6 @@ public class RedisConfig {
                         return null;
                     }
 
-                    // Check for LinkedHashMap in Lists
                     if (value instanceof List) {
                         List<?> list = (List<?>) value;
                         if (!list.isEmpty() && list.get(0) instanceof LinkedHashMap) {
@@ -187,10 +180,7 @@ public class RedisConfig {
         @Override
         public <T> T get(Object key, Class<T> type) {
             try {
-                // Always get the raw value first to avoid ClassCastException from
-                // delegate.get(key, type)
-                // Never call delegate.get(key, type) directly as it may throw
-                // ClassCastException
+
                 ValueWrapper wrapper;
                 try {
                     wrapper = delegate.get(key);
@@ -227,16 +217,15 @@ public class RedisConfig {
                     return null;
                 }
 
-                // Check if the raw value is a LinkedHashMap when expecting a different type
                 if (rawValue instanceof LinkedHashMap && !Map.class.isAssignableFrom(type)) {
                     log.warn("캐시에서 LinkedHashMap 감지 (단일 객체), 수동 변환 시도: key={}, expected={}, cache={}",
                             key, type.getName(), getName());
                     try {
-                        // LinkedHashMap을 원하는 타입으로 변환
+
                         T convertedValue = objectMapper.convertValue(rawValue, type);
                         if (convertedValue != null) {
                             log.debug("LinkedHashMap 변환 성공: key={}, type={}", key, type.getName());
-                            // 변환된 값을 다시 캐시에 저장
+
                             delegate.put(key, convertedValue);
                             return convertedValue;
                         }
@@ -244,7 +233,7 @@ public class RedisConfig {
                         log.warn("LinkedHashMap 변환 실패, 캐시 무효화: key={}, error={}", key,
                                 conversionError.getMessage());
                     }
-                    // 캐시 무효화하여 다음 호출 시 새로 생성되도록 함
+
                     try {
                         delegate.evict(key);
                     } catch (Exception evictError) {
@@ -253,7 +242,6 @@ public class RedisConfig {
                     return null;
                 }
 
-                // Check for LinkedHashMap in Lists
                 if (rawValue instanceof List) {
                     List<?> list = (List<?>) rawValue;
                     if (!list.isEmpty() && list.get(0) instanceof LinkedHashMap) {
@@ -267,12 +255,10 @@ public class RedisConfig {
                     }
                 }
 
-                // If rawValue is already the correct type, cast and return it
                 if (type.isInstance(rawValue)) {
                     return type.cast(rawValue);
                 }
 
-                // If not the correct type but not a LinkedHashMap, try conversion
                 log.warn("캐시 타입 불일치 감지, 변환 시도: key={}, expected={}, actual={}",
                         key, type.getName(), rawValue.getClass().getName());
                 try {
@@ -286,7 +272,6 @@ public class RedisConfig {
                     log.warn("타입 변환 실패, 캐시 무효화: key={}, error={}", key, conversionError.getMessage());
                 }
 
-                // If conversion failed, evict the cache entry
                 try {
                     delegate.evict(key);
                 } catch (Exception evictError) {

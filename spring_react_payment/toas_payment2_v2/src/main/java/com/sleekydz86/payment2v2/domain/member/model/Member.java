@@ -72,4 +72,3 @@ public class Member {
         return name != null ? name.getValue() : null;
     }
 }
-

@@ -41,7 +41,7 @@ public class PaymentCancelService implements CancelPaymentUseCase {
         return LoggingUtil.executeWithContext(Map.of(
                 LOG_PAYMENT_KEY, command.getPaymentKey() != null ? command.getPaymentKey() : "알수없음",
                 LOG_OPERATION, "cancelPayment"), () -> {
-                    log.info("결제 취소 요청: paymentKey={}, cancelReason={}", 
+                    log.info("결제 취소 요청: paymentKey={}, cancelReason={}",
                             command.getPaymentKey(), command.getCancelReason());
 
                     TossPaymentCancelRequest request = toTossCancelRequest(command);
@@ -59,7 +59,7 @@ public class PaymentCancelService implements CancelPaymentUseCase {
                 .currency(command.getCurrency());
 
         if (command.getRefundReceiveAccount() != null) {
-            TossPaymentCancelRequest.RefundReceiveAccount refundAccount = 
+            TossPaymentCancelRequest.RefundReceiveAccount refundAccount =
                     TossPaymentCancelRequest.RefundReceiveAccount.builder()
                             .bank(command.getRefundReceiveAccount().getBank())
                             .accountNumber(command.getRefundReceiveAccount().getAccountNumber())
@@ -99,7 +99,7 @@ public class PaymentCancelService implements CancelPaymentUseCase {
 
     private TossPaymentCancelResponse tossCancelFallback(String paymentKey, TossPaymentCancelRequest request, Exception e) {
         log.error("토스페이먼츠 결제 취소 API Circuit Breaker 활성화: paymentKey={}", paymentKey, e);
-        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR, 
+        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR,
                 "토스페이먼츠 서비스가 일시적으로 사용할 수 없습니다.", e);
     }
 
@@ -128,4 +128,3 @@ public class PaymentCancelService implements CancelPaymentUseCase {
                 .build();
     }
 }
-

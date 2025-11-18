@@ -18,4 +18,3 @@ public class RefundPaymentCommand {
     private BigDecimal amountServiceFee;
     private Boolean idempotent;
 }
-

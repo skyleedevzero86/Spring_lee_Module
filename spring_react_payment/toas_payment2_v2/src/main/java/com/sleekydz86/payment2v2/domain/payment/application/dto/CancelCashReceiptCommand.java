@@ -11,4 +11,3 @@ public class CancelCashReceiptCommand {
     private String receiptKey;
     private BigDecimal amount;
 }
-

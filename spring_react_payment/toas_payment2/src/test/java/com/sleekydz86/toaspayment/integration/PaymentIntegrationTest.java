@@ -80,10 +80,9 @@ class PaymentIntegrationTest {
     @Test
     @DisplayName("결제 초기화 성공")
     void initPurchase_success() throws Exception {
-        // given
+
         PurchaseInitRequest request = new PurchaseInitRequest(1L, 50000);
 
-        // when & then
         mockMvc.perform(post("/api/v1/purchase/init")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -95,10 +94,9 @@ class PaymentIntegrationTest {
     @Test
     @DisplayName("인증 없이 결제 초기화 실패")
     void initPurchase_withoutAuth_fail() throws Exception {
-        // given
+
         PurchaseInitRequest request = new PurchaseInitRequest(1L, 50000);
 
-        // when & then
         mockMvc.perform(post("/api/v1/purchase/init")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -108,7 +106,7 @@ class PaymentIntegrationTest {
     @Test
     @DisplayName("결제 승인 성공")
     void confirmPurchase_success() throws Exception {
-        // given
+
         PurchaseInitRequest initRequest = new PurchaseInitRequest(1L, 50000);
         String initResponse = mockMvc.perform(post("/api/v1/purchase/init")
                         .header("Authorization", "Bearer " + token)
@@ -159,7 +157,6 @@ class PaymentIntegrationTest {
                 50000
         );
 
-        // when & then
         mockMvc.perform(post("/api/v1/purchase/confirm")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -173,7 +170,7 @@ class PaymentIntegrationTest {
     @Test
     @DisplayName("존재하지 않는 주문 결제 승인 실패")
     void confirmPurchase_notFoundOrder_fail() throws Exception {
-        // given
+
         PurchaseConfirmRequest request = new PurchaseConfirmRequest(
                 "payment_key_123",
                 "not_exist_order_id",
@@ -181,7 +178,6 @@ class PaymentIntegrationTest {
                 50000
         );
 
-        // when & then
         mockMvc.perform(post("/api/v1/purchase/confirm")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -193,7 +189,7 @@ class PaymentIntegrationTest {
     @Test
     @DisplayName("금액 불일치 결제 승인 실패")
     void confirmPurchase_amountMismatch_fail() throws Exception {
-        // given
+
         PurchaseInitRequest initRequest = new PurchaseInitRequest(1L, 50000);
         String initResponse = mockMvc.perform(post("/api/v1/purchase/init")
                         .header("Authorization", "Bearer " + token)
@@ -215,7 +211,6 @@ class PaymentIntegrationTest {
                 30000
         );
 
-        // when & then
         mockMvc.perform(post("/api/v1/purchase/confirm")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -227,7 +222,7 @@ class PaymentIntegrationTest {
     @Test
     @DisplayName("환불 성공")
     void refundOrder_success() throws Exception {
-        // given
+
         PurchaseInitRequest initRequest = new PurchaseInitRequest(1L, 50000);
         String initResponse = mockMvc.perform(post("/api/v1/purchase/init")
                         .header("Authorization", "Bearer " + token)
@@ -334,7 +329,6 @@ class PaymentIntegrationTest {
                 50000
         );
 
-        // when & then
         mockMvc.perform(post("/api/v1/purchase/refund")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -348,7 +342,7 @@ class PaymentIntegrationTest {
     @Test
     @DisplayName("결제 완료되지 않은 주문 환불 실패")
     void refundOrder_notDoneOrder_fail() throws Exception {
-        // given
+
         PurchaseInitRequest initRequest = new PurchaseInitRequest(1L, 50000);
         String initResponse = mockMvc.perform(post("/api/v1/purchase/init")
                         .header("Authorization", "Bearer " + token)
@@ -370,7 +364,6 @@ class PaymentIntegrationTest {
                 50000
         );
 
-        // when & then
         mockMvc.perform(post("/api/v1/purchase/refund")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -379,4 +372,3 @@ class PaymentIntegrationTest {
                 .andExpect(jsonPath("$.message").value("환불 가능한 주문이 아닙니다."));
     }
 }
-

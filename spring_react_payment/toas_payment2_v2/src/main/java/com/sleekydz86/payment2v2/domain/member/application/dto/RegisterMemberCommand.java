@@ -10,4 +10,3 @@ public class RegisterMemberCommand {
     private String password;
     private String name;
 }
-

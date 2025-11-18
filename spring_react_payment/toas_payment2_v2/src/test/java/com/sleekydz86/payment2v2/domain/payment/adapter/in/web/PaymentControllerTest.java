@@ -48,7 +48,7 @@ class PaymentControllerTest {
         request.setProductDesc("?�스???�품");
         request.setAmount(new BigDecimal("10000"));
         request.setAmountTaxFree(new BigDecimal("0"));
-        request.setRetUrl("https://example.com/return");
+        request.setRetUrl("https:
         request.setRetCancelUrl("https://example.com/cancel");
         request.setExpiredTime(LocalDateTime.now().plusHours(1));
 
@@ -108,4 +108,3 @@ class PaymentControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
-

@@ -13,4 +13,3 @@ public class MetricsConfig {
         return new TimedAspect(registry);
     }
 }
-

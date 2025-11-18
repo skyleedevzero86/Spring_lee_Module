@@ -14,4 +14,3 @@ public class ValidationException extends BusinessException {
         return validationErrors;
     }
 }
-

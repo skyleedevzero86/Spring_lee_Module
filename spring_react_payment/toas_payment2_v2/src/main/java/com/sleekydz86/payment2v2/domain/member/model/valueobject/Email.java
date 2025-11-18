@@ -42,7 +42,7 @@ public class Email {
         }
         String trimmed = value.trim();
         if (trimmed.length() > MAX_LENGTH) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, 
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE,
                     String.format("이메일은 %d자를 초과할 수 없습니다.", MAX_LENGTH));
         }
         if (!EMAIL_PATTERN.matcher(trimmed).matches()) {
@@ -54,4 +54,3 @@ public class Email {
         return value;
     }
 }
-

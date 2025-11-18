@@ -31,4 +31,3 @@ public class CreatePaymentCommand {
     private Object cardOptions;
     private String installment;
 }
-

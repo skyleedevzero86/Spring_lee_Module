@@ -67,16 +67,16 @@ public class PaymentController {
     @GetMapping("/receipt/{orderId}")
     public ResponseEntity<byte[]> downloadReceipt(@PathVariable String orderId) {
         byte[] pdfBytes = generateReceiptUseCase.execute(orderId);
-        
+
         String filename = "영수증_" + orderId + ".pdf";
         ContentDisposition contentDisposition = ContentDisposition.attachment()
                 .filename(filename, StandardCharsets.UTF_8)
                 .build();
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(contentDisposition);
-        
+
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(pdfBytes);
@@ -90,4 +90,3 @@ public class PaymentController {
         return ResponseEntity.ok(orders);
     }
 }
-

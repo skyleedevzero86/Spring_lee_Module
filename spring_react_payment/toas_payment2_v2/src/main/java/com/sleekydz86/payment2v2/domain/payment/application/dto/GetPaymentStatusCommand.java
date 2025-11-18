@@ -9,4 +9,3 @@ public class GetPaymentStatusCommand {
     private String payToken;
     private String orderNo;
 }
-

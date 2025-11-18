@@ -14,4 +14,3 @@ public class TransactionInfoApiResponse {
     private Integer pointAmount;
     private String regTs;
 }
-

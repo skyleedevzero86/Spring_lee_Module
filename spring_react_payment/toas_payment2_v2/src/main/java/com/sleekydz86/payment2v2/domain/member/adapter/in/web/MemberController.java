@@ -105,7 +105,7 @@ public class MemberController {
             @PageableDefault(size = 20) Pageable pageable) {
         MemberName.of(name);
         PageResponse<SearchMemberResponse> pageResponse = searchMemberPageUseCase.searchByName(name, pageable);
-        com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse<SearchMemberApiResponse> apiResponse = 
+        com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse<SearchMemberApiResponse> apiResponse =
                 memberWebMapper.toPageApiResponse(pageResponse);
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
@@ -116,7 +116,7 @@ public class MemberController {
             @PageableDefault(size = 20) Pageable pageable) {
         Email.of(email);
         PageResponse<SearchMemberResponse> pageResponse = searchMemberPageUseCase.searchByEmail(email, pageable);
-        com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse<SearchMemberApiResponse> apiResponse = 
+        com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse<SearchMemberApiResponse> apiResponse =
                 memberWebMapper.toPageApiResponse(pageResponse);
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
@@ -125,7 +125,7 @@ public class MemberController {
     public ResponseEntity<com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse<SearchMemberApiResponse>> searchAllPage(
             @PageableDefault(size = 20) Pageable pageable) {
         PageResponse<SearchMemberResponse> pageResponse = searchMemberPageUseCase.searchAll(pageable);
-        com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse<SearchMemberApiResponse> apiResponse = 
+        com.sleekydz86.payment2v2.domain.payment.adapter.in.web.dto.PageApiResponse<SearchMemberApiResponse> apiResponse =
                 memberWebMapper.toPageApiResponse(pageResponse);
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
@@ -139,4 +139,3 @@ public class MemberController {
         });
     }
 }
-

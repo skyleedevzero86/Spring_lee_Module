@@ -22,7 +22,7 @@ public class CancelPaymentRequest {
 
     private RefundReceiveAccount refundReceiveAccount;
 
-    private String idempotencyKey; // 멱등키
+    private String idempotencyKey;
 
     @Getter
     @Setter
@@ -39,4 +39,3 @@ public class CancelPaymentRequest {
         private String holderName;
     }
 }
-

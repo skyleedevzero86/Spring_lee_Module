@@ -6,4 +6,3 @@ public interface FindMemberUseCase {
     FindMemberResponse findByEmail(String email);
     FindMemberResponse findById(Long id);
 }
-

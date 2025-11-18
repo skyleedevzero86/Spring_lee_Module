@@ -6,6 +6,3 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentStatusRes
 public interface GetPaymentStatusUseCase {
     PaymentStatusResponse getPaymentStatus(GetPaymentStatusCommand command);
 }
-
-
-

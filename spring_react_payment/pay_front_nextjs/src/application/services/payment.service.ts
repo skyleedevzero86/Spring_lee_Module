@@ -261,6 +261,33 @@ class PaymentService {
       '결제 취소에 실패했습니다.'
     );
   }
+
+  async cancelPaymentById(
+    paymentId: number,
+    request: CancelPaymentRequest
+  ): Promise<CancelPaymentResponse> {
+    return handleServiceCall(
+      () => paymentApi.cancelPaymentById(paymentId, request),
+      'CANCEL_PAYMENT_FAILED',
+      '결제 취소에 실패했습니다.'
+    );
+  }
+
+  async downloadReceipt(paymentId: number): Promise<Blob> {
+    try {
+      return await paymentApi.downloadReceipt(paymentId);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(
+        'DOWNLOAD_RECEIPT_FAILED',
+        0,
+        '영수증 다운로드에 실패했습니다.',
+        error instanceof Error ? error.message : String(error)
+      );
+    }
+  }
 }
 
 export const paymentService = new PaymentService();

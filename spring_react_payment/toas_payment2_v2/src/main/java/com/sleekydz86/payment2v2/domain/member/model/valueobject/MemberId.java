@@ -40,4 +40,3 @@ public class MemberId {
         return value;
     }
 }
-

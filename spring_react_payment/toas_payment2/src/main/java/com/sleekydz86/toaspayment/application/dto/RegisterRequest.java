@@ -15,8 +15,3 @@ public record RegisterRequest(
         String name
 ) {
 }
-
-
-
-
-

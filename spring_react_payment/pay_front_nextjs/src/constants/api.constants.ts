@@ -30,6 +30,8 @@ export const API_ENDPOINTS = {
     DETAIL: (id: number) => `/api/v1/payments/${id}`,
     REFUND: (id: number) => `/api/v1/payments/${id}/refund`,
     CANCEL: (paymentKey: string) => `/api/v1/payments/${paymentKey}/cancel`,
+    CANCEL_BY_ID: (id: number) => `/api/v1/payments/${id}/cancel-by-id`,
+    RECEIPT: (id: number) => `/api/v1/payments/${id}/receipt`,
   },
   CASH_RECEIPTS: {
     BASE: '/api/v1/cash-receipts',

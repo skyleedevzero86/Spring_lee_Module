@@ -27,4 +27,3 @@ public class CancelPaymentApiResponse {
         private String cancelStatus;
     }
 }
-

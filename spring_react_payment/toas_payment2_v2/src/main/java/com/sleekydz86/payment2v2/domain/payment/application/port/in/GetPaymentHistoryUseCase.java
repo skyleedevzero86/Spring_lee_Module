@@ -7,4 +7,3 @@ import java.util.List;
 public interface GetPaymentHistoryUseCase {
     List<PaymentHistoryResponse> getPaymentHistory(Long userId, String userRole);
 }
-

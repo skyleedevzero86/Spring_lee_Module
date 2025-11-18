@@ -7,4 +7,3 @@ import org.springframework.data.domain.Pageable;
 public interface GetPaymentHistoryPageUseCase {
     PageResponse<PaymentHistoryResponse> getPaymentHistory(Long userId, String userRole, Pageable pageable);
 }
-

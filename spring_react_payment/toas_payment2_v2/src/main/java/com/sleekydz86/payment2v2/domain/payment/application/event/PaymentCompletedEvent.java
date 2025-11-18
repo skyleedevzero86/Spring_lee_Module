@@ -15,4 +15,3 @@ public class PaymentCompletedEvent extends PaymentEvent {
         this.transactionId = transactionId;
     }
 }
-

@@ -18,4 +18,3 @@ public abstract class PaymentEvent extends ApplicationEvent {
         this.orderNo = orderNo;
     }
 }
-

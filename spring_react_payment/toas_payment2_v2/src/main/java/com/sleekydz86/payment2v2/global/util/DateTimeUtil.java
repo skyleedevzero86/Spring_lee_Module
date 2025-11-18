@@ -24,4 +24,3 @@ public class DateTimeUtil {
         return LocalDateTime.parse(dateTimeString, DEFAULT_FORMATTER);
     }
 }
-

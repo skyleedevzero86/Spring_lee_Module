@@ -14,4 +14,3 @@ public class TransactionInfo {
     private Integer pointAmount;
     private String regTs;
 }
-

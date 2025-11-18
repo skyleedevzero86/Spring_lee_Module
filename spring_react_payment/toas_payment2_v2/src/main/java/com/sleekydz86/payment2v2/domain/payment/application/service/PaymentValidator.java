@@ -26,6 +26,3 @@ public class PaymentValidator {
         return Money.of(amountTaxFree);
     }
 }
-
-
-

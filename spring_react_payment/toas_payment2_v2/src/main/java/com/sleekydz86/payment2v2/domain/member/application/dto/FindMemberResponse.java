@@ -11,4 +11,3 @@ public class FindMemberResponse {
     private String name;
     private String role;
 }
-

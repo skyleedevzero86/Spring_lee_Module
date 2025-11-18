@@ -15,4 +15,3 @@ public class PaymentRefundedEvent extends PaymentEvent {
         this.refundedAmount = refundedAmount;
     }
 }
-

@@ -11,4 +11,3 @@ public class RegisterMemberApiResponse {
     private String name;
     private String role;
 }
-

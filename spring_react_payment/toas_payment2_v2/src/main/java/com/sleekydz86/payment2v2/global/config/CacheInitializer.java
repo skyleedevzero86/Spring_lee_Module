@@ -20,7 +20,7 @@ public class CacheInitializer {
     public void clearCacheOnStartup() {
         try {
             log.info("Redis 캐시 초기화 시작...");
-            
+
             if (cacheManager != null) {
                 cacheManager.getCacheNames().forEach(cacheName -> {
                     var cache = cacheManager.getCache(cacheName);
@@ -30,13 +30,10 @@ public class CacheInitializer {
                     }
                 });
             }
-            
+
             log.info("Redis 캐시 초기화 완료");
         } catch (Exception e) {
             log.warn("캐시 초기화 중 오류 발생 (무시 가능): {}", e.getMessage());
         }
     }
 }
-
-
-

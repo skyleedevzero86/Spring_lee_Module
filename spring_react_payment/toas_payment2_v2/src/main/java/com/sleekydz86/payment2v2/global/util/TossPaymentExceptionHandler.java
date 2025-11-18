@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class TossPaymentExceptionHandler {
-    
+
     private TossPaymentExceptionHandler() {
         throw new AssertionError("유틸리티 클래스는 인스턴스화할 수 없습니다.");
     }
@@ -25,7 +25,7 @@ public final class TossPaymentExceptionHandler {
         if (!validator.isSuccess(response)) {
             String errorMessage = validator.getErrorMessage(response);
             log.error("토스페이먼츠 {} 실패: orderNo={}, message={}", operation, orderNo, errorMessage);
-            throw new BusinessException(validator.getErrorCode(), 
+            throw new BusinessException(validator.getErrorCode(),
                     errorMessage != null ? errorMessage : String.format("%s에 실패했습니다.", operation));
         }
         return response;
@@ -42,4 +42,3 @@ public final class TossPaymentExceptionHandler {
         ErrorCode getErrorCode();
     }
 }
-

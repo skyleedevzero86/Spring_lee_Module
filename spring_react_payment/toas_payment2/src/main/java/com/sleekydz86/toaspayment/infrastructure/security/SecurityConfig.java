@@ -28,10 +28,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    
+
     @Value("${cors.allowed-origins}")
     private String allowedOrigins;
-    
+
     @Value("${security.csrf.enabled:false}")
     private boolean csrfEnabled;
 
@@ -40,7 +40,7 @@ public class SecurityConfig {
         if (!csrfEnabled) {
             http.csrf(csrf -> csrf.disable());
         }
-        
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -81,4 +81,3 @@ public class SecurityConfig {
         return source;
     }
 }
-

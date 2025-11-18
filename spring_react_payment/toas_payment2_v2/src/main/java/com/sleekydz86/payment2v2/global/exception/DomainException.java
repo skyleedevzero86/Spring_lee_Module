@@ -24,4 +24,3 @@ public class DomainException extends RuntimeException {
         return domainMessage;
     }
 }
-

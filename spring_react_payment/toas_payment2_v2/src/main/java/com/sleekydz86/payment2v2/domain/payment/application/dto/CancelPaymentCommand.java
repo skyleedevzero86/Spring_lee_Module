@@ -14,7 +14,7 @@ public class CancelPaymentCommand {
     private BigDecimal taxFreeAmount;
     private String currency;
     private RefundReceiveAccount refundReceiveAccount;
-    private String idempotencyKey; // 멱등키
+    private String idempotencyKey;
 
     @Getter
     @Builder
@@ -24,4 +24,3 @@ public class CancelPaymentCommand {
         private String holderName;
     }
 }
-

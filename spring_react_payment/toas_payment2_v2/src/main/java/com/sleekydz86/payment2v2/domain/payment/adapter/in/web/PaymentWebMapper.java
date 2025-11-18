@@ -327,7 +327,7 @@ public class PaymentWebMapper {
                 .idempotencyKey(request.getIdempotencyKey());
 
         if (request.getRefundReceiveAccount() != null) {
-            CancelPaymentCommand.RefundReceiveAccount refundAccount = 
+            CancelPaymentCommand.RefundReceiveAccount refundAccount =
                     CancelPaymentCommand.RefundReceiveAccount.builder()
                             .bank(request.getRefundReceiveAccount().getBank())
                             .accountNumber(request.getRefundReceiveAccount().getAccountNumber())
@@ -364,4 +364,3 @@ public class PaymentWebMapper {
                 .build();
     }
 }
-

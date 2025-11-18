@@ -6,4 +6,3 @@ import com.sleekydz86.payment2v2.domain.member.application.dto.RegisterMemberRes
 public interface RegisterMemberUseCase {
     RegisterMemberResponse register(RegisterMemberCommand command);
 }
-

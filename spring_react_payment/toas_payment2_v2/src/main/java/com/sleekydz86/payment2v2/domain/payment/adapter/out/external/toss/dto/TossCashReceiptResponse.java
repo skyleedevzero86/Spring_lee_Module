@@ -31,7 +31,7 @@ public class TossCashReceiptResponse {
     private String businessNumber;
 
     @JsonProperty("transactionType")
-    private String transactionType; // CONFIRM, CANCEL
+    private String transactionType;
 
     @JsonProperty("amount")
     private BigDecimal amount;
@@ -43,7 +43,7 @@ public class TossCashReceiptResponse {
     private BigDecimal taxExemptionAmount;
 
     @JsonProperty("issueStatus")
-    private String issueStatus; // IN_PROGRESS, COMPLETED, FAILED
+    private String issueStatus;
 
     @JsonProperty("failure")
     private FailureInfo failure;

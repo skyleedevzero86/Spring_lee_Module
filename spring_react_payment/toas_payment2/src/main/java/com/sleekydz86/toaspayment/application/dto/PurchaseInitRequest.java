@@ -8,8 +8,3 @@ public record PurchaseInitRequest(
         @NotNull @Positive Integer amount
 ) {
 }
-
-
-
-
-

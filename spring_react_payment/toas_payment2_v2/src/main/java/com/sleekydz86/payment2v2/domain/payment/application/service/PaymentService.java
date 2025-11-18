@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 @RequiredArgsConstructor
 public class PaymentService
-        implements CreatePaymentUseCase, ApprovePaymentUseCase, GetPaymentHistoryUseCase, GetPaymentDetailUseCase, 
+        implements CreatePaymentUseCase, ApprovePaymentUseCase, GetPaymentHistoryUseCase, GetPaymentDetailUseCase,
         RefundPaymentUseCase, GetPaymentHistoryPageUseCase, GetPaymentStatusUseCase {
 
     private static final String LOG_USER_ID = "userId";

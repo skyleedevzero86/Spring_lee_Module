@@ -36,7 +36,7 @@ public class CashReceiptService implements CashReceiptUseCase {
     public CashReceiptResponse issueCashReceipt(IssueCashReceiptCommand command) {
         return LoggingUtil.executeWithContext(Map.of(
                 LOG_OPERATION, "issueCashReceipt"), () -> {
-                    log.info("현금영수증 발급 요청: orderId={}, type={}", 
+                    log.info("현금영수증 발급 요청: orderId={}, type={}",
                             command.getOrderId(), command.getType());
 
                     TossCashReceiptRequest request = TossCashReceiptRequest.builder()
@@ -74,7 +74,7 @@ public class CashReceiptService implements CashReceiptUseCase {
     public CashReceiptListResponse getCashReceipts(String requestDate, Long cursor, Integer limit) {
         return LoggingUtil.executeWithContext(Map.of(
                 LOG_OPERATION, "getCashReceipts"), () -> {
-                    log.info("현금영수증 조회 요청: requestDate={}, cursor={}, limit={}", 
+                    log.info("현금영수증 조회 요청: requestDate={}, cursor={}, limit={}",
                             requestDate, cursor, limit);
 
                     TossCashReceiptListResponse response = callTossGetCashReceiptsApi(requestDate, cursor, limit);
@@ -97,7 +97,7 @@ public class CashReceiptService implements CashReceiptUseCase {
 
                         @Override
                         public String getErrorMessage(TossCashReceiptResponse response) {
-                            return response != null && response.getFailure() != null 
+                            return response != null && response.getFailure() != null
                                     ? response.getFailure().getMessage() : "현금영수증 발급 실패";
                         }
 
@@ -111,7 +111,7 @@ public class CashReceiptService implements CashReceiptUseCase {
 
     private TossCashReceiptResponse tossIssueCashReceiptFallback(TossCashReceiptRequest request, Exception e) {
         log.error("토스페이먼츠 현금영수증 발급 API Circuit Breaker 활성화: orderId={}", request.getOrderId(), e);
-        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR, 
+        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR,
                 "토스페이먼츠 서비스가 일시적으로 사용할 수 없습니다.", e);
     }
 
@@ -130,7 +130,7 @@ public class CashReceiptService implements CashReceiptUseCase {
 
                         @Override
                         public String getErrorMessage(TossCashReceiptResponse response) {
-                            return response != null && response.getFailure() != null 
+                            return response != null && response.getFailure() != null
                                     ? response.getFailure().getMessage() : "현금영수증 취소 실패";
                         }
 
@@ -144,7 +144,7 @@ public class CashReceiptService implements CashReceiptUseCase {
 
     private TossCashReceiptResponse tossCancelCashReceiptFallback(String receiptKey, TossCashReceiptCancelRequest request, Exception e) {
         log.error("토스페이먼츠 현금영수증 취소 API Circuit Breaker 활성화: receiptKey={}", receiptKey, e);
-        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR, 
+        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR,
                 "토스페이먼츠 서비스가 일시적으로 사용할 수 없습니다.", e);
     }
 
@@ -176,7 +176,7 @@ public class CashReceiptService implements CashReceiptUseCase {
 
     private TossCashReceiptListResponse tossGetCashReceiptsFallback(String requestDate, Long cursor, Integer limit, Exception e) {
         log.error("토스페이먼츠 현금영수증 조회 API Circuit Breaker 활성화: requestDate={}", requestDate, e);
-        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR, 
+        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR,
                 "토스페이먼츠 서비스가 일시적으로 사용할 수 없습니다.", e);
     }
 
@@ -223,4 +223,3 @@ public class CashReceiptService implements CashReceiptUseCase {
                 .build();
     }
 }
-

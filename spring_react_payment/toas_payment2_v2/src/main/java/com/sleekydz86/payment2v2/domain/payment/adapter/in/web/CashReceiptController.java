@@ -29,7 +29,7 @@ public class CashReceiptController {
         MemberId memberId = MemberId.of(userId);
         return LoggingUtil.executeWithContext("userId", String.valueOf(memberId.getValue()), () -> {
             log.info("현금영수증 발급 요청: userId={}, orderId={}", userId, request.getOrderId());
-            
+
             IssueCashReceiptCommand command = cashReceiptWebMapper.toIssueCommand(request);
             CashReceiptResponse response = cashReceiptUseCase.issueCashReceipt(command);
             CashReceiptApiResponse apiResponse = cashReceiptWebMapper.toApiResponse(response);
@@ -45,7 +45,7 @@ public class CashReceiptController {
         MemberId memberId = MemberId.of(userId);
         return LoggingUtil.executeWithContext("userId", String.valueOf(memberId.getValue()), () -> {
             log.info("현금영수증 취소 요청: userId={}, receiptKey={}", userId, receiptKey);
-            
+
             CancelCashReceiptCommand command = cashReceiptWebMapper.toCancelCommand(receiptKey, request);
             CashReceiptResponse response = cashReceiptUseCase.cancelCashReceipt(command);
             CashReceiptApiResponse apiResponse = cashReceiptWebMapper.toApiResponse(response);
@@ -61,13 +61,12 @@ public class CashReceiptController {
             @RequestHeader(HeaderConstants.USER_ID_HEADER) Long userId) {
         MemberId memberId = MemberId.of(userId);
         return LoggingUtil.executeWithContext("userId", String.valueOf(memberId.getValue()), () -> {
-            log.info("현금영수증 조회 요청: userId={}, requestDate={}, cursor={}, limit={}", 
+            log.info("현금영수증 조회 요청: userId={}, requestDate={}, cursor={}, limit={}",
                     userId, requestDate, cursor, limit);
-            
+
             CashReceiptListResponse response = cashReceiptUseCase.getCashReceipts(requestDate, cursor, limit);
             CashReceiptListApiResponse apiResponse = cashReceiptWebMapper.toListApiResponse(response);
             return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
         });
     }
 }
-

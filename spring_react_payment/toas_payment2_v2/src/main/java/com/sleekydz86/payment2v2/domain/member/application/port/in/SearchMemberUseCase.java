@@ -9,4 +9,3 @@ public interface SearchMemberUseCase {
     List<SearchMemberResponse> searchByEmail(String email);
     List<SearchMemberResponse> searchAll();
 }
-

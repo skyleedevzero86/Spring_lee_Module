@@ -12,8 +12,3 @@ public class TossPaymentException extends RuntimeException {
         return statusCode;
     }
 }
-
-
-
-
-

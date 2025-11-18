@@ -23,7 +23,7 @@ public class IssueCashReceiptRequest {
     private String orderName;
 
     @NotBlank(message = "현금영수증 종류는 필수입니다.")
-    private String type; // 소득공제, 지출증빙
+    private String type;
 
     @NotBlank(message = "소비자 인증수단은 필수입니다.")
     @Size(max = 30, message = "소비자 인증수단은 최대 30자까지 입력 가능합니다.")
@@ -31,4 +31,3 @@ public class IssueCashReceiptRequest {
 
     private BigDecimal taxFreeAmount;
 }
-

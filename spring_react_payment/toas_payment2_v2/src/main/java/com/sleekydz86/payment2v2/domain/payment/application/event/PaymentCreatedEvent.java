@@ -13,4 +13,3 @@ public class PaymentCreatedEvent extends PaymentEvent {
         this.productDesc = productDesc;
     }
 }
-

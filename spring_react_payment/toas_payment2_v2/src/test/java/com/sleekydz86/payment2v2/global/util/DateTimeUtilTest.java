@@ -13,7 +13,7 @@ class DateTimeUtilTest {
     @Test
     @DisplayName("LocalDateTime을 기본 형식 문자열로 변환할 수 있다")
     void LocalDateTime을_기본_형식_문자열로_변환할_수_있다() {
-        // given
+
         LocalDateTime dateTime = LocalDateTime.of(2024, 1, 15, 14, 30, 45);
 
         String formatted = DateTimeUtil.format(dateTime);
@@ -24,7 +24,7 @@ class DateTimeUtilTest {
     @Test
     @DisplayName("null LocalDateTime을 변환하면 null을 반환한다")
     void null_LocalDateTime을_변환하면_null을_반환한다() {
-        // given
+
         LocalDateTime dateTime = null;
 
         String formatted = DateTimeUtil.format(dateTime);
@@ -35,7 +35,7 @@ class DateTimeUtilTest {
     @Test
     @DisplayName("기본 형식 문자열을 LocalDateTime으로 파싱할 수 있다")
     void 기본_형식_문자열을_LocalDateTime으로_파싱할_수_있다() {
-        // given
+
         String dateTimeString = "2024-01-15 14:30:45";
 
         LocalDateTime parsed = DateTimeUtil.parse(dateTimeString);
@@ -46,7 +46,7 @@ class DateTimeUtilTest {
     @Test
     @DisplayName("null 문자열을 파싱하면 null을 반환한다")
     void null_문자열을_파싱하면_null을_반환한다() {
-        // given
+
         String dateTimeString = null;
 
         LocalDateTime parsed = DateTimeUtil.parse(dateTimeString);
@@ -57,7 +57,7 @@ class DateTimeUtilTest {
     @Test
     @DisplayName("빈 문자열을 파싱하면 null을 반환한다")
     void 빈_문자열을_파싱하면_null을_반환한다() {
-        // given
+
         String dateTimeString = "";
 
         LocalDateTime parsed = DateTimeUtil.parse(dateTimeString);
@@ -68,7 +68,7 @@ class DateTimeUtilTest {
     @Test
     @DisplayName("포맷과 파싱이 서로 역변환이 가능하다")
     void 포맷과_파싱이_서로_역변환이_가능하다() {
-        // given
+
         LocalDateTime original = LocalDateTime.of(2024, 1, 15, 14, 30, 45);
 
         String formatted = DateTimeUtil.format(original);
@@ -80,7 +80,7 @@ class DateTimeUtilTest {
     @Test
     @DisplayName("다양한 날짜 시간을 포맷할 수 있다")
     void 다양한_날짜_시간을_포맷할_수_있다() {
-        // given
+
         LocalDateTime[] dateTimes = {
                 LocalDateTime.of(2024, 1, 1, 0, 0, 0),
                 LocalDateTime.of(2024, 12, 31, 23, 59, 59),
@@ -94,9 +94,9 @@ class DateTimeUtilTest {
         };
 
         for (int i = 0; i < dateTimes.length; i++) {
-            // when
+
             String formatted = DateTimeUtil.format(dateTimes[i]);
-            // then
+
             assertThat(formatted).isEqualTo(expected[i]);
         }
     }

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public final class LoggingUtil {
-    
+
     private LoggingUtil() {
         throw new AssertionError("유틸리티 클래스는 인스턴스화할 수 없습니다.");
     }
@@ -50,4 +50,3 @@ public final class LoggingUtil {
         }
     }
 }
-

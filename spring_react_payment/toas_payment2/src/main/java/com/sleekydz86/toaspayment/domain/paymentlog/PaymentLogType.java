@@ -10,4 +10,3 @@ public enum PaymentLogType {
     REFUND_FAILED,
     PAYMENT_ERROR
 }
-

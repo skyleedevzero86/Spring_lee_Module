@@ -75,7 +75,7 @@ public class MemberWebMapper {
                 .role(response.getData().getRole())
                 .token(response.getData().getToken())
                 .build();
-        
+
         return LoginApiResponse.builder()
                 .message(response.getMessage())
                 .data(data)
@@ -98,4 +98,3 @@ public class MemberWebMapper {
                 .build();
     }
 }
-

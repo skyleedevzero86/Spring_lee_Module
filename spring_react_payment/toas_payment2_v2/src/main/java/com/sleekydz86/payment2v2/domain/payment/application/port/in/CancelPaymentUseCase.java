@@ -6,4 +6,3 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.CancelPaymentRes
 public interface CancelPaymentUseCase {
     CancelPaymentResponse cancelPayment(CancelPaymentCommand command);
 }
-

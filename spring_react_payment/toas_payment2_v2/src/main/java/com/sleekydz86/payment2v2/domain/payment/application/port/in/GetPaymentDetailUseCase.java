@@ -5,4 +5,3 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentDetailRes
 public interface GetPaymentDetailUseCase {
     PaymentDetailResponse getPaymentDetail(Long paymentId, Long userId, String userRole);
 }
-

@@ -6,4 +6,3 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentApprovalR
 public interface ApprovePaymentUseCase {
     PaymentApprovalResponse approvePayment(ApprovePaymentCommand command);
 }
-

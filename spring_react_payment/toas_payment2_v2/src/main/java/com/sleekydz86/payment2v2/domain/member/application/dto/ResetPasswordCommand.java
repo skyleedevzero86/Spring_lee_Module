@@ -9,4 +9,3 @@ public class ResetPasswordCommand {
     private String email;
     private String newPassword;
 }
-

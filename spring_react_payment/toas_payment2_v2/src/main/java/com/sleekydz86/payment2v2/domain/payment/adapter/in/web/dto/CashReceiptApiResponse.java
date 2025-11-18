@@ -15,11 +15,11 @@ public class CashReceiptApiResponse {
     private String issueNumber;
     private String receiptUrl;
     private String businessNumber;
-    private String transactionType; // CONFIRM, CANCEL
+    private String transactionType;
     private BigDecimal amount;
     private BigDecimal taxFreeAmount;
     private BigDecimal taxExemptionAmount;
-    private String issueStatus; // IN_PROGRESS, COMPLETED, FAILED
+    private String issueStatus;
     private String requestedAt;
     private String customerIdentityNumber;
     private FailureInfo failure;
@@ -31,4 +31,3 @@ public class CashReceiptApiResponse {
         private String message;
     }
 }
-

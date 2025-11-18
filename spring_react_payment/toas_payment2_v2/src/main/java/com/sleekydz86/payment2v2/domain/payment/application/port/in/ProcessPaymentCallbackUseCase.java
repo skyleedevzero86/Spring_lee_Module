@@ -5,4 +5,3 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.PaymentCallbackC
 public interface ProcessPaymentCallbackUseCase {
     void processCallback(PaymentCallbackCommand callbackCommand);
 }
-

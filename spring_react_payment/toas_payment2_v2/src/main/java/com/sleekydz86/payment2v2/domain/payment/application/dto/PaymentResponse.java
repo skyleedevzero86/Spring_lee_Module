@@ -13,4 +13,3 @@ public class PaymentResponse {
     private String productDesc;
     private String status;
 }
-

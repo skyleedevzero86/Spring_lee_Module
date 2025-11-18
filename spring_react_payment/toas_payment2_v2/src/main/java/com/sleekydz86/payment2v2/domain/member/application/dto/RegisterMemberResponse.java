@@ -11,4 +11,3 @@ public class RegisterMemberResponse {
     private String name;
     private String role;
 }
-

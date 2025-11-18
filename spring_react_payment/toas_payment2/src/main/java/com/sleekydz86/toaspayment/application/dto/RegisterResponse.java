@@ -11,8 +11,3 @@ public record RegisterResponse(
     ) {
     }
 }
-
-
-
-
-

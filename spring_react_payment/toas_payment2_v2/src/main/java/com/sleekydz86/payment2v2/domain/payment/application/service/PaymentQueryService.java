@@ -178,7 +178,7 @@ public class PaymentQueryService implements GetPaymentHistoryUseCase, GetPayment
     @Override
     @Transactional(readOnly = true)
     @Cacheable(
-            value = "paymentDetail", 
+            value = "paymentDetail",
             key = "#paymentIdValue + '_' + #userIdValue + '_' + #userRoleValue",
             unless = "#result == null"
     )
@@ -220,4 +220,3 @@ public class PaymentQueryService implements GetPaymentHistoryUseCase, GetPayment
         }
     }
 }
-

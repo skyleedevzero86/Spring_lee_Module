@@ -58,7 +58,7 @@ class RefundOrderUseCaseTest {
         @Test
         @DisplayName("환불 성공")
         void refundOrder_success() {
-                // given
+
                 RefundRequest request = new RefundRequest(
                                 paymentKey,
                                 orderId.toString(),
@@ -109,10 +109,8 @@ class RefundOrderUseCaseTest {
                 when(paymentGateway.refundPayment(paymentKey, "구매자 환불 요청")).thenReturn(response);
                 when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-                // when
                 refundOrderUseCase.execute(request);
 
-                // then
                 verify(orderRepository, times(1)).findByOrderId(orderId);
                 verify(paymentGateway, times(1)).refundPayment(paymentKey, "구매자 환불 요청");
                 verify(orderRepository, times(2)).save(any(Order.class));
@@ -122,7 +120,7 @@ class RefundOrderUseCaseTest {
         @Test
         @DisplayName("주문을 찾을 수 없는 경우")
         void refundOrder_orderNotFound() {
-                // given
+
                 RefundRequest request = new RefundRequest(
                                 paymentKey,
                                 orderId.toString(),
@@ -131,7 +129,6 @@ class RefundOrderUseCaseTest {
 
                 when(orderRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
-                // when & then
                 assertThatThrownBy(() -> refundOrderUseCase.execute(request))
                                 .isInstanceOf(BadRequestException.class)
                                 .hasMessageContaining("주문을 찾을 수 없습니다.");
@@ -140,7 +137,7 @@ class RefundOrderUseCaseTest {
         @Test
         @DisplayName("환불 가능한 주문이 아닌 경우")
         void refundOrder_notRefundable() {
-                // given
+
                 RefundRequest request = new RefundRequest(
                                 paymentKey,
                                 orderId.toString(),
@@ -150,7 +147,6 @@ class RefundOrderUseCaseTest {
                 Order pendingOrder = Order.create(orderId, "예매 티켓", 1L, orderAmount);
                 when(orderRepository.findByOrderId(orderId)).thenReturn(Optional.of(pendingOrder));
 
-                // when & then
                 assertThatThrownBy(() -> refundOrderUseCase.execute(request))
                                 .isInstanceOf(BadRequestException.class)
                                 .hasMessageContaining("환불 가능한 주문이 아닙니다.");
@@ -159,7 +155,7 @@ class RefundOrderUseCaseTest {
         @Test
         @DisplayName("토스 페이먼츠 환불 실패")
         void refundOrder_tossPaymentFailure() {
-                // given
+
                 RefundRequest request = new RefundRequest(
                                 paymentKey,
                                 orderId.toString(),
@@ -171,7 +167,6 @@ class RefundOrderUseCaseTest {
                                 .thenThrow(new TossPaymentException("환불 처리 실패", 400));
                 when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-                // when & then
                 assertThatThrownBy(() -> refundOrderUseCase.execute(request))
                                 .isInstanceOf(com.sleekydz86.toaspayment.global.exception.TossPaymentException.class)
                                 .hasMessageContaining("환불 처리에 실패했습니다");
@@ -180,5 +175,3 @@ class RefundOrderUseCaseTest {
                 assertThat(testOrder.getStatus()).isEqualTo(OrderStatus.REFUND_FAILED);
         }
 }
-
-

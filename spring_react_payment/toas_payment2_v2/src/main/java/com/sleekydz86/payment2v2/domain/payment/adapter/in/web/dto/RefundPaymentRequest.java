@@ -29,4 +29,3 @@ public class RefundPaymentRequest {
 
     private Boolean idempotent;
 }
-

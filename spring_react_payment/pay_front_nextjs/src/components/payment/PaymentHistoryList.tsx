@@ -1,14 +1,62 @@
 'use client';
 
+import { useState } from 'react';
 import { usePaymentHistory } from '@/hooks/queries/use-payment-queries';
+import { usePayment } from '@/hooks/use-payment';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { PaymentStatus } from '@/domain/types/payment.types';
 import { ApiError } from '@/domain/types/error.types';
 import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const PaymentHistoryList = () => {
   const { data: paymentHistory = [], isLoading: loading, error } = usePaymentHistory();
+  const { cancelPaymentById } = usePayment();
+  const queryClient = useQueryClient();
+  const [cancellingIds, setCancellingIds] = useState<Set<number>>(new Set());
+
+  const canCancel = (payment: { status: string; paidTs?: string }) => {
+    if (payment.status !== PaymentStatus.COMPLETED && payment.status !== PaymentStatus.APPROVED) {
+      return false;
+    }
+    if (!payment.paidTs) {
+      return false;
+    }
+    const paidDate = new Date(payment.paidTs);
+    const now = new Date();
+    const daysDiff = Math.floor((now.getTime() - paidDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff <= 15;
+  };
+
+  const handleCancel = async (paymentId: number) => {
+    if (!confirm('정말로 결제를 취소하시겠습니까?')) {
+      return;
+    }
+
+    const cancelReason = prompt('취소 사유를 입력해주세요:');
+    if (!cancelReason || cancelReason.trim() === '') {
+      alert('취소 사유를 입력해주세요.');
+      return;
+    }
+
+    setCancellingIds((prev) => new Set(prev).add(paymentId));
+    try {
+      await cancelPaymentById(paymentId, { cancelReason: cancelReason.trim() });
+      alert('결제가 취소되었습니다.');
+      queryClient.invalidateQueries({ queryKey: ['payments', 'history'] });
+    } catch (err) {
+      console.error('결제 취소 실패:', err);
+      const errorMessage = err instanceof ApiError ? err.message : '결제 취소에 실패했습니다.';
+      alert(errorMessage);
+    } finally {
+      setCancellingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(paymentId);
+        return next;
+      });
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -122,12 +170,23 @@ export const PaymentHistoryList = () => {
                 })}
               </td>
               <td className="whitespace-nowrap px-4 py-4 text-sm font-medium sm:px-6">
-                <Link
-                  href={`/payments/${payment.id}`}
-                  className="text-blue-600 hover:text-blue-900 transition-colors"
-                >
-                  상세보기
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/payments/${payment.id}`}
+                    className="text-blue-600 hover:text-blue-900 transition-colors"
+                  >
+                    상세보기
+                  </Link>
+                  {canCancel(payment) && (
+                    <button
+                      onClick={() => handleCancel(payment.id)}
+                      disabled={cancellingIds.has(payment.id)}
+                      className="text-red-600 hover:text-red-900 transition-colors disabled:text-gray-400 disabled:cursor-not-allowed"
+                    >
+                      {cancellingIds.has(payment.id) ? '취소 중...' : '취소'}
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
           ))}

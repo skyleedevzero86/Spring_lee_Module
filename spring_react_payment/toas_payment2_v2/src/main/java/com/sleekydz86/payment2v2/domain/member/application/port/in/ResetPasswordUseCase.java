@@ -6,4 +6,3 @@ import com.sleekydz86.payment2v2.domain.member.application.dto.ResetPasswordResp
 public interface ResetPasswordUseCase {
     ResetPasswordResponse resetPassword(ResetPasswordCommand command);
 }
-

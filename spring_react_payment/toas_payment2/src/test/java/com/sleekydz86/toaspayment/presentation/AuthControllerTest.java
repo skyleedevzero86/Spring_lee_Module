@@ -34,7 +34,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("로그인 성공")
     void login_success() {
-        // given
+
         LoginRequest request = new LoginRequest("test@example.com", "password123");
         LoginResponse expectedResponse = new LoginResponse(
                 "로그인 성공",
@@ -42,10 +42,8 @@ class AuthControllerTest {
 
         when(loginUseCase.execute(request)).thenReturn(expectedResponse);
 
-        // when
         ResponseEntity<LoginResponse> response = authController.login(request);
 
-        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("로그인 성공");
@@ -56,7 +54,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("회원가입 성공")
     void register_success() {
-        // given
+
         RegisterRequest request = new RegisterRequest(
                 "newuser@example.com",
                 "password123",
@@ -67,17 +65,11 @@ class AuthControllerTest {
 
         when(registerUseCase.execute(request)).thenReturn(expectedResponse);
 
-        // when
         ResponseEntity<RegisterResponse> response = authController.register(request);
 
-        // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("회원가입 성공");
         assertThat(response.getBody().data().email()).isEqualTo("newuser@example.com");
     }
 }
-
-
-
-

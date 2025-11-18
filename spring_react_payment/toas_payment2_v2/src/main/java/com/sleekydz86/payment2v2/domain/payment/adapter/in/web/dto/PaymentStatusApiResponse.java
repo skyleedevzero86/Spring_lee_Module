@@ -32,4 +32,3 @@ public class PaymentStatusApiResponse {
     private String createdTs;
     private String paidTs;
 }
-

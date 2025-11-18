@@ -9,4 +9,3 @@ public class ApprovePaymentCommand {
     private String payToken;
     private String orderNo;
 }
-

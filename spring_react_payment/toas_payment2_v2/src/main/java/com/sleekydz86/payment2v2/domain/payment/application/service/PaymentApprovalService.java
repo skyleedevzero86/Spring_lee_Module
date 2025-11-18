@@ -142,7 +142,7 @@ public class PaymentApprovalService implements ApprovePaymentUseCase {
 
     private TossPaymentExecuteResponse tossExecuteFallback(String payToken, String orderNo, Exception e) {
         log.error("토스페이먼츠 결제 승인 API Circuit Breaker 활성화: orderNo={}", orderNo, e);
-        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR, 
+        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR,
                 "토스페이먼츠 서비스가 일시적으로 사용할 수 없습니다.", e);
     }
 
@@ -219,4 +219,3 @@ public class PaymentApprovalService implements ApprovePaymentUseCase {
                 payment.getOrderNoValue(), payment.getAmount(), payment.getTransactionId()));
     }
 }
-

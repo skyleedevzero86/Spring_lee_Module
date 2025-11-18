@@ -50,4 +50,3 @@ public class Resilience4jConfig {
         return registry.retry("tossPayment");
     }
 }
-

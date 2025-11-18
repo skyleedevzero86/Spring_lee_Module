@@ -80,8 +80,6 @@ class PaymentApprovalServiceTest {
 
         PaymentApprovalResponse result = paymentApprovalService.approvePayment(command);
 
-
-        // then
         assertThat(result).isNotNull();
         assertThat(result.getOrderNo()).isEqualTo("ORDER-001");
         assertThat(result.getStatus()).isEqualTo("COMPLETED");
@@ -132,7 +130,6 @@ class PaymentApprovalServiceTest {
         given(paymentRepository.findByPayToken("invalid-token")).willReturn(Optional.empty());
         given(paymentRepository.findByOrderNo("ORDER-001")).willReturn(Optional.empty());
 
-        // when & then
         assertThatThrownBy(() -> paymentApprovalService.approvePayment(command))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")

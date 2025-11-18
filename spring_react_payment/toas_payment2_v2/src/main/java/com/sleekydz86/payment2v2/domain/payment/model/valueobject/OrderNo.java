@@ -52,4 +52,3 @@ public class OrderNo {
         return value;
     }
 }
-

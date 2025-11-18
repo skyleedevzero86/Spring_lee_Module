@@ -9,4 +9,3 @@ public class ResetPasswordApiResponse {
     private String message;
     private String email;
 }
-

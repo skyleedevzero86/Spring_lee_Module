@@ -59,7 +59,7 @@ class PaymentCreationServiceTest {
     @Test
     @DisplayName("결제 생성이 성공적으로 완료된다")
     void 결제_생성이_성공적으로_완료된다() {
-        // given
+
         CreatePaymentCommand command = CreatePaymentCommand.builder()
                 .userId(1L)
                 .orderNo("ORDER-001")
@@ -89,10 +89,8 @@ class PaymentCreationServiceTest {
         given(paymentGatewayPort.createPayment(tossRequest)).willReturn(tossResponse);
         given(paymentResponseMapper.toResponse(any(Payment.class))).willReturn(expectedResponse);
 
-        // when
         PaymentResponse result = paymentCreationService.createPayment(command);
 
-        // then
         assertThat(result).isNotNull();
         assertThat(result.getOrderNo()).isEqualTo("ORDER-001");
         assertThat(result.getCheckoutPage()).isEqualTo("https://toss.im/checkout/test-token");
@@ -107,7 +105,7 @@ class PaymentCreationServiceTest {
     @Test
     @DisplayName("중복된 주문번호로 결제 생성 시 예외가 발생한다")
     void 중복된_주문번호로_결제_생성_시_예외가_발생한다() {
-        // given
+
         CreatePaymentCommand command = CreatePaymentCommand.builder()
                 .userId(1L)
                 .orderNo("ORDER-001")
@@ -121,7 +119,6 @@ class PaymentCreationServiceTest {
 
         given(paymentRepository.existsByOrderNo("ORDER-001")).willReturn(true);
 
-        // when & then
         assertThatThrownBy(() -> paymentCreationService.createPayment(command))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -134,7 +131,7 @@ class PaymentCreationServiceTest {
     @Test
     @DisplayName("토스페이먼츠 API 호출 실패 시 예외가 발생한다")
     void 토스페이먼츠_API_호출_실패_시_예외가_발생한다() {
-        // given
+
         CreatePaymentCommand command = CreatePaymentCommand.builder()
                 .userId(1L)
                 .orderNo("ORDER-001")
@@ -157,7 +154,6 @@ class PaymentCreationServiceTest {
         given(tossPaymentMapper.toTossRequest(command)).willReturn(tossRequest);
         given(paymentGatewayPort.createPayment(tossRequest)).willReturn(tossResponse);
 
-        // when & then
         assertThatThrownBy(() -> paymentCreationService.createPayment(command))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
@@ -170,7 +166,7 @@ class PaymentCreationServiceTest {
     @Test
     @DisplayName("결제 생성 시 이벤트가 올바르게 발행된다")
     void 결제_생성_시_이벤트가_올바르게_발행된다() {
-        // given
+
         CreatePaymentCommand command = CreatePaymentCommand.builder()
                 .userId(1L)
                 .orderNo("ORDER-001")
@@ -183,7 +179,7 @@ class PaymentCreationServiceTest {
                 .build();
 
         Payment savedPayment = PaymentFixture.기본_결제_생성().build();
-        // when
+
         ReflectionTestUtils.setField(savedPayment, "id", 1L);
 
         TossPaymentRequest tossRequest = TossPaymentRequest.builder().build();
@@ -203,10 +199,8 @@ class PaymentCreationServiceTest {
 
         ArgumentCaptor<PaymentCreatedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentCreatedEvent.class);
 
-        // when
         paymentCreationService.createPayment(command);
 
-        // then
         verify(eventPublisher, times(1)).publishEvent(eventCaptor.capture());
         PaymentCreatedEvent capturedEvent = eventCaptor.getValue();
         assertThat(capturedEvent.getPaymentId()).isEqualTo(1L);
@@ -214,4 +208,3 @@ class PaymentCreationServiceTest {
         assertThat(capturedEvent.getUserId()).isEqualTo(1L);
         assertThat(capturedEvent.getProductDesc()).isEqualTo("테스트 상품");
     }
-

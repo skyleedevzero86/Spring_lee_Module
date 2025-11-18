@@ -88,8 +88,6 @@ class PaymentRefundServiceTest {
 
         RefundPaymentResponse result = paymentRefundService.refundPayment(command);
 
-
-        // then
         assertThat(result).isNotNull();
         assertThat(result.getPaymentId()).isEqualTo(1L);
         assertThat(result.getRefundNo()).isEqualTo("REFUND-001");
@@ -167,7 +165,6 @@ class PaymentRefundServiceTest {
 
         given(paymentRepository.findById(999L)).willReturn(Optional.empty());
 
-        // when & then
         assertThatThrownBy(() -> paymentRefundService.refundPayment(command))
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")

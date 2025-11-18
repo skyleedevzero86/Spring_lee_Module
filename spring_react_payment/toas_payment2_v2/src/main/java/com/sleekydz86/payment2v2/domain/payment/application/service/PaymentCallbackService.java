@@ -45,7 +45,7 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
         updatePaymentInfo(payment, callbackCommand);
         updatePaymentMethodInfo(payment, callbackCommand);
         paymentRepository.save(payment);
-        
+
         processPostPaymentActions(payment);
 
         log.info("결제 완료 처리 완료. orderNo: {}, payToken: {}, transactionId: {}",
@@ -57,7 +57,7 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
             log.error("주문번호가 null이거나 비어있습니다.");
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "주문번호는 필수입니다.");
         }
-        
+
         return paymentRepository.findByOrderNo(orderNo)
                 .orElseThrow(() -> {
                     log.warn("주문번호로 결제 정보를 찾을 수 없음: orderNo={}", orderNo);
@@ -79,7 +79,7 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
             log.warn("결제 토큰이 null이거나 비어있습니다. orderNo={}", payment.getOrderNoValue());
             return;
         }
-        
+
         if (payment.getPayToken() != null && !payment.getPayToken().equals(payToken)) {
             log.error("결제 토큰이 일치하지 않습니다. orderNo: {}, expected: {}, actual: {}",
                     payment.getOrderNoValue(), payment.getPayToken(), payToken);
@@ -100,7 +100,7 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR,
                     String.format("결제 금액이 null입니다. orderNo: %s", payment.getOrderNoValue()));
         }
-        
+
         BigDecimal actualAmount = BigDecimal.valueOf(callbackAmount);
 
         if (expectedAmount.compareTo(actualAmount) != 0) {
@@ -138,7 +138,7 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
 
     private void updateCardInfo(Payment payment, PaymentCallbackCommand callbackCommand) {
         Integer spreadOut = parseSpreadOut(callbackCommand.getSpreadOut(), payment.getOrderNoValue());
-        
+
         payment.updateCardInfo(
                 callbackCommand.getCardCompanyCode(),
                 callbackCommand.getCardAuthorizationNo(),
@@ -156,7 +156,7 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
         if (spreadOutValue == null || spreadOutValue.isBlank()) {
             return null;
         }
-        
+
         try {
             return Integer.parseInt(spreadOutValue);
         } catch (NumberFormatException e) {
@@ -180,7 +180,7 @@ public class PaymentCallbackService implements ProcessPaymentCallbackUseCase {
             log.info("재고 차감 완료. orderNo: {}", payment.getOrderNoValue());
         } catch (Exception e) {
             log.error("재고 차감 중 오류 발생. orderNo: {}", payment.getOrderNoValue(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, 
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR,
                     String.format("재고 차감 중 오류가 발생했습니다. orderNo: %s", payment.getOrderNoValue()), e);
         }
     }

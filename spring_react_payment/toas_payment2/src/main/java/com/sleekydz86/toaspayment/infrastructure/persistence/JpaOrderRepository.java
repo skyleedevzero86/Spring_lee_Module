@@ -49,4 +49,3 @@ class OrderRepositoryImpl implements OrderRepository {
         return jpaOrderRepository.findAll();
     }
 }
-

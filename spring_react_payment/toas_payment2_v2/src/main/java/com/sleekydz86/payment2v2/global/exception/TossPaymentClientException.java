@@ -9,4 +9,3 @@ public class TossPaymentClientException extends RuntimeException {
         super(message, cause);
     }
 }
-

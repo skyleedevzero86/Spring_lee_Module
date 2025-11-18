@@ -324,7 +324,7 @@ public class TossPaymentClient implements PaymentGatewayPort {
         try {
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(TOSS_PAYMENT_V1_API_BASE + "/cash-receipts")
                     .queryParam("requestDate", requestDate);
-            
+
             if (cursor != null) {
                 builder.queryParam("cursor", cursor);
             }

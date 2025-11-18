@@ -305,7 +305,7 @@ class ApiClient {
       },
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
-        retryableStatusCodes: [408, 429, 502, 503, 504],
+        retryableStatusCodes: [408, 502, 503, 504], // 429는 제외 (재시도하지 않음)
         maxRetries: 2,
       }
     );
@@ -325,9 +325,8 @@ class ApiClient {
       },
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
-        retryableStatusCodes: [408, 429, 500, 502, 503, 504],
-        // 429 에러는 Retry-After 헤더가 있을 때만 재시도
-        maxRetries: 2, // 429 에러는 최대 2번만 재시도
+        retryableStatusCodes: [408, 500, 502, 503, 504], // 429는 제외 (재시도하지 않음)
+        maxRetries: 2,
       }
     );
   }
@@ -345,9 +344,8 @@ class ApiClient {
       },
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
-        retryableStatusCodes: [408, 429, 500, 502, 503, 504],
-        // 429 에러는 Retry-After 헤더가 있을 때만 재시도
-        maxRetries: 2, // 429 에러는 최대 2번만 재시도
+        retryableStatusCodes: [408, 500, 502, 503, 504], // 429는 제외 (재시도하지 않음)
+        maxRetries: 2,
       }
     );
   }
@@ -365,9 +363,8 @@ class ApiClient {
       },
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
-        retryableStatusCodes: [408, 429, 500, 502, 503, 504],
-        // 429 에러는 Retry-After 헤더가 있을 때만 재시도
-        maxRetries: 2, // 429 에러는 최대 2번만 재시도
+        retryableStatusCodes: [408, 500, 502, 503, 504], // 429는 제외 (재시도하지 않음)
+        maxRetries: 2,
       }
     );
   }
@@ -383,9 +380,8 @@ class ApiClient {
       },
       {
         retryableErrorCodes: ['NETWORK_ERROR'],
-        retryableStatusCodes: [408, 429, 500, 502, 503, 504],
-        // 429 에러는 Retry-After 헤더가 있을 때만 재시도
-        maxRetries: 2, // 429 에러는 최대 2번만 재시도
+        retryableStatusCodes: [408, 500, 502, 503, 504], // 429는 제외 (재시도하지 않음)
+        maxRetries: 2,
       }
     );
   }

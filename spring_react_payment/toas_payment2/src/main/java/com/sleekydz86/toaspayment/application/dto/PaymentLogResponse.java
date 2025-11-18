@@ -12,8 +12,3 @@ public record PaymentLogResponse(
         LocalDateTime createdAt
 ) {
 }
-
-
-
-
-

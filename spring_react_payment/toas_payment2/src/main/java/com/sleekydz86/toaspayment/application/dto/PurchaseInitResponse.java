@@ -8,8 +8,3 @@ public record PurchaseInitResponse(
     ) {
     }
 }
-
-
-
-
-

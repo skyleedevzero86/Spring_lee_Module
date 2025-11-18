@@ -40,4 +40,3 @@ public class PaymentId {
         return value;
     }
 }
-

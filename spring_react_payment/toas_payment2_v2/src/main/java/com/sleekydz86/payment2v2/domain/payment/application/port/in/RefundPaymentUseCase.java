@@ -6,4 +6,3 @@ import com.sleekydz86.payment2v2.domain.payment.application.dto.RefundPaymentRes
 public interface RefundPaymentUseCase {
     RefundPaymentResponse refundPayment(RefundPaymentCommand command);
 }
-

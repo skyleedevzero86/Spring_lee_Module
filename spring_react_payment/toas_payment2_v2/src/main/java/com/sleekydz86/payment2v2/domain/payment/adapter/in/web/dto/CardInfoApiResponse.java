@@ -18,4 +18,3 @@ public class CardInfoApiResponse {
     private String cardCompanyName;
     private Integer cardCompanyCode;
 }
-

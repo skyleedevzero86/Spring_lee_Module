@@ -115,7 +115,7 @@ public class PaymentRefundService implements RefundPaymentUseCase {
     private TossPaymentRefundResponse tossRefundFallback(TossPaymentRefundRequest refundRequest, String orderNo,
             Exception e) {
         log.error("토스페이먼츠 결제 환불 API Circuit Breaker 활성화: orderNo={}", orderNo, e);
-        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR, 
+        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR,
                 "토스페이먼츠 서비스가 일시적으로 사용할 수 없습니다.", e);
     }
 
@@ -147,4 +147,3 @@ public class PaymentRefundService implements RefundPaymentUseCase {
                 payment.getOrderNoValue(), refundNo, refundedAmount));
     }
 }
-

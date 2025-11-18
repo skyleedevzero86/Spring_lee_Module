@@ -45,11 +45,10 @@ public class MemberMapper {
                 .role(member.getRole().name())
                 .token("")
                 .build();
-        
+
         return LoginResponse.builder()
                 .message("로그인 성공")
                 .data(data)
                 .build();
     }
 }
-

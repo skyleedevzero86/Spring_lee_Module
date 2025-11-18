@@ -38,13 +38,11 @@ class InitPurchaseUseCaseTest {
     @Test
     @DisplayName("정상적인 결제 초기화")
     void initPurchaseSuccess() {
-        // given
+
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // when
         PurchaseInitResponse response = initPurchaseUseCase.execute(request);
 
-        // then
         assertThat(response.data().purchaseUUID()).isNotNull();
         ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
         verify(orderRepository).save(orderCaptor.capture());
@@ -52,7 +50,3 @@ class InitPurchaseUseCaseTest {
         assertThat(savedOrder.getFinalAmount().toInteger()).isEqualTo(50000);
     }
 }
-
-
-
-

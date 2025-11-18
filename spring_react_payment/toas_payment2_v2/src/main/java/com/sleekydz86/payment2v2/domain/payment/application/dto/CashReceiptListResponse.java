@@ -12,4 +12,3 @@ public class CashReceiptListResponse {
     private Long lastCursor;
     private List<CashReceiptResponse> data;
 }
-

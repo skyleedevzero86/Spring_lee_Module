@@ -21,4 +21,3 @@ public class RegisterMemberRequest {
     @Size(max = 50, message = "이름은 50자 이하여야 합니다.")
     private String name;
 }
-

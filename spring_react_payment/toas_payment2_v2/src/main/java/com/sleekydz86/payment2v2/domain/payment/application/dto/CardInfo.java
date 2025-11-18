@@ -22,4 +22,3 @@ public class CardInfo {
     private String cardCompanyName;
     private Integer cardCompanyCode;
 }
-

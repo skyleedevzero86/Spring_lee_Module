@@ -192,23 +192,23 @@ public class PaymentMapper {
                 .createdAt(payment.getCreatedAt())
                 .userName(userName)
                 .userEmail(userEmail);
-        
+
         if (isAdmin) {
             builder.transactionId(payment.getTransactionId());
         }
-        
+
         if (payment.getPaidTs() != null && !payment.getPaidTs().isEmpty()) {
             try {
                 builder.paidTs(LocalDateTime.parse(payment.getPaidTs(), DATE_TIME_FORMATTER));
             } catch (DateTimeParseException e) {
-                log.error("paidTs 파싱 실패: paidTs={}, paymentId={}, format={}", 
+                log.error("paidTs 파싱 실패: paidTs={}, paymentId={}, format={}",
                         payment.getPaidTs(), payment.getId(), PaymentConstants.DATE_TIME_FORMAT, e);
                 throw new BusinessException(ErrorCode.INVALID_DATA_FORMAT,
-                        String.format("paidTs 형식이 올바르지 않습니다. paymentId: %d, paidTs: %s", 
+                        String.format("paidTs 형식이 올바르지 않습니다. paymentId: %d, paidTs: %s",
                                 payment.getId(), payment.getPaidTs()), e);
             }
         }
-        
+
         return builder.build();
     }
 
@@ -238,11 +238,11 @@ public class PaymentMapper {
                 .createdAt(payment.getCreatedAt())
                 .updatedAt(payment.getUpdatedAt())
                 .expiredTime(payment.getExpiredTime());
-        
+
         if (isAdmin) {
             builder.transactionId(payment.getTransactionId());
         }
-        
+
         if (payment.getCardCompanyName() != null || payment.getCardCompanyCode() != null) {
             builder.card(CardInfo.builder()
                     .cardCompanyName(payment.getCardCompanyName())
@@ -257,7 +257,7 @@ public class PaymentMapper {
                     .salesCheckLinkUrl(payment.getSalesCheckLinkUrl())
                     .build());
         }
-        
+
         return builder.build();
     }
 
@@ -318,16 +318,16 @@ public class PaymentMapper {
         if (value == null) {
             return null;
         }
-        
+
         BigDecimal rounded = value.setScale(0, PaymentConstants.AMOUNT_ROUNDING_MODE);
-        
+
         if (rounded.compareTo(BigDecimal.valueOf(PaymentConstants.INTEGER_MAX_VALUE)) > 0) {
-            log.error("금액이 Integer 범위를 초과합니다. value={}, maxValue={}", 
+            log.error("금액이 Integer 범위를 초과합니다. value={}, maxValue={}",
                     value, PaymentConstants.INTEGER_MAX_VALUE);
             throw new BusinessException(ErrorCode.AMOUNT_EXCEEDS_INTEGER_RANGE,
                     String.format("금액이 Integer 범위를 초과합니다. value: %s", value));
         }
-        
+
         return rounded.intValue();
     }
 }

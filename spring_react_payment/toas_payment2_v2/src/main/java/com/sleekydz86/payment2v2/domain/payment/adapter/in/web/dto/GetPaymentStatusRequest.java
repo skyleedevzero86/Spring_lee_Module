@@ -16,8 +16,7 @@ public class GetPaymentStatusRequest {
 
     @AssertTrue(message = "결제 토큰 또는 주문번호 중 하나는 필수입니다.")
     private boolean isValid() {
-        return (payToken != null && !payToken.isBlank()) || 
+        return (payToken != null && !payToken.isBlank()) ||
                (orderNo != null && !orderNo.isBlank());
     }
 }
-

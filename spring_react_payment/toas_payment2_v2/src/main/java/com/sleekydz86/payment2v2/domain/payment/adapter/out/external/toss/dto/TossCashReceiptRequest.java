@@ -28,7 +28,7 @@ public class TossCashReceiptRequest {
 
     @JsonProperty("type")
     @NotBlank(message = "현금영수증 종류는 필수입니다.")
-    private String type; // 소득공제, 지출증빙
+    private String type;
 
     @JsonProperty("customerIdentityNumber")
     @NotBlank(message = "소비자 인증수단은 필수입니다.")

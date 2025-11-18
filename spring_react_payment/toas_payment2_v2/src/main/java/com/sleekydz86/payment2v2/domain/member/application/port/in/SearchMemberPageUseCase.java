@@ -9,4 +9,3 @@ public interface SearchMemberPageUseCase {
     PageResponse<SearchMemberResponse> searchByEmail(String email, Pageable pageable);
     PageResponse<SearchMemberResponse> searchAll(Pageable pageable);
 }
-

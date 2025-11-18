@@ -16,4 +16,3 @@ public class PageApiResponse<T> {
     private boolean hasNext;
     private boolean hasPrevious;
 }
-

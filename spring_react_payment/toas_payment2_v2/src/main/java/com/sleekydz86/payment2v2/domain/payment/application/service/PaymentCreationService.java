@@ -131,7 +131,7 @@ public class PaymentCreationService implements CreatePaymentUseCase {
 
     private TossPaymentResponse tossPaymentFallback(TossPaymentRequest tossRequest, String orderNo, Exception e) {
         log.error("토스페이먼츠 API Circuit Breaker 활성화: orderNo={}", orderNo, e);
-        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR, 
+        throw new BusinessException(ErrorCode.TOSS_PAYMENT_API_ERROR,
                 "토스페이먼츠 서비스가 일시적으로 사용할 수 없습니다.", e);
     }
 
@@ -150,4 +150,3 @@ public class PaymentCreationService implements CreatePaymentUseCase {
                 payment.getOrderNoValue(), payment.getUserId(), payment.getProductDesc()));
     }
 }
-

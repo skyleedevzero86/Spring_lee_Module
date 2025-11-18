@@ -11,4 +11,3 @@ public class FindMemberApiResponse {
     private String name;
     private String role;
 }
-

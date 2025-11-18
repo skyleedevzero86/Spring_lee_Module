@@ -2,6 +2,31 @@ import type { NextConfig } from "next";
 import path from 'path';
 import bundleAnalyzer from '@next/bundle-analyzer';
 
+// Windows-specific: Suppress known file access errors for client-reference-manifest
+// This is a known Next.js issue on Windows and doesn't affect functionality
+if (typeof window === 'undefined' && process.platform === 'win32') {
+  const originalConsoleError = console.error;
+  console.error = (...args: any[]) => {
+    const errorMessage = args[0]?.toString() || '';
+    const errorObj = args[0];
+    
+    // Suppress Windows-specific file access errors
+    if (
+      errorMessage.includes('page_client-reference-manifest.js') ||
+      (errorObj && typeof errorObj === 'object' && 
+       errorObj.code === 'UNKNOWN' && 
+       errorObj.errno === -4094 &&
+       errorObj.path?.includes('client-reference-manifest'))
+    ) {
+      // Silently suppress this Windows file access error
+      return;
+    }
+    
+    // Call original console.error for all other errors
+    originalConsoleError.apply(console, args);
+  };
+}
+
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });

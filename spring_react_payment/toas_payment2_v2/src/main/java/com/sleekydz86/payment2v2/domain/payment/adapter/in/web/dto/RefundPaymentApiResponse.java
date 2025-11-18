@@ -29,4 +29,3 @@ public class RefundPaymentApiResponse {
     private String accountNumber;
     private String status;
 }
-

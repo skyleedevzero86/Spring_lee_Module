@@ -77,6 +77,15 @@ export const usePayment = () => {
       paymentService.cancelPayment(paymentKey, request)
   );
 
+  const cancelPaymentByIdAsync = useAsyncOperation(
+    (paymentId: number, request: CancelPaymentRequest) =>
+      paymentService.cancelPaymentById(paymentId, request)
+  );
+
+  const downloadReceiptAsync = useAsyncOperation(
+    (paymentId: number) => paymentService.downloadReceipt(paymentId)
+  );
+
   const loading = useMemo(
     () =>
       createPaymentAsync.loading ||
@@ -86,7 +95,9 @@ export const usePayment = () => {
       getPaymentHistoryPageAsync.loading ||
       getPaymentDetailAsync.loading ||
       refundPaymentAsync.loading ||
-      cancelPaymentAsync.loading,
+      cancelPaymentAsync.loading ||
+      cancelPaymentByIdAsync.loading ||
+      downloadReceiptAsync.loading,
     [
       createPaymentAsync.loading,
       approvePaymentAsync.loading,
@@ -96,6 +107,8 @@ export const usePayment = () => {
       getPaymentDetailAsync.loading,
       refundPaymentAsync.loading,
       cancelPaymentAsync.loading,
+      cancelPaymentByIdAsync.loading,
+      downloadReceiptAsync.loading,
     ]
   );
 
@@ -108,7 +121,9 @@ export const usePayment = () => {
       getPaymentHistoryPageAsync.error ||
       getPaymentDetailAsync.error ||
       refundPaymentAsync.error ||
-      cancelPaymentAsync.error,
+      cancelPaymentAsync.error ||
+      cancelPaymentByIdAsync.error ||
+      downloadReceiptAsync.error,
     [
       createPaymentAsync.error,
       approvePaymentAsync.error,
@@ -118,6 +133,8 @@ export const usePayment = () => {
       getPaymentDetailAsync.error,
       refundPaymentAsync.error,
       cancelPaymentAsync.error,
+      cancelPaymentByIdAsync.error,
+      downloadReceiptAsync.error,
     ]
   );
 
@@ -132,6 +149,8 @@ export const usePayment = () => {
     getPaymentDetail: getPaymentDetailAsync.execute,
     refundPayment: refundPaymentAsync.execute,
     cancelPayment: cancelPaymentAsync.execute,
+    cancelPaymentById: cancelPaymentByIdAsync.execute,
+    downloadReceipt: downloadReceiptAsync.execute,
   };
 };
 

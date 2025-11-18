@@ -55,7 +55,6 @@ class ConfirmPurchaseUseCaseTest {
         @Test
         @DisplayName("결제 승인 성공")
         void confirmPurchase_success() {
-                // given
                 PurchaseConfirmRequest request = new PurchaseConfirmRequest(
                                 paymentKey,
                                 orderId.toString(),
@@ -91,10 +90,8 @@ class ConfirmPurchaseUseCaseTest {
                 when(paymentGateway.confirmPayment(paymentKey, orderId.toString(), 50000)).thenReturn(response);
                 when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-                // when
                 confirmPurchaseUseCase.execute(request);
 
-                // then
                 verify(orderRepository, times(1)).findByOrderId(orderId);
                 verify(paymentGateway, times(1)).confirmPayment(paymentKey, orderId.toString(), 50000);
                 verify(orderRepository, times(1)).save(any(Order.class));
@@ -104,7 +101,6 @@ class ConfirmPurchaseUseCaseTest {
         @Test
         @DisplayName("주문을 찾을 수 없는 경우")
         void confirmPurchase_orderNotFound() {
-                // given
                 PurchaseConfirmRequest request = new PurchaseConfirmRequest(
                                 paymentKey,
                                 orderId.toString(),
@@ -113,7 +109,6 @@ class ConfirmPurchaseUseCaseTest {
 
                 when(orderRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
-                // when & then
                 assertThatThrownBy(() -> confirmPurchaseUseCase.execute(request))
                                 .isInstanceOf(BadRequestException.class)
                                 .hasMessageContaining("주문을 찾을 수 없습니다.");
@@ -122,7 +117,6 @@ class ConfirmPurchaseUseCaseTest {
         @Test
         @DisplayName("결제 금액이 일치하지 않는 경우")
         void confirmPurchase_amountMismatch() {
-                // given
                 PurchaseConfirmRequest request = new PurchaseConfirmRequest(
                                 paymentKey,
                                 orderId.toString(),
@@ -131,7 +125,6 @@ class ConfirmPurchaseUseCaseTest {
 
                 when(orderRepository.findByOrderId(orderId)).thenReturn(Optional.of(testOrder));
 
-                // when & then
                 assertThatThrownBy(() -> confirmPurchaseUseCase.execute(request))
                                 .isInstanceOf(BadRequestException.class)
                                 .hasMessageContaining("결제 금액이 일치하지 않습니다.");
@@ -140,7 +133,6 @@ class ConfirmPurchaseUseCaseTest {
         @Test
         @DisplayName("토스 페이먼츠 결제 승인 실패")
         void confirmPurchase_tossPaymentFailure() {
-                // given
                 PurchaseConfirmRequest request = new PurchaseConfirmRequest(
                                 paymentKey,
                                 orderId.toString(),
@@ -152,7 +144,6 @@ class ConfirmPurchaseUseCaseTest {
                                 .thenThrow(new TossPaymentException("결제 승인 실패", 400));
                 when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-                // when & then
                 assertThatThrownBy(() -> confirmPurchaseUseCase.execute(request))
                                 .isInstanceOf(com.sleekydz86.toaspayment.global.exception.TossPaymentException.class)
                                 .hasMessageContaining("결제 승인에 실패했습니다");

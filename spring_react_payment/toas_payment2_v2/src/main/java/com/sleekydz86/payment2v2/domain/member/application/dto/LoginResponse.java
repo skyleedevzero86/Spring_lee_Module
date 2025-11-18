@@ -8,7 +8,7 @@ import lombok.Getter;
 public class LoginResponse {
     private String message;
     private LoginData data;
-    
+
     @Getter
     @Builder
     public static class LoginData {
@@ -19,4 +19,3 @@ public class LoginResponse {
         private String token;
     }
 }
-

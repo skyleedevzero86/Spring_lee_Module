@@ -10,4 +10,3 @@ import java.math.BigDecimal;
 public class CancelCashReceiptRequest {
     private BigDecimal amount;
 }
-

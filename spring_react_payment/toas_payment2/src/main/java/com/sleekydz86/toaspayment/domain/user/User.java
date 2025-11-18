@@ -54,4 +54,3 @@ public class User {
         return this.role == UserRole.USER;
     }
 }
-

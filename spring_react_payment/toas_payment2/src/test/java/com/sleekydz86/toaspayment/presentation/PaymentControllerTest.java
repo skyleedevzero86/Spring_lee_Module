@@ -38,7 +38,7 @@ class PaymentControllerTest {
     @Test
     @DisplayName("결제 초기화 성공")
     void initPurchase_success() {
-        //given
+
         PurchaseInitRequest request = new PurchaseInitRequest(1L, 50000);
         PurchaseInitResponse expectedResponse = new PurchaseInitResponse(
                 new PurchaseInitResponse.PurchaseInitData("order-uuid-12345")
@@ -46,10 +46,8 @@ class PaymentControllerTest {
 
         when(initPurchaseUseCase.execute(request)).thenReturn(expectedResponse);
 
-        //when
         ResponseEntity<PurchaseInitResponse> response = paymentController.initPurchase(request);
 
-        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().data().purchaseUUID()).isEqualTo("order-uuid-12345");
@@ -59,7 +57,7 @@ class PaymentControllerTest {
     @Test
     @DisplayName("결제 승인 성공")
     void confirmPurchase_success() {
-        //given
+
         PurchaseConfirmRequest request = new PurchaseConfirmRequest(
                 "payment_key",
                 "order_id",
@@ -69,10 +67,8 @@ class PaymentControllerTest {
 
         doNothing().when(confirmPurchaseUseCase).execute(request);
 
-        //when
         ResponseEntity<Void> response = paymentController.confirmPurchase(request);
 
-        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(confirmPurchaseUseCase, times(1)).execute(request);
     }
@@ -80,7 +76,7 @@ class PaymentControllerTest {
     @Test
     @DisplayName("환불 성공")
     void refundOrder_success() {
-        //given
+
         RefundRequest request = new RefundRequest(
                 "payment_key",
                 "order_id",
@@ -90,12 +86,9 @@ class PaymentControllerTest {
 
         doNothing().when(refundOrderUseCase).execute(request);
 
-        //when
         ResponseEntity<Void> response = paymentController.refundOrder(request);
 
-        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(refundOrderUseCase, times(1)).execute(request);
     }
 }
-

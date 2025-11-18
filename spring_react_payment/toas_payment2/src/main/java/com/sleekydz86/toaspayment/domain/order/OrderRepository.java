@@ -13,4 +13,3 @@ public interface OrderRepository {
     List<Order> findByMemberId(Long memberId);
     List<Order> findAll();
 }
-

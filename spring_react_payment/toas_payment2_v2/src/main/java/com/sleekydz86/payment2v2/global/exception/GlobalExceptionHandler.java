@@ -76,4 +76,3 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(createHeaders()).body(response);
     }
 }
-

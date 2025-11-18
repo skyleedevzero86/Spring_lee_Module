@@ -46,4 +46,3 @@ public class OrderId {
         return value;
     }
 }
-

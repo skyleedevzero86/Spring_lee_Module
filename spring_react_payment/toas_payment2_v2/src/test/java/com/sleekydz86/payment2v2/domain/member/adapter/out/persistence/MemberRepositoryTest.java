@@ -47,16 +47,16 @@ class MemberRepositoryTest {
     @DisplayName("?�메?�로 ?�원??조회?????�다")
     void ?�메?�로_?�원??조회?????�다() {
 
-        // given
+
         Member member = MemberFixture.?�반_?�용??);
-        // when
+
         entityManager.persistAndFlush(member);
 
 
         Optional<Member> found = memberRepository.findByEmail("user@example.com");
 
 
-        // then
+
         assertThat(found).isPresent();
         assertThat(found.get().getEmailValue()).isEqualTo("user@example.com");
     }
@@ -65,9 +65,9 @@ class MemberRepositoryTest {
     @DisplayName("?�메??중복 ?�인???�상?�으�??�작?�다")
     void ?�메??중복_?�인???�상?�으�??�작?�다() {
 
-        // given
+
         Member member = MemberFixture.?�반_?�용??);
-        // when
+
         entityManager.persistAndFlush(member);
 
 
@@ -75,7 +75,7 @@ class MemberRepositoryTest {
         boolean notExists = memberRepository.existsByEmail("new@example.com");
 
 
-        // then
+
         assertThat(exists).isTrue();
         assertThat(notExists).isFalse();
     }
@@ -84,10 +84,10 @@ class MemberRepositoryTest {
     @DisplayName("?�름?�로 ?�원??검?�할 ???�다")
     void ?�름?�로_?�원??검?�할_???�다() {
 
-        // given
+
         Member member1 = MemberFixture.?�반_?�용??);
         Member member2 = MemberFixture.?�메?�로_?�성("test2@example.com");
-        // when
+
         entityManager.persistAndFlush(member1);
         entityManager.persistAndFlush(member2);
 
@@ -105,11 +105,11 @@ class MemberRepositoryTest {
     void ?�름?�로_?�이�?검?�이_?�상?�으�??�작?�다() {
 
         for (int i = 1; i <= 25; i++) {
-            // given
+
             Member member = MemberFixture.?�메?�로_?�성("user" + i + "@example.com");
-            // when
+
             entityManager.persistAndFlush(member);
-        // then
+
         }
 
         Pageable pageable = PageRequest.of(0, 10);

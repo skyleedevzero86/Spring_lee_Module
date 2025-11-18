@@ -25,6 +25,3 @@ public class MemberValidator {
         return MemberId.of(id);
     }
 }
-
-
-
