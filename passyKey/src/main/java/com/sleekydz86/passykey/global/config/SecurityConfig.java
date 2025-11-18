@@ -40,7 +40,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/public/**", "/", "/register", "/login", "/static/**", "/css/**", "/js/**").permitAll()
-                        .requestMatchers("/api/webauthn/register/options").permitAll()
+                        .requestMatchers("/api/webauthn/register/options", "/api/webauthn/authenticate/options").permitAll()
                         .requestMatchers("/favicon.ico", "/.well-known/**").permitAll()
                         .anyRequest().authenticated()
                 )
