@@ -66,13 +66,34 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const options = optionsResult.data;
-            options.challenge = base64UrlToArrayBuffer(options.challenge);
+            if (options.challenge) {
+                if (typeof options.challenge === 'string') {
+                    options.challenge = base64UrlToArrayBuffer(options.challenge);
+                } else if (options.challenge.value && Array.isArray(options.challenge.value)) {
+                    options.challenge = new Uint8Array(options.challenge.value).buffer;
+                } else if (Array.isArray(options.challenge)) {
+                    options.challenge = new Uint8Array(options.challenge).buffer;
+                } else if (!(options.challenge instanceof ArrayBuffer)) {
+                    console.error('Unexpected challenge format:', options.challenge);
+                    throw new Error('Invalid challenge format');
+                }
+            }
 
             if (options.allowCredentials) {
-                options.allowCredentials = options.allowCredentials.map(cred => ({
-                    ...cred,
-                    id: base64UrlToArrayBuffer(cred.id)
-                }));
+                options.allowCredentials = options.allowCredentials.map(cred => {
+                    let id = cred.id;
+                    if (typeof id === 'string') {
+                        id = base64UrlToArrayBuffer(id);
+                    } else if (Array.isArray(id)) {
+                        id = new Uint8Array(id).buffer;
+                    } else if (id && id.value && Array.isArray(id.value)) {
+                        id = new Uint8Array(id.value).buffer;
+                    }
+                    return {
+                        ...cred,
+                        id: id
+                    };
+                });
             }
 
             const assertion = await navigator.credentials.get({
@@ -118,8 +139,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function base64UrlToArrayBuffer(base64url) {
+        if (base64url instanceof ArrayBuffer) {
+            return base64url;
+        }
+        if (base64url instanceof Uint8Array) {
+            return base64url.buffer;
+        }
+        if (typeof base64url !== 'string') {
+            console.error('base64UrlToArrayBuffer: Invalid input type', typeof base64url, base64url);
+            throw new Error('base64url must be a string, ArrayBuffer, or Uint8Array');
+        }
         const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
-        const binary = atob(base64);
+        const paddedBase64 = base64 + '='.repeat((4 - base64.length % 4) % 4);
+        const binary = atob(paddedBase64);
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) {
             bytes[i] = binary.charCodeAt(i);
@@ -128,6 +160,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function arrayBufferToBase64Url(buffer) {
+        if (!(buffer instanceof ArrayBuffer)) {
+            if (buffer instanceof Uint8Array) {
+                buffer = buffer.buffer;
+            } else {
+                console.error('arrayBufferToBase64Url: Invalid input type', typeof buffer, buffer);
+                throw new Error('buffer must be an ArrayBuffer or Uint8Array');
+            }
+        }
         const bytes = new Uint8Array(buffer);
         let binary = '';
         for (let i = 0; i < bytes.length; i++) {

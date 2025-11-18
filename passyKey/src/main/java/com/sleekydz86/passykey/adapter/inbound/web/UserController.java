@@ -4,6 +4,8 @@ import com.sleekydz86.passykey.application.dto.ApiResponse;
 import com.sleekydz86.passykey.application.dto.RegisterRequest;
 import com.sleekydz86.passykey.domain.model.User;
 import com.sleekydz86.passykey.domain.port.inbound.UserUseCase;
+import com.sleekydz86.passykey.global.security.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +15,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/public")
 public class UserController extends BaseController {
 
-    public UserController(UserUseCase userUseCase) {
+    private final AuthenticationService authenticationService;
+
+    public UserController(UserUseCase userUseCase, AuthenticationService authenticationService) {
         super(userUseCase);
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<User>> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<User>> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest httpRequest) {
         try {
             User user = userUseCase.register(request);
+            authenticationService.setAuthentication(user, httpRequest);
             return createdResponse("사용자 등록 성공", user);
         } catch (IllegalArgumentException e) {
             logger.error("사용자 등록 실패", e);

@@ -8,57 +8,71 @@
         <result property="password" column="password"/>
         <result property="email" column="email"/>
         <result property="displayName" column="display_name"/>
-        <result property="role" column="role"/>
-        <result property="accountLocked" column="account_locked"/>
-        <result property="accountExpired" column="account_expired"/>
-        <result property="credentialsExpired" column="credentials_expired"/>
+        <result property="userHandle" column="user_handle"/>
         <result property="enabled" column="enabled"/>
+        <result property="accountNonExpired" column="account_non_expired"/>
+        <result property="accountNonLocked" column="account_non_locked"/>
+        <result property="credentialsNonExpired" column="credentials_non_expired"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
-    <select id="save" statementType="CALLABLE" parameterType="map" resultType="map">
-        {CALL sp_save_user(
-            #{operation, mode=IN, jdbcType=CHAR},
-            #{id, mode=IN, jdbcType=BIGINT},
-            #{username, mode=IN, jdbcType=VARCHAR},
-            #{password, mode=IN, jdbcType=VARCHAR},
-            #{email, mode=IN, jdbcType=VARCHAR},
-            #{displayName, mode=IN, jdbcType=VARCHAR},
-            #{userHandle, mode=IN, jdbcType=VARCHAR},
-            #{enabled, mode=IN, jdbcType=BOOLEAN},
-            #{accountNonExpired, mode=IN, jdbcType=BOOLEAN},
-            #{accountNonLocked, mode=IN, jdbcType=BOOLEAN},
-            #{credentialsNonExpired, mode=IN, jdbcType=BOOLEAN},
-            #{resultId, mode=OUT, jdbcType=BIGINT}
-        )}
-    </select>
+    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="resultId" keyColumn="id">
+        INSERT INTO users (
+            username, password, email, display_name, user_handle,
+            enabled, account_non_expired, account_non_locked, credentials_non_expired
+        ) VALUES (
+            #{username}, #{password}, #{email}, #{displayName}, #{userHandle},
+            #{enabled}, #{accountNonExpired}, #{accountNonLocked}, #{credentialsNonExpired}
+        )
+    </insert>
+
+    <update id="update" parameterType="map">
+        UPDATE users
+        SET username = #{username},
+            password = #{password},
+            email = #{email},
+            display_name = #{displayName},
+            user_handle = #{userHandle},
+            enabled = #{enabled},
+            account_non_expired = #{accountNonExpired},
+            account_non_locked = #{accountNonLocked},
+            credentials_non_expired = #{credentialsNonExpired}
+        WHERE id = #{id}
+    </update>
 
     <select id="selectById" parameterType="Long" resultMap="userResultMap">
-        SELECT id, username, password, email, display_name, 
-               role, account_locked, account_expired, credentials_expired,
-               enabled, created_at, updated_at
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
         FROM users WHERE id = #{id}
     </select>
 
     <select id="selectByUsername" parameterType="String" resultMap="userResultMap">
-        SELECT id, username, password, email, display_name, 
-               role, account_locked, account_expired, credentials_expired,
-               enabled, created_at, updated_at
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
         FROM users WHERE username = #{username}
     </select>
 
     <select id="selectByEmail" parameterType="String" resultMap="userResultMap">
-        SELECT id, username, password, email, display_name, 
-               role, account_locked, account_expired, credentials_expired,
-               enabled, created_at, updated_at
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
         FROM users WHERE email = #{email}
     </select>
 
+    <select id="selectByUserHandle" parameterType="String" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
+        FROM users WHERE user_handle = #{userHandle}
+    </select>
+
     <select id="selectAll" resultMap="userResultMap">
-        SELECT id, username, password, email, display_name, 
-               role, account_locked, account_expired, credentials_expired,
-               enabled, created_at, updated_at
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
         FROM users
     </select>
 

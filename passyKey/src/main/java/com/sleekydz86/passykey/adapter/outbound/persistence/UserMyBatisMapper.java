@@ -8,7 +8,9 @@ import java.util.Map;
 @Mapper
 public interface UserMyBatisMapper {
 
-    void save(Map<String, Object> params);
+    void insert(Map<String, Object> params);
+
+    void update(Map<String, Object> params);
 
     User selectById(Long id);
 

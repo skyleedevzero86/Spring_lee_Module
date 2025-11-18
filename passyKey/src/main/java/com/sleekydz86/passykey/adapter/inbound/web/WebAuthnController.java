@@ -40,9 +40,18 @@ public class WebAuthnController extends BaseController {
 
     @PostMapping("/register/options")
     public ResponseEntity<ApiResponse<PublicKeyCredentialCreationOptions>> getRegistrationOptions(
+            @RequestParam(required = false) String username,
             HttpServletRequest request) {
         try {
-            User user = getAuthenticatedUser();
+            User user;
+            try {
+                user = getAuthenticatedUser();
+            } catch (IllegalStateException e) {
+                if (username == null || username.isEmpty()) {
+                    return errorResponse(HttpStatus.UNAUTHORIZED, "인증이 필요하거나 사용자명을 제공해야 합니다");
+                }
+                user = getUserByUsernameOrAuthenticated(username);
+            }
             PublicKeyCredentialCreationOptions options = registrationUseCase.createRegistrationOptions(
                     user, request.getSession());
             return successResponse("등록 옵션 생성 완료", options);

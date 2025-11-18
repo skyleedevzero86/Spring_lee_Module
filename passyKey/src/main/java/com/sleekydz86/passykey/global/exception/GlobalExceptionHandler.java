@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -86,6 +87,14 @@ public class GlobalExceptionHandler {
         logger.error("잘못된 상태 예외 발생", ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Void> handleNoResourceFoundException(NoResourceFoundException ex) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("리소스를 찾을 수 없음: {}", ex.getResourcePath());
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(RuntimeException.class)

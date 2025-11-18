@@ -31,10 +31,7 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     @Transactional(rollbackFor = Exception.class)
     public User save(User user) {
         try {
-            String operation = (user.getId() == null) ? "C" : "U";
             Map<String, Object> params = new HashMap<>();
-
-            params.put("operation", operation);
             params.put("id", user.getId());
             params.put("username", user.getUsername());
             params.put("password", user.getPassword());
@@ -48,13 +45,16 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
 
             params.put("resultId", null);
 
-            userMapper.save(params);
-
-            if (user.getId() == null && params.get("resultId") != null) {
-                Object resultIdValue = params.get("resultId");
-                if (resultIdValue instanceof Number) {
-                    user.setId(((Number) resultIdValue).longValue());
+            if (user.getId() == null) {
+                userMapper.insert(params);
+                if (params.get("resultId") != null) {
+                    Object resultIdValue = params.get("resultId");
+                    if (resultIdValue instanceof Number) {
+                        user.setId(((Number) resultIdValue).longValue());
+                    }
                 }
+            } else {
+                userMapper.update(params);
             }
 
             userCacheService.cacheUser(user.getUsername(), user);
