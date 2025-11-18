@@ -54,16 +54,36 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        credentialsList.innerHTML = credentials.map(cred => `
-            <div class="credential-item">
-                <div class="credential-info">
-                    <h3>${cred.label || '이름 없는 패스키'}</h3>
-                    <p>생성일: ${new Date(cred.createdAt).toLocaleDateString('ko-KR')}</p>
-                    <p>마지막 사용: ${new Date(cred.lastUsedAt).toLocaleDateString('ko-KR')}</p>
+        credentialsList.innerHTML = credentials.map(cred => {
+            const formatDate = (dateStr) => {
+                if (!dateStr) return '정보 없음';
+                try {
+                    const date = new Date(dateStr);
+                    if (isNaN(date.getTime())) return '정보 없음';
+                    return date.toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch (e) {
+                    console.error('날짜 포맷팅 오류:', e, dateStr);
+                    return '정보 없음';
+                }
+            };
+            
+            return `
+                <div class="credential-item">
+                    <div class="credential-info">
+                        <h3>${cred.label || '이름 없는 패스키'}</h3>
+                        <p>생성일: ${formatDate(cred.createdAt)}</p>
+                        <p>마지막 사용: ${formatDate(cred.lastUsedAt)}</p>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteCredential('${cred.credentialId}')">삭제</button>
                 </div>
-                <button class="btn btn-danger" onclick="deleteCredential('${cred.credentialId}')">삭제</button>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     window.deleteCredential = async function(credentialId) {

@@ -1,5 +1,6 @@
 package com.sleekydz86.passykey.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 
 public class WebAuthnCredential {
@@ -11,7 +12,11 @@ public class WebAuthnCredential {
     private String transports;
     private String label;
     private User user;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime lastUsedAt;
 
     public WebAuthnCredential() {

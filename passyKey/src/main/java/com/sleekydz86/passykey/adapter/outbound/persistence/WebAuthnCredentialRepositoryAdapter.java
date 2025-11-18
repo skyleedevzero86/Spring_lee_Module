@@ -46,8 +46,10 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
             params.put("transports", credential.getTransports());
             params.put("label", credential.getLabel());
             params.put("userId", credential.getUser() != null ? credential.getUser().getId() : null);
-            params.put("createdAt", credential.getCreatedAt());
-            params.put("lastUsedAt", credential.getLastUsedAt());
+            
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            params.put("createdAt", credential.getCreatedAt() != null ? credential.getCreatedAt() : now);
+            params.put("lastUsedAt", credential.getLastUsedAt() != null ? credential.getLastUsedAt() : now);
 
             params.put("resultId", null);
 
@@ -56,7 +58,18 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
             if (credential.getId() == null && params.get("resultId") != null) {
                 Object resultIdValue = params.get("resultId");
                 if (resultIdValue instanceof Number) {
-                    credential.setId(((Number) resultIdValue).longValue());
+                    Long savedId = ((Number) resultIdValue).longValue();
+                    credential.setId(savedId);
+                    
+                    WebAuthnCredential savedCredential = credentialMapper.selectById(savedId);
+                    if (savedCredential != null) {
+                        if (savedCredential.getCreatedAt() != null) {
+                            credential.setCreatedAt(savedCredential.getCreatedAt());
+                        }
+                        if (savedCredential.getLastUsedAt() != null) {
+                            credential.setLastUsedAt(savedCredential.getLastUsedAt());
+                        }
+                    }
                 }
             }
 
