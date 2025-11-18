@@ -287,17 +287,21 @@ public class PaymentController {
 
         try {
             PaymentDetailResponse paymentDetail = getPaymentDetailUseCase.getPaymentDetail(paymentId, userId, userRole);
-            byte[] pdfBytes = receiptService.generateReceiptPdf(paymentDetail);
+            byte[] pdfBytes = receiptService.generateReceiptPdf(paymentDetail, paymentId);
 
             String fileName = String.format("영수증_%s_%s.pdf", 
                     paymentDetail.getOrderNo(), 
                     java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")));
             String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20");
+            String asciiFileName = String.format("Receipt_%s_%s.pdf", 
+                    paymentDetail.getOrderNo(), 
+                    java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")));
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", fileName);
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFileName);
+            String contentDisposition = String.format("attachment; filename=\"%s\"; filename*=UTF-8''%s", 
+                    asciiFileName, encodedFileName);
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
             headers.setContentLength(pdfBytes.length);
 
             return ResponseEntity.ok()

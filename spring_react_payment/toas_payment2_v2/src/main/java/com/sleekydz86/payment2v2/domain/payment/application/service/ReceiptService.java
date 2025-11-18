@@ -11,8 +11,17 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -21,17 +30,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import javax.imageio.ImageIO;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReceiptService {
 
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
+
     private static final float MARGIN = 50;
     private static final float LINE_HEIGHT = 20;
     private static final float TITLE_FONT_SIZE = 18;
     private static final float HEADER_FONT_SIZE = 12;
     private static final float BODY_FONT_SIZE = 10;
+    private static final float QR_CODE_SIZE = 100;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd. HH:mm:ss");
     private static final DateTimeFormatter DATE_ONLY_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd.");
 
@@ -119,7 +135,7 @@ public class ReceiptService {
         return text.chars().anyMatch(ch -> ch >= 0xAC00 && ch <= 0xD7A3);
     }
 
-    public byte[] generateReceiptPdf(PaymentDetailResponse paymentDetail) throws IOException {
+    public byte[] generateReceiptPdf(PaymentDetailResponse paymentDetail, Long paymentId) throws IOException {
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
@@ -145,19 +161,30 @@ public class ReceiptService {
                 yPosition -= (LINE_HEIGHT * 1.5f);
 
                 drawLine(contentStream, MARGIN, yPosition, pageWidth - MARGIN);
-                yPosition -= LINE_HEIGHT;
+                yPosition -= (LINE_HEIGHT * 2);
+
+                float qrX = pageWidth - MARGIN - QR_CODE_SIZE;
+                float qrY = yPosition - QR_CODE_SIZE;
+                
+                if (paymentId != null) {
+                    try {
+                        String qrUrl = frontendUrl + "/payments/" + paymentId;
+                        BufferedImage qrImage = generateQRCode(qrUrl, (int) QR_CODE_SIZE);
+                        PDImageXObject qrImageXObject = PDImageXObject.createFromByteArray(document, 
+                            imageToByteArray(qrImage), "qr-code");
+                        contentStream.drawImage(qrImageXObject, qrX, qrY, QR_CODE_SIZE, QR_CODE_SIZE);
+                    } catch (Exception e) {
+                        log.warn("QR 코드 생성 실패: {}", e.getMessage());
+                    }
+                }
 
                 yPosition = addSection(contentStream, "주문 정보", yPosition, pageWidth, contentWidth, document);
                 yPosition = addKeyValue(contentStream, "주문번호", paymentDetail.getOrderNo(), yPosition, contentWidth, document);
                 
-                if (paymentDetail.getTransactionId() != null && !paymentDetail.getTransactionId().isEmpty()) {
-                    yPosition = addKeyValue(contentStream, "거래 ID", paymentDetail.getTransactionId(), yPosition, contentWidth, document);
-                }
-                
                 yPosition = addKeyValue(contentStream, "상품 설명", 
                     paymentDetail.getProductDesc() != null ? paymentDetail.getProductDesc() : "-", 
                     yPosition, contentWidth, document);
-                yPosition = addKeyValue(contentStream, "상태", paymentDetail.getStatus(), yPosition, contentWidth, document);
+                yPosition = addKeyValue(contentStream, "상태", "결제 완료", yPosition, contentWidth, document);
                 yPosition -= LINE_HEIGHT;
 
                 yPosition = addSection(contentStream, "결제 정보", yPosition, pageWidth, contentWidth, document);
@@ -192,6 +219,17 @@ public class ReceiptService {
                 if (paymentDetail.getDiscountedAmount() != null && paymentDetail.getDiscountedAmount().compareTo(BigDecimal.ZERO) > 0) {
                     yPosition = addKeyValue(contentStream, "할인 금액", 
                         formatAmount(paymentDetail.getDiscountedAmount()) + "원", yPosition, contentWidth, document);
+                }
+                
+                if (paymentDetail.getPaidTs() != null && !paymentDetail.getPaidTs().isEmpty()) {
+                    yPosition = addKeyValue(contentStream, "결제 완료일", paymentDetail.getPaidTs(), yPosition, contentWidth, document);
+                } else if (paymentDetail.getApprovalTime() != null && !paymentDetail.getApprovalTime().isEmpty()) {
+                    yPosition = addKeyValue(contentStream, "승인 시간", paymentDetail.getApprovalTime(), yPosition, contentWidth, document);
+                }
+                
+                if (paymentDetail.getExpiredTime() != null) {
+                    yPosition = addKeyValue(contentStream, "만료일", 
+                        formatDateTime(paymentDetail.getExpiredTime()), yPosition, contentWidth, document);
                 }
                 
                 yPosition -= LINE_HEIGHT;
@@ -229,24 +267,6 @@ public class ReceiptService {
                     }
                     
                     yPosition -= LINE_HEIGHT;
-                }
-
-                yPosition = addSection(contentStream, "날짜 정보", yPosition, pageWidth, contentWidth, document);
-                
-                if (paymentDetail.getCreatedAt() != null) {
-                    yPosition = addKeyValue(contentStream, "생성일", 
-                        formatDateTime(paymentDetail.getCreatedAt()), yPosition, contentWidth, document);
-                }
-                
-                if (paymentDetail.getPaidTs() != null && !paymentDetail.getPaidTs().isEmpty()) {
-                    yPosition = addKeyValue(contentStream, "결제 완료일", paymentDetail.getPaidTs(), yPosition, contentWidth, document);
-                } else if (paymentDetail.getApprovalTime() != null && !paymentDetail.getApprovalTime().isEmpty()) {
-                    yPosition = addKeyValue(contentStream, "승인 시간", paymentDetail.getApprovalTime(), yPosition, contentWidth, document);
-                }
-                
-                if (paymentDetail.getExpiredTime() != null) {
-                    yPosition = addKeyValue(contentStream, "만료일", 
-                        formatDateTime(paymentDetail.getExpiredTime()), yPosition, contentWidth, document);
                 }
                 
                 yPosition -= (LINE_HEIGHT * 2);
@@ -381,6 +401,30 @@ public class ReceiptService {
             return "****";
         }
         return "****" + accountNumber.substring(length - 4);
+    }
+
+    private BufferedImage generateQRCode(String text, int size) throws WriterException {
+        Map<EncodeHintType, Object> hints = new HashMap<>();
+        hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
+        hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+        hints.put(EncodeHintType.MARGIN, 1);
+
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, size, size, hints);
+
+        BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                image.setRGB(x, y, bitMatrix.get(x, y) ? 0x000000 : 0xFFFFFF);
+            }
+        }
+        return image;
+    }
+
+    private byte[] imageToByteArray(BufferedImage image) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "PNG", baos);
+        return baos.toByteArray();
     }
 }
 
