@@ -145,6 +145,16 @@ class PaymentApi {
       );
     }
   }
+
+  async updatePaymentStatus(
+    paymentId: number,
+    status: string
+  ): Promise<PaymentDetailResponse> {
+    return apiClient.patch<PaymentDetailResponse>(
+      `/api/v1/payments/${paymentId}/status`,
+      { status }
+    );
+  }
 }
 
 export const paymentApi = new PaymentApi();

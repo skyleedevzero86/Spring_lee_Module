@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.IOException;
@@ -24,9 +25,9 @@ import org.springframework.core.env.Environment;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig implements WebMvcConfigurer {
-
+    
     private final Environment environment;
-
+    
     public SecurityConfig(Environment environment) {
         this.environment = environment;
     }
@@ -88,12 +89,12 @@ public class SecurityConfig implements WebMvcConfigurer {
 
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
-
+        
         org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SecurityConfig.class);
-        log.info("CORS 설정 완료: 허용된 Origin={}, Methods={}",
-            configuration.getAllowedOrigins(),
+        log.info("CORS 설정 완료: 허용된 Origin={}, Methods={}", 
+            configuration.getAllowedOrigins(), 
             configuration.getAllowedMethods());
-
+        
         return source;
     }
 
@@ -107,14 +108,14 @@ public class SecurityConfig implements WebMvcConfigurer {
         boolean isDev = Arrays.asList(environment.getActiveProfiles()).contains("dev") ||
                        Arrays.asList(environment.getActiveProfiles()).contains("development") ||
                        !Arrays.asList(environment.getActiveProfiles()).contains("prod");
-
+        
         int maxRequests = isDev ? 500 : 100;
         long windowMs = 60000;
-
+        
         org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SecurityConfig.class);
-        log.info("Rate Limit 설정: maxRequests={}, windowMs={}ms, isDev={}",
+        log.info("Rate Limit 설정: maxRequests={}, windowMs={}ms, isDev={}", 
             maxRequests, windowMs, isDev);
-
+        
         return new RateLimitInterceptor(maxRequests, windowMs);
     }
 
@@ -129,12 +130,17 @@ public class SecurityConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins("http://localhost:3000", "http://localhost:3001")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("Origin", "Content-Type", "Accept", "Authorization",
+                .allowedHeaders("Origin", "Content-Type", "Accept", "Authorization", 
                                "X-User-Id", "X-User-Role", "X-Requested-With",
                                "X-CSRF-Token", "X-XSRF-TOKEN",
                                "Access-Control-Request-Method", "Access-Control-Request-Headers")
                 .allowCredentials(true)
                 .maxAge(3600);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.setOrder(org.springframework.core.Ordered.LOWEST_PRECEDENCE);
     }
 
     @Override
@@ -149,18 +155,18 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     public static class SecurityHeadersFilter extends OncePerRequestFilter {
         private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SecurityHeadersFilter.class);
-
+        
         @Override
         protected void doFilterInternal(
                 HttpServletRequest request,
                 HttpServletResponse response,
                 jakarta.servlet.FilterChain filterChain) throws jakarta.servlet.ServletException, IOException {
 
-            log.info("요청 수신: {} {} from origin: {}",
-                request.getMethod(),
+            log.info("요청 수신: {} {} from origin: {}", 
+                request.getMethod(), 
                 request.getRequestURI(),
                 request.getHeader("Origin"));
-
+            
             response.setHeader("X-Content-Type-Options", "nosniff");
             response.setHeader("X-Frame-Options", "DENY");
             response.setHeader("X-XSS-Protection", "1; mode=block");
@@ -174,11 +180,11 @@ public class SecurityConfig implements WebMvcConfigurer {
         private final long WINDOW_MS;
         private final ConcurrentHashMap<String, RequestWindow> requestCounts = new ConcurrentHashMap<>();
         private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RateLimitInterceptor.class);
-
+        
         public RateLimitInterceptor() {
             this(100, 60000);
         }
-
+        
         public RateLimitInterceptor(int maxRequests, long windowMs) {
             this.MAX_REQUESTS = maxRequests;
             this.WINDOW_MS = windowMs;
@@ -203,17 +209,17 @@ public class SecurityConfig implements WebMvcConfigurer {
             if (currentCount > MAX_REQUESTS) {
                 long remainingTime = WINDOW_MS - (now - window.startTime);
                 long retryAfterSeconds = (remainingTime / 1000) + 1;
-
+                
                 response.setStatus(429);
                 response.setHeader("Retry-After", String.valueOf(retryAfterSeconds));
                 response.setHeader("X-RateLimit-Limit", String.valueOf(MAX_REQUESTS));
                 response.setHeader("X-RateLimit-Remaining", "0");
                 response.setHeader("X-RateLimit-Reset", String.valueOf(window.startTime + WINDOW_MS));
                 response.setContentType("application/json");
-
-                log.warn("Rate limit 초과: clientId={}, count={}, limit={}, retryAfter={}초",
+                
+                log.warn("Rate limit 초과: clientId={}, count={}, limit={}, retryAfter={}초", 
                     clientId, currentCount, MAX_REQUESTS, retryAfterSeconds);
-
+                
                 try {
                     response.getWriter().write(
                         String.format(
@@ -226,7 +232,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 } catch (IOException e) {
                     log.error("Rate limit 에러 응답 작성 실패", e);
                 }
-
+                
                 return false;
             }
 

@@ -288,6 +288,17 @@ class PaymentService {
       );
     }
   }
+
+  async updatePaymentStatus(
+    paymentId: number,
+    status: string
+  ): Promise<PaymentDetailResponse> {
+    return handleServiceCall(
+      () => paymentApi.updatePaymentStatus(paymentId, status),
+      'UPDATE_PAYMENT_STATUS_FAILED',
+      '결제 상태 변경에 실패했습니다.'
+    );
+  }
 }
 
 export const paymentService = new PaymentService();

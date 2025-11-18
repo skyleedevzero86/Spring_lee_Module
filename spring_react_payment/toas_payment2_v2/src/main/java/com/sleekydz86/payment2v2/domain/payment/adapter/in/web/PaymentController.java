@@ -37,6 +37,7 @@ import com.sleekydz86.payment2v2.domain.payment.application.service.ReceiptServi
 import com.sleekydz86.payment2v2.domain.payment.port.out.PaymentRepository;
 import com.sleekydz86.payment2v2.domain.payment.model.Payment;
 import com.sleekydz86.payment2v2.domain.payment.model.PaymentStatus;
+import org.springframework.web.bind.annotation.PatchMapping;
 import com.sleekydz86.payment2v2.global.dto.PageResponse;
 import com.sleekydz86.payment2v2.domain.member.model.valueobject.MemberId;
 import com.sleekydz86.payment2v2.domain.payment.model.valueobject.PaymentId;
@@ -164,7 +165,7 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
         } catch (ClassCastException e) {
 
-            log.warn("캐시 타입 불일치 감지, 캐시 무효화: paymentId={}, userId={}, userRole={}",
+            log.warn("캐시 타입 불일치 감지, 캐시 무효화: paymentId={}, userId={}, userRole={}", 
                     paymentId, userId, userRole, e);
             String cacheKey = paymentId + "_" + userId + "_" + userRole;
             var cache = cacheManager.getCache("paymentDetail");
@@ -198,7 +199,7 @@ public class PaymentController {
             @PathVariable String paymentKey,
             @RequestHeader(HeaderConstants.USER_ID_HEADER) Long userId,
             @Valid @RequestBody CancelPaymentRequest request) {
-        log.info("결제 취소 요청: paymentKey={}, userId={}, cancelReason={}",
+        log.info("결제 취소 요청: paymentKey={}, userId={}, cancelReason={}", 
                 paymentKey, userId, request.getCancelReason());
 
         CancelPaymentCommand command = paymentWebMapper.toCancelCommand(paymentKey, request);
@@ -219,7 +220,7 @@ public class PaymentController {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "사용자 역할이 필요합니다.");
         }
 
-        log.info("결제 취소 요청: paymentId={}, userId={}, cancelReason={}",
+        log.info("결제 취소 요청: paymentId={}, userId={}, cancelReason={}", 
                 paymentId, userId, request.getCancelReason());
 
         boolean isAdmin = "ADMIN".equalsIgnoreCase(userRole);
@@ -232,12 +233,12 @@ public class PaymentController {
                                 String.format("결제 정보를 찾을 수 없습니다. paymentId: %d, userId: %d", paymentId, userId)));
 
         if (payment.getStatus() != PaymentStatus.COMPLETED && payment.getStatus() != PaymentStatus.APPROVED) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE,
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, 
                     "완료된 결제만 취소할 수 있습니다.");
         }
 
         if (payment.getPaidTs() == null || payment.getPaidTs().isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE,
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, 
                     "결제 완료 시간이 없어 취소할 수 없습니다.");
         }
 
@@ -245,9 +246,9 @@ public class PaymentController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(PaymentConstants.DATE_TIME_FORMAT);
             LocalDateTime paidTime = LocalDateTime.parse(payment.getPaidTs(), formatter);
             long daysSincePayment = ChronoUnit.DAYS.between(paidTime, LocalDateTime.now());
-
+            
             if (daysSincePayment > 15) {
-                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE,
+                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, 
                         "결제일로부터 15일이 지나 취소할 수 없습니다.");
             }
         } catch (Exception e) {
@@ -255,12 +256,12 @@ public class PaymentController {
                 throw e;
             }
             log.error("결제 완료 시간 파싱 실패: paidTs={}, paymentId={}", payment.getPaidTs(), paymentId, e);
-            throw new BusinessException(ErrorCode.INVALID_DATA_FORMAT,
+            throw new BusinessException(ErrorCode.INVALID_DATA_FORMAT, 
                     "결제 완료 시간 형식이 올바르지 않습니다.");
         }
 
         if (payment.getPayToken() == null || payment.getPayToken().isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE,
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, 
                     "결제 토큰이 없어 취소할 수 없습니다.");
         }
 
@@ -288,8 +289,8 @@ public class PaymentController {
             PaymentDetailResponse paymentDetail = getPaymentDetailUseCase.getPaymentDetail(paymentId, userId, userRole);
             byte[] pdfBytes = receiptService.generateReceiptPdf(paymentDetail);
 
-            String fileName = String.format("영수증_%s_%s.pdf",
-                    paymentDetail.getOrderNo(),
+            String fileName = String.format("영수증_%s_%s.pdf", 
+                    paymentDetail.getOrderNo(), 
                     java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")));
             String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20");
 
@@ -306,5 +307,53 @@ public class PaymentController {
             log.error("영수증 생성 실패: paymentId={}, userId={}", paymentId, userId, e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "영수증 생성 중 오류가 발생했습니다.");
         }
+    }
+
+    @PatchMapping("/{paymentId}/status")
+    public ResponseEntity<PaymentDetailApiResponse> updatePaymentStatus(
+            @PathVariable Long paymentId,
+            @RequestHeader(HeaderConstants.USER_ID_HEADER) Long userId,
+            @RequestHeader(HeaderConstants.USER_ROLE_HEADER) String userRole,
+            @RequestBody java.util.Map<String, String> request) {
+        PaymentId.of(paymentId);
+        MemberId.of(userId);
+        if (userRole == null || userRole.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "사용자 역할이 필요합니다.");
+        }
+
+        if (!"ADMIN".equalsIgnoreCase(userRole)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "관리자만 상태를 변경할 수 있습니다.");
+        }
+
+        String statusStr = request.get("status");
+        if (statusStr == null || statusStr.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "상태 값이 필요합니다.");
+        }
+
+        PaymentStatus newStatus;
+        try {
+            newStatus = PaymentStatus.valueOf(statusStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, 
+                    String.format("유효하지 않은 상태입니다: %s", statusStr));
+        }
+
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(userRole);
+        Payment payment = isAdmin
+                ? paymentRepository.findById(paymentId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND,
+                                String.format("결제 정보를 찾을 수 없습니다. paymentId: %d", paymentId)))
+                : paymentRepository.findByIdAndUserId(paymentId, userId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND,
+                                String.format("결제 정보를 찾을 수 없습니다. paymentId: %d, userId: %d", paymentId, userId)));
+
+        payment.updateStatus(newStatus);
+        paymentRepository.save(payment);
+
+        log.info("결제 상태 변경: paymentId={}, userId={}, newStatus={}", paymentId, userId, newStatus);
+
+        PaymentDetailResponse response = getPaymentDetailUseCase.getPaymentDetail(paymentId, userId, userRole);
+        PaymentDetailApiResponse apiResponse = paymentWebMapper.toDetailApiResponse(response);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 }

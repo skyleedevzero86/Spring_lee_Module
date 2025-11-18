@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { PaymentStatus } from '@/domain/types/payment.types';
+import { getStatusText, getStatusColor as getStatusColorUtil } from '@/utils/payment-status';
 import Link from 'next/link';
 
 function PaymentDetailPageContent() {
@@ -18,12 +19,27 @@ function PaymentDetailPageContent() {
   const { paymentDetail } = usePaymentStore();
   const [refundLoading, setRefundLoading] = useState(false);
   const [receiptLoading, setReceiptLoading] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const hasLoadedRef = useRef<number | null>(null);
   const getPaymentDetailRef = useRef(getPaymentDetail);
 
   useEffect(() => {
     getPaymentDetailRef.current = getPaymentDetail;
   }, [getPaymentDetail]);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const role = await TokenManager.getUserRole();
+        setIsAdmin(role === 'ADMIN');
+      } catch (error) {
+        console.error('Failed to check admin role:', error);
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
+  }, []);
 
   useEffect(() => {
     if (hasLoadedRef.current !== paymentId) {
@@ -39,18 +55,7 @@ function PaymentDetailPageContent() {
   }, [paymentId]);
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case PaymentStatus.COMPLETED:
-        return 'bg-green-100 text-green-800';
-      case PaymentStatus.PENDING:
-        return 'bg-yellow-100 text-yellow-800';
-      case PaymentStatus.CANCELLED:
-        return 'bg-red-100 text-red-800';
-      case PaymentStatus.FAILED:
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-blue-100 text-blue-800';
-    }
+    return getStatusColorUtil(status);
   };
 
   if (loading) {
@@ -128,7 +133,7 @@ function PaymentDetailPageContent() {
                   paymentDetail.status
                 )}`}
               >
-                {paymentDetail.status}
+                {getStatusText(paymentDetail.status)}
               </span>
             </div>
 
@@ -196,7 +201,7 @@ function PaymentDetailPageContent() {
             )}
           </div>
 
-          <div className="pt-6 border-t flex gap-4">
+          <div className="pt-6 border-t flex gap-4 flex-wrap">
             <button
               onClick={async () => {
                 try {
@@ -251,6 +256,30 @@ function PaymentDetailPageContent() {
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {refundLoading ? '처리 중...' : '환불 요청'}
+              </button>
+            )}
+            {isAdmin && paymentDetail.status !== PaymentStatus.COMPLETED && (
+              <button
+                onClick={async () => {
+                  if (!confirm('결제 상태를 COMPLETED로 변경하시겠습니까?')) {
+                    return;
+                  }
+                  try {
+                    setStatusUpdating(true);
+                    await updatePaymentStatus(paymentId, PaymentStatus.COMPLETED);
+                    alert('결제 상태가 COMPLETED로 변경되었습니다.');
+                    await getPaymentDetail(paymentId);
+                  } catch (err) {
+                    console.error('상태 변경 실패:', err);
+                    alert('상태 변경에 실패했습니다.');
+                  } finally {
+                    setStatusUpdating(false);
+                  }
+                }}
+                disabled={statusUpdating}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {statusUpdating ? '변경 중...' : '상태를 COMPLETED로 변경'}
               </button>
             )}
           </div>

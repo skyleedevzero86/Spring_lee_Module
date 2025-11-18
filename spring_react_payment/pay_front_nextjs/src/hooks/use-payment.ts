@@ -86,6 +86,10 @@ export const usePayment = () => {
     (paymentId: number) => paymentService.downloadReceipt(paymentId)
   );
 
+  const updatePaymentStatusAsync = useAsyncOperation(
+    (paymentId: number, status: string) => paymentService.updatePaymentStatus(paymentId, status)
+  );
+
   const loading = useMemo(
     () =>
       createPaymentAsync.loading ||
@@ -97,7 +101,8 @@ export const usePayment = () => {
       refundPaymentAsync.loading ||
       cancelPaymentAsync.loading ||
       cancelPaymentByIdAsync.loading ||
-      downloadReceiptAsync.loading,
+      downloadReceiptAsync.loading ||
+      updatePaymentStatusAsync.loading,
     [
       createPaymentAsync.loading,
       approvePaymentAsync.loading,
@@ -109,6 +114,7 @@ export const usePayment = () => {
       cancelPaymentAsync.loading,
       cancelPaymentByIdAsync.loading,
       downloadReceiptAsync.loading,
+      updatePaymentStatusAsync.loading,
     ]
   );
 
@@ -123,7 +129,8 @@ export const usePayment = () => {
       refundPaymentAsync.error ||
       cancelPaymentAsync.error ||
       cancelPaymentByIdAsync.error ||
-      downloadReceiptAsync.error,
+      downloadReceiptAsync.error ||
+      updatePaymentStatusAsync.error,
     [
       createPaymentAsync.error,
       approvePaymentAsync.error,
@@ -135,6 +142,7 @@ export const usePayment = () => {
       cancelPaymentAsync.error,
       cancelPaymentByIdAsync.error,
       downloadReceiptAsync.error,
+      updatePaymentStatusAsync.error,
     ]
   );
 
@@ -151,6 +159,7 @@ export const usePayment = () => {
     cancelPayment: cancelPaymentAsync.execute,
     cancelPaymentById: cancelPaymentByIdAsync.execute,
     downloadReceipt: downloadReceiptAsync.execute,
+    updatePaymentStatus: updatePaymentStatusAsync.execute,
   };
 };
 

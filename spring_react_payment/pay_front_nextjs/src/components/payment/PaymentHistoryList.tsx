@@ -7,6 +7,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { PaymentStatus } from '@/domain/types/payment.types';
 import { ApiError } from '@/domain/types/error.types';
+import { getStatusText, getStatusColor as getStatusColorUtil } from '@/utils/payment-status';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -59,18 +60,7 @@ export const PaymentHistoryList = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case PaymentStatus.COMPLETED:
-        return 'bg-green-100 text-green-800';
-      case PaymentStatus.PENDING:
-        return 'bg-yellow-100 text-yellow-800';
-      case PaymentStatus.CANCELLED:
-        return 'bg-red-100 text-red-800';
-      case PaymentStatus.FAILED:
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-blue-100 text-blue-800';
-    }
+    return getStatusColorUtil(status);
   };
 
   const isConnectionError = error instanceof ApiError && 
@@ -152,7 +142,7 @@ export const PaymentHistoryList = () => {
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(payment.status)}`}
                 >
-                  {payment.status}
+                  {getStatusText(payment.status)}
                 </span>
               </td>
               <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500 sm:px-6">

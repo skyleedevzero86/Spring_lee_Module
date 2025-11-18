@@ -239,6 +239,13 @@ public class Payment {
         this.status = PaymentStatus.APPROVED;
     }
 
+    public void updateStatus(PaymentStatus newStatus) {
+        if (newStatus == null) {
+            throw new IllegalArgumentException("상태는 null일 수 없습니다.");
+        }
+        this.status = newStatus;
+    }
+
     public void approvePayment(String mode, String approvalTime, String stateMsg, String payMethod,
                               BigDecimal discountedAmount, BigDecimal paidAmount, String transactionId,
                               String cashReceiptMgtKey) {
