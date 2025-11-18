@@ -16,13 +16,18 @@ import com.webauthn4j.data.AuthenticationRequest;
 import com.webauthn4j.data.PublicKeyCredentialParameters;
 import com.webauthn4j.data.PublicKeyCredentialType;
 import com.webauthn4j.util.exception.WebAuthnException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
+
+    private static final Logger logger = LoggerFactory.getLogger(WebAuthnVerifierAdapter.class);
 
     private final ObjectConverter objectConverter;
     private final WebAuthnManager webAuthnManager;
@@ -59,6 +64,27 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
     public void verifyAuthentication(byte[] authenticatorDataBytes, byte[] clientDataJSONBytes,
             byte[] signatureBytes, byte[] userHandle, ServerProperty serverProperty,
             RegisteredCredential registeredCredential) {
+        if (clientDataJSONBytes == null || clientDataJSONBytes.length == 0) {
+            throw new RuntimeException("clientDataJSONBytes is null or empty");
+        }
+
+        try {
+            String clientDataJSONString = new String(clientDataJSONBytes, StandardCharsets.UTF_8);
+            logger.debug("clientDataJSON (decoded): {}", clientDataJSONString);
+            
+            if (!clientDataJSONString.trim().startsWith("{")) {
+                logger.error("clientDataJSON is not valid JSON. First char: '{}', length: {}", 
+                    clientDataJSONString.length() > 0 ? clientDataJSONString.charAt(0) : "empty",
+                    clientDataJSONBytes.length);
+                logger.error("clientDataJSONBytes (first 50 bytes): {}", 
+                    java.util.Arrays.toString(java.util.Arrays.copyOf(clientDataJSONBytes, Math.min(50, clientDataJSONBytes.length))));
+                throw new RuntimeException("clientDataJSON is not valid JSON format");
+            }
+        } catch (Exception e) {
+            logger.error("Failed to validate clientDataJSON", e);
+            throw new RuntimeException("clientDataJSON validation failed: " + e.getMessage(), e);
+        }
+
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(
                 registeredCredential.getCredentialId(),
                 authenticatorDataBytes,
@@ -76,6 +102,7 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
         try {
             webAuthnManager.validate(authenticationRequest, authenticationParameters);
         } catch (WebAuthnException e) {
+            logger.error("WebAuthn validation failed", e);
             throw new RuntimeException("Authentication validation failed: " + e.getMessage(), e);
         }
     }

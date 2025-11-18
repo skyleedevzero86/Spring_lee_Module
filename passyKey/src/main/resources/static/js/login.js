@@ -112,12 +112,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 publicKey: options
             });
 
+            const clientDataJSONEncoded = arrayBufferToBase64Url(assertion.response.clientDataJSON);
+            
+            console.log('=== Authentication Debug ===');
+            console.log('assertion.id:', assertion.id);
+            console.log('clientDataJSON (encoded length):', clientDataJSONEncoded.length);
+            console.log('clientDataJSON (first 100 chars):', clientDataJSONEncoded.substring(0, Math.min(100, clientDataJSONEncoded.length)));
+            
+            try {
+                const base64 = clientDataJSONEncoded.replace(/-/g, '+').replace(/_/g, '/');
+                const paddedBase64 = base64 + '='.repeat((4 - base64.length % 4) % 4);
+                const decoded = atob(paddedBase64);
+                console.log('clientDataJSON (decoded):', decoded);
+                const parsed = JSON.parse(decoded);
+                console.log('clientDataJSON (parsed):', parsed);
+            } catch (e) {
+                console.error('Failed to decode/parse clientDataJSON:', e);
+            }
+
             const authenticationRequest = {
                 id: assertion.id,
                 rawId: arrayBufferToBase64Url(assertion.rawId),
                 response: {
                     authenticatorData: arrayBufferToBase64Url(assertion.response.authenticatorData),
-                    clientDataJSON: arrayBufferToBase64Url(assertion.response.clientDataJSON),
+                    clientDataJSON: clientDataJSONEncoded,
                     signature: arrayBufferToBase64Url(assertion.response.signature),
                     userHandle: assertion.response.userHandle ? arrayBufferToBase64Url(assertion.response.userHandle) : null
                 }

@@ -67,16 +67,57 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public User authenticate(String credentialId, String authenticatorDataBase64,
-                             String clientDataJSONBase64, String signatureBase64,
-                             String userHandle, HttpSession session) {
+            String clientDataJSONBase64, String signatureBase64,
+            String userHandle, HttpSession session) {
         try {
             WebAuthnCredential credential = credentialRepository.findByCredentialId(credentialId)
                     .orElseThrow(() -> new CredentialNotFoundException(credentialId));
 
-            byte[] authenticatorDataBytes = Base64UrlConverter.decode(authenticatorDataBase64);
-            byte[] clientDataJSONBytes = Base64UrlConverter.decode(clientDataJSONBase64);
-            byte[] signatureBytes = Base64UrlConverter.decode(signatureBase64);
-            byte[] publicKeyCoseBytes = Base64UrlConverter.decode(credential.getPublicKeyCose());
+            byte[] authenticatorDataBytes;
+            byte[] clientDataJSONBytes;
+            byte[] signatureBytes;
+            byte[] publicKeyCoseBytes;
+
+            logger.debug("=== Authentication Debug ===");
+            logger.debug("credentialId: {}", credentialId);
+            logger.debug("clientDataJSONBase64 length: {}",
+                    clientDataJSONBase64 != null ? clientDataJSONBase64.length() : 0);
+            logger.debug("clientDataJSONBase64 (first 100 chars): {}",
+                    clientDataJSONBase64 != null && clientDataJSONBase64.length() > 100
+                            ? clientDataJSONBase64.substring(0, 100)
+                            : clientDataJSONBase64);
+
+            try {
+                authenticatorDataBytes = Base64UrlConverter.decode(authenticatorDataBase64);
+                clientDataJSONBytes = Base64UrlConverter.decode(clientDataJSONBase64);
+                signatureBytes = Base64UrlConverter.decode(signatureBase64);
+                publicKeyCoseBytes = Base64UrlConverter.decode(credential.getPublicKeyCose());
+            } catch (Exception e) {
+                logger.error("Base64 디코딩 실패", e);
+                logger.error("clientDataJSONBase64: {}", clientDataJSONBase64);
+                throw new WebAuthnException("Base64 디코딩 실패: " + e.getMessage());
+            }
+
+            if (clientDataJSONBytes == null || clientDataJSONBytes.length == 0) {
+                throw new WebAuthnException("clientDataJSON이 비어있습니다");
+            }
+
+            try {
+                String clientDataJSONString = new String(clientDataJSONBytes, java.nio.charset.StandardCharsets.UTF_8);
+                logger.debug("Decoded clientDataJSON: {}", clientDataJSONString);
+                if (!clientDataJSONString.trim().startsWith("{")) {
+                    logger.error("clientDataJSON이 유효한 JSON이 아닙니다. 첫 문자: '{}'",
+                            clientDataJSONString.length() > 0 ? clientDataJSONString.charAt(0) : "empty");
+                    throw new WebAuthnException("clientDataJSON이 유효한 JSON 형식이 아닙니다");
+                }
+            } catch (Exception e) {
+                logger.error("clientDataJSON 검증 실패", e);
+                logger.error("clientDataJSONBytes length: {}", clientDataJSONBytes.length);
+                logger.error("clientDataJSONBytes (first 20 bytes): {}",
+                        java.util.Arrays.toString(java.util.Arrays.copyOf(clientDataJSONBytes,
+                                Math.min(20, clientDataJSONBytes.length))));
+                throw new WebAuthnException("clientDataJSON 검증 실패: " + e.getMessage());
+            }
 
             String sessionId = session.getId();
             Challenge challenge = challengeService.getChallenge(
@@ -93,8 +134,7 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
                     Base64UrlConverter.decode(credentialId),
                     publicKeyCoseBytes,
                     credential.getCounter(),
-                    null
-            );
+                    null);
 
             verifierPort.verifyAuthentication(
                     authenticatorDataBytes,
@@ -102,8 +142,7 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
                     signatureBytes,
                     userHandle != null ? Base64UrlConverter.decode(userHandle) : null,
                     serverProperty,
-                    registeredCredential
-            );
+                    registeredCredential);
 
             challengeService.removeChallenge(sessionId, WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
 
