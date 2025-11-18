@@ -72,6 +72,18 @@ public class WebAuthnOptionsFactoryAdapter implements WebAuthnOptionsFactoryPort
                                 com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-257)));
                 params.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
                                 com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-8)));
+                params.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-37)));
+                params.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-35)));
+                params.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-36)));
+                params.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-258)));
+                params.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-38)));
+                params.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-39)));
                 return params;
         }
 

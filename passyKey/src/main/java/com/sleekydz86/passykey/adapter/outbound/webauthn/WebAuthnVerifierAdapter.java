@@ -9,16 +9,17 @@ import com.webauthn4j.data.client.Origin;
 import com.webauthn4j.data.client.challenge.Challenge;
 import com.webauthn4j.server.ServerProperty;
 import com.webauthn4j.WebAuthnManager;
-import com.webauthn4j.data.AuthenticatorAssertionResponse;
 import com.webauthn4j.data.RegistrationParameters;
 import com.webauthn4j.data.AuthenticationParameters;
 import com.webauthn4j.data.RegistrationRequest;
 import com.webauthn4j.data.AuthenticationRequest;
-import com.webauthn4j.credential.CredentialRecord;
+import com.webauthn4j.data.PublicKeyCredentialParameters;
+import com.webauthn4j.data.PublicKeyCredentialType;
 import com.webauthn4j.util.exception.WebAuthnException;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
@@ -40,9 +41,10 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
                 null,
                 null);
 
+        List<PublicKeyCredentialParameters> allowedParameters = getAllowedParameters();
         RegistrationParameters registrationParameters = new RegistrationParameters(
                 serverProperty,
-                Collections.emptyList(),
+                allowedParameters,
                 false,
                 true);
 
@@ -100,5 +102,28 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
         AuthenticatorData<?> authenticatorData = objectConverter.getCborConverter()
                 .readValue(authenticatorDataBytes, AuthenticatorData.class);
         return authenticatorData.getSignCount();
+    }
+
+    private List<PublicKeyCredentialParameters> getAllowedParameters() {
+        List<PublicKeyCredentialParameters> parameters = new ArrayList<>();
+        parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-7)));
+        parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-257)));
+        parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-8)));
+        parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-37)));
+        parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-35)));
+        parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-36)));
+        parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-258)));
+        parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-38)));
+        parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
+                com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-39)));
+        return parameters;
     }
 }
