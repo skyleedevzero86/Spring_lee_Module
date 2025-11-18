@@ -10,11 +10,15 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -31,155 +35,239 @@ public class ReceiptService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd. HH:mm:ss");
     private static final DateTimeFormatter DATE_ONLY_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd.");
 
+    private PDType0Font koreanFont = null;
+    private PDType0Font koreanBoldFont = null;
+
+    private PDType0Font loadKoreanFont(PDDocument document, boolean bold) {
+        if (bold && koreanBoldFont != null) {
+            return koreanBoldFont;
+        }
+        if (!bold && koreanFont != null) {
+            return koreanFont;
+        }
+
+        try {
+            String osName = System.getProperty("os.name").toLowerCase();
+            Path fontPath = null;
+
+            if (osName.contains("win")) {
+                String windowsFontDir = System.getenv("WINDIR");
+                if (windowsFontDir == null) {
+                    windowsFontDir = "C:\\Windows";
+                }
+                Path fontsDir = Paths.get(windowsFontDir, "Fonts");
+
+                String[] fontFiles = bold
+                    ? new String[]{"malgunbd.ttf", "NanumGothicBold.ttf", "gulim.ttc"}
+                    : new String[]{"malgun.ttf", "NanumGothic.ttf", "gulim.ttc"};
+
+                for (String fontFile : fontFiles) {
+                    Path path = fontsDir.resolve(fontFile);
+                    if (Files.exists(path)) {
+                        fontPath = path;
+                        break;
+                    }
+                }
+            } else if (osName.contains("mac")) {
+                String[] fontPaths = bold
+                    ? new String[]{"/System/Library/Fonts/AppleGothic.ttf", "/Library/Fonts/AppleGothic.ttf"}
+                    : new String[]{"/System/Library/Fonts/AppleGothic.ttf", "/Library/Fonts/AppleGothic.ttf"};
+
+                for (String pathStr : fontPaths) {
+                    Path path = Paths.get(pathStr);
+                    if (Files.exists(path)) {
+                        fontPath = path;
+                        break;
+                    }
+                }
+            } else {
+                String[] fontPaths = {
+                    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+                    "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+                };
+
+                for (String pathStr : fontPaths) {
+                    Path path = Paths.get(pathStr);
+                    if (Files.exists(path)) {
+                        fontPath = path;
+                        break;
+                    }
+                }
+            }
+
+            if (fontPath != null && Files.exists(fontPath)) {
+                PDType0Font font = PDType0Font.load(document, fontPath.toFile());
+                if (bold) {
+                    koreanBoldFont = font;
+                } else {
+                    koreanFont = font;
+                }
+                log.info("한글 폰트 로드 성공: {}", fontPath);
+                return font;
+            }
+        } catch (Exception e) {
+            log.warn("한글 폰트 로드 실패: {}", e.getMessage());
+        }
+
+        return null;
+    }
+
+    private boolean containsKorean(String text) {
+        if (text == null) {
+            return false;
+        }
+        return text.chars().anyMatch(ch -> ch >= 0xAC00 && ch <= 0xD7A3);
+    }
+
     public byte[] generateReceiptPdf(PaymentDetailResponse paymentDetail) throws IOException {
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
+
+            PDType0Font koreanBoldFont = loadKoreanFont(document, true);
+            PDType0Font koreanFont = loadKoreanFont(document, false);
 
             try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
                 float yPosition = PDRectangle.A4.getHeight() - MARGIN;
                 float pageWidth = PDRectangle.A4.getWidth();
                 float contentWidth = pageWidth - (MARGIN * 2);
 
-
                 contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA_BOLD, TITLE_FONT_SIZE);
+                if (koreanBoldFont != null) {
+                    contentStream.setFont(koreanBoldFont, TITLE_FONT_SIZE);
+                } else {
+                    contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), TITLE_FONT_SIZE);
+                }
                 float titleWidth = TITLE_FONT_SIZE * 6;
                 contentStream.newLineAtOffset((pageWidth - titleWidth) / 2, yPosition);
                 contentStream.showText("결제 영수증");
                 contentStream.endText();
                 yPosition -= (LINE_HEIGHT * 1.5f);
 
-
                 drawLine(contentStream, MARGIN, yPosition, pageWidth - MARGIN);
                 yPosition -= LINE_HEIGHT;
 
-
-                yPosition = addSection(contentStream, "주문 정보", yPosition, pageWidth, contentWidth);
-                yPosition = addKeyValue(contentStream, "주문번호", paymentDetail.getOrderNo(), yPosition, contentWidth);
-
+                yPosition = addSection(contentStream, "주문 정보", yPosition, pageWidth, contentWidth, document);
+                yPosition = addKeyValue(contentStream, "주문번호", paymentDetail.getOrderNo(), yPosition, contentWidth, document);
+                
                 if (paymentDetail.getTransactionId() != null && !paymentDetail.getTransactionId().isEmpty()) {
-                    yPosition = addKeyValue(contentStream, "거래 ID", paymentDetail.getTransactionId(), yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "거래 ID", paymentDetail.getTransactionId(), yPosition, contentWidth, document);
                 }
-
-                yPosition = addKeyValue(contentStream, "상품 설명",
-                    paymentDetail.getProductDesc() != null ? paymentDetail.getProductDesc() : "-",
-                    yPosition, contentWidth);
-                yPosition = addKeyValue(contentStream, "상태", paymentDetail.getStatus(), yPosition, contentWidth);
+                
+                yPosition = addKeyValue(contentStream, "상품 설명", 
+                    paymentDetail.getProductDesc() != null ? paymentDetail.getProductDesc() : "-", 
+                    yPosition, contentWidth, document);
+                yPosition = addKeyValue(contentStream, "상태", paymentDetail.getStatus(), yPosition, contentWidth, document);
                 yPosition -= LINE_HEIGHT;
 
-
-                yPosition = addSection(contentStream, "결제 정보", yPosition, pageWidth, contentWidth);
-
+                yPosition = addSection(contentStream, "결제 정보", yPosition, pageWidth, contentWidth, document);
+                
                 if (paymentDetail.getPayMethod() != null && !paymentDetail.getPayMethod().isEmpty()) {
-                    yPosition = addKeyValue(contentStream, "결제 수단", paymentDetail.getPayMethod(), yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "결제 수단", paymentDetail.getPayMethod(), yPosition, contentWidth, document);
                 }
-
-                yPosition = addKeyValue(contentStream, "결제 금액",
-                    formatAmount(paymentDetail.getAmount()) + "원", yPosition, contentWidth);
-
+                
+                yPosition = addKeyValue(contentStream, "결제 금액", 
+                    formatAmount(paymentDetail.getAmount()) + "원", yPosition, contentWidth, document);
+                
                 if (paymentDetail.getAmountTaxFree() != null && paymentDetail.getAmountTaxFree().compareTo(BigDecimal.ZERO) > 0) {
-                    yPosition = addKeyValue(contentStream, "비과세 금액",
-                        formatAmount(paymentDetail.getAmountTaxFree()) + "원", yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "비과세 금액", 
+                        formatAmount(paymentDetail.getAmountTaxFree()) + "원", yPosition, contentWidth, document);
                 }
-
+                
                 if (paymentDetail.getAmountTaxable() != null && paymentDetail.getAmountTaxable().compareTo(BigDecimal.ZERO) > 0) {
-                    yPosition = addKeyValue(contentStream, "과세 금액",
-                        formatAmount(paymentDetail.getAmountTaxable()) + "원", yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "과세 금액", 
+                        formatAmount(paymentDetail.getAmountTaxable()) + "원", yPosition, contentWidth, document);
                 }
-
+                
                 if (paymentDetail.getAmountVat() != null && paymentDetail.getAmountVat().compareTo(BigDecimal.ZERO) > 0) {
-                    yPosition = addKeyValue(contentStream, "부가세",
-                        formatAmount(paymentDetail.getAmountVat()) + "원", yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "부가세", 
+                        formatAmount(paymentDetail.getAmountVat()) + "원", yPosition, contentWidth, document);
                 }
-
+                
                 if (paymentDetail.getPaidAmount() != null && paymentDetail.getPaidAmount().compareTo(BigDecimal.ZERO) > 0) {
-                    yPosition = addKeyValue(contentStream, "실제 결제 금액",
-                        formatAmount(paymentDetail.getPaidAmount()) + "원", yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "실제 결제 금액", 
+                        formatAmount(paymentDetail.getPaidAmount()) + "원", yPosition, contentWidth, document);
                 }
-
+                
                 if (paymentDetail.getDiscountedAmount() != null && paymentDetail.getDiscountedAmount().compareTo(BigDecimal.ZERO) > 0) {
-                    yPosition = addKeyValue(contentStream, "할인 금액",
-                        formatAmount(paymentDetail.getDiscountedAmount()) + "원", yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "할인 금액", 
+                        formatAmount(paymentDetail.getDiscountedAmount()) + "원", yPosition, contentWidth, document);
                 }
-
+                
                 yPosition -= LINE_HEIGHT;
-
 
                 if (paymentDetail.getCard() != null) {
                     CardInfo card = paymentDetail.getCard();
-                    yPosition = addSection(contentStream, "카드 정보", yPosition, pageWidth, contentWidth);
-
+                    yPosition = addSection(contentStream, "카드 정보", yPosition, pageWidth, contentWidth, document);
+                    
                     if (card.getCardCompanyName() != null && !card.getCardCompanyName().isEmpty()) {
-                        yPosition = addKeyValue(contentStream, "카드사", card.getCardCompanyName(), yPosition, contentWidth);
+                        yPosition = addKeyValue(contentStream, "카드사", card.getCardCompanyName(), yPosition, contentWidth, document);
                     }
-
+                    
                     if (card.getCardNumber() != null && !card.getCardNumber().isEmpty()) {
                         String maskedCardNumber = maskCardNumber(card.getCardNumber());
-                        yPosition = addKeyValue(contentStream, "카드번호", maskedCardNumber, yPosition, contentWidth);
+                        yPosition = addKeyValue(contentStream, "카드번호", maskedCardNumber, yPosition, contentWidth, document);
                     } else if (card.getCardNum4Print() != null && !card.getCardNum4Print().isEmpty()) {
-                        yPosition = addKeyValue(contentStream, "카드번호", card.getCardNum4Print(), yPosition, contentWidth);
+                        yPosition = addKeyValue(contentStream, "카드번호", card.getCardNum4Print(), yPosition, contentWidth, document);
                     }
-
+                    
                     if (card.getSpreadOut() != null && card.getSpreadOut() > 0) {
-                        yPosition = addKeyValue(contentStream, "할부",
-                            card.getSpreadOut() + "개월", yPosition, contentWidth);
+                        yPosition = addKeyValue(contentStream, "할부", 
+                            card.getSpreadOut() + "개월", yPosition, contentWidth, document);
                     }
-
+                    
                     yPosition -= LINE_HEIGHT;
                 }
-
 
                 if (paymentDetail.getAccountBankName() != null && !paymentDetail.getAccountBankName().isEmpty()) {
-                    yPosition = addSection(contentStream, "계좌 정보", yPosition, pageWidth, contentWidth);
-                    yPosition = addKeyValue(contentStream, "은행", paymentDetail.getAccountBankName(), yPosition, contentWidth);
-
+                    yPosition = addSection(contentStream, "계좌 정보", yPosition, pageWidth, contentWidth, document);
+                    yPosition = addKeyValue(contentStream, "은행", paymentDetail.getAccountBankName(), yPosition, contentWidth, document);
+                    
                     if (paymentDetail.getAccountNumber() != null && !paymentDetail.getAccountNumber().isEmpty()) {
-                        yPosition = addKeyValue(contentStream, "계좌번호",
-                            maskAccountNumber(paymentDetail.getAccountNumber()), yPosition, contentWidth);
+                        yPosition = addKeyValue(contentStream, "계좌번호", 
+                            maskAccountNumber(paymentDetail.getAccountNumber()), yPosition, contentWidth, document);
                     }
-
+                    
                     yPosition -= LINE_HEIGHT;
                 }
 
-
-                yPosition = addSection(contentStream, "날짜 정보", yPosition, pageWidth, contentWidth);
-
+                yPosition = addSection(contentStream, "날짜 정보", yPosition, pageWidth, contentWidth, document);
+                
                 if (paymentDetail.getCreatedAt() != null) {
-                    yPosition = addKeyValue(contentStream, "생성일",
-                        formatDateTime(paymentDetail.getCreatedAt()), yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "생성일", 
+                        formatDateTime(paymentDetail.getCreatedAt()), yPosition, contentWidth, document);
                 }
-
+                
                 if (paymentDetail.getPaidTs() != null && !paymentDetail.getPaidTs().isEmpty()) {
-                    yPosition = addKeyValue(contentStream, "결제 완료일", paymentDetail.getPaidTs(), yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "결제 완료일", paymentDetail.getPaidTs(), yPosition, contentWidth, document);
                 } else if (paymentDetail.getApprovalTime() != null && !paymentDetail.getApprovalTime().isEmpty()) {
-                    yPosition = addKeyValue(contentStream, "승인 시간", paymentDetail.getApprovalTime(), yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "승인 시간", paymentDetail.getApprovalTime(), yPosition, contentWidth, document);
                 }
-
+                
                 if (paymentDetail.getExpiredTime() != null) {
-                    yPosition = addKeyValue(contentStream, "만료일",
-                        formatDateTime(paymentDetail.getExpiredTime()), yPosition, contentWidth);
+                    yPosition = addKeyValue(contentStream, "만료일", 
+                        formatDateTime(paymentDetail.getExpiredTime()), yPosition, contentWidth, document);
                 }
-
+                
                 yPosition -= (LINE_HEIGHT * 2);
-
 
                 drawLine(contentStream, MARGIN, yPosition, pageWidth - MARGIN);
                 yPosition -= LINE_HEIGHT;
 
-
-                contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 8);
-                contentStream.newLineAtOffset(MARGIN, yPosition);
-                contentStream.showText("이 영수증은 결제 내역 확인용으로 사용됩니다.");
-                contentStream.endText();
-                yPosition -= LINE_HEIGHT;
-
-                contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 8);
-                contentStream.newLineAtOffset(MARGIN, yPosition);
-                contentStream.showText("문의사항이 있으시면 고객센터로 연락해주세요.");
-                contentStream.endText();
+                if (koreanFont != null) {
+                    contentStream.beginText();
+                    contentStream.setFont(koreanFont, 8);
+                    contentStream.newLineAtOffset(MARGIN, yPosition);
+                    contentStream.showText("이 영수증은 결제 내역 확인용으로 사용됩니다.");
+                    contentStream.endText();
+                    yPosition -= LINE_HEIGHT;
+                    
+                    contentStream.beginText();
+                    contentStream.setFont(koreanFont, 8);
+                    contentStream.newLineAtOffset(MARGIN, yPosition);
+                    contentStream.showText("문의사항이 있으시면 고객센터로 연락해주세요.");
+                    contentStream.endText();
+                }
             }
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -188,53 +276,66 @@ public class ReceiptService {
         }
     }
 
-    private float addSection(PDPageContentStream contentStream, String title, float yPosition,
-                             float pageWidth, float contentWidth) throws IOException {
+    private float addSection(PDPageContentStream contentStream, String title, float yPosition, 
+                             float pageWidth, float contentWidth, PDDocument document) throws IOException {
         if (yPosition < MARGIN + 100) {
             return yPosition;
         }
-
+        
         contentStream.beginText();
-        contentStream.setFont(PDType1Font.HELVETICA_BOLD, HEADER_FONT_SIZE);
+        PDType0Font koreanBoldFont = loadKoreanFont(document, true);
+        if (koreanBoldFont != null && containsKorean(title)) {
+            contentStream.setFont(koreanBoldFont, HEADER_FONT_SIZE);
+        } else {
+            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), HEADER_FONT_SIZE);
+        }
         contentStream.newLineAtOffset(MARGIN, yPosition);
         contentStream.showText(title);
         contentStream.endText();
         yPosition -= (LINE_HEIGHT * 0.8f);
-
+        
         drawLine(contentStream, MARGIN, yPosition, MARGIN + 100);
         yPosition -= LINE_HEIGHT;
-
+        
         return yPosition;
     }
 
-    private float addKeyValue(PDPageContentStream contentStream, String key, String value,
-                              float yPosition, float contentWidth) throws IOException {
+    private float addKeyValue(PDPageContentStream contentStream, String key, String value, 
+                              float yPosition, float contentWidth, PDDocument document) throws IOException {
         if (yPosition < MARGIN + 50) {
             return yPosition;
         }
-
+        
+        PDType0Font koreanBoldFont = loadKoreanFont(document, true);
+        PDType0Font koreanFont = loadKoreanFont(document, false);
+        
         contentStream.beginText();
-        contentStream.setFont(PDType1Font.HELVETICA_BOLD, BODY_FONT_SIZE);
+        if (koreanBoldFont != null && containsKorean(key)) {
+            contentStream.setFont(koreanBoldFont, BODY_FONT_SIZE);
+        } else {
+            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), BODY_FONT_SIZE);
+        }
         contentStream.newLineAtOffset(MARGIN, yPosition);
         contentStream.showText(key + ":");
         contentStream.endText();
-
-
+        
         float valueX = MARGIN + 120;
-        float maxWidth = contentWidth - 120;
-
+        
         contentStream.beginText();
-        contentStream.setFont(PDType1Font.HELVETICA, BODY_FONT_SIZE);
+        if (koreanFont != null && containsKorean(value)) {
+            contentStream.setFont(koreanFont, BODY_FONT_SIZE);
+        } else {
+            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), BODY_FONT_SIZE);
+        }
         contentStream.newLineAtOffset(valueX, yPosition);
-
-
+        
         String displayValue = value;
         if (displayValue.length() > 50) {
             displayValue = displayValue.substring(0, 47) + "...";
         }
         contentStream.showText(displayValue);
         contentStream.endText();
-
+        
         return yPosition - LINE_HEIGHT;
     }
 
@@ -262,7 +363,6 @@ public class ReceiptService {
         if (cardNumber == null || cardNumber.length() < 8) {
             return cardNumber;
         }
-
         int length = cardNumber.length();
         if (length <= 8) {
             return cardNumber;
@@ -276,7 +376,6 @@ public class ReceiptService {
         if (accountNumber == null || accountNumber.length() < 4) {
             return accountNumber;
         }
-
         int length = accountNumber.length();
         if (length <= 4) {
             return "****";

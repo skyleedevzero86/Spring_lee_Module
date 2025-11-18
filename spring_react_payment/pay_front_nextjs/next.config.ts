@@ -11,16 +11,44 @@ if (typeof window === 'undefined' && process.platform === 'win32') {
     if (
       errorMessage.includes('page_client-reference-manifest.js') ||
       errorMessage.includes('page.js') ||
+      errorMessage.includes('ENOENT') ||
+      errorMessage.includes('no such file or directory') ||
+      errorMessage.includes('.pack.gz') ||
+      errorMessage.includes('webpack') ||
       (errorObj && typeof errorObj === 'object' && 
-       errorObj.code === 'UNKNOWN' && 
-       errorObj.errno === -4094 &&
-       (errorObj.path?.includes('client-reference-manifest') || errorObj.path?.includes('page.js')))
+       ((errorObj.code === 'UNKNOWN' && errorObj.errno === -4094) ||
+        (errorObj.code === 'ENOENT' && errorObj.errno === -4058)) &&
+       (errorObj.path?.includes('client-reference-manifest') || 
+        errorObj.path?.includes('page.js') ||
+        errorObj.path?.includes('.pack.gz') ||
+        errorObj.path?.includes('webpack')))
     ) {
       return;
     }
     
     originalConsoleError.apply(console, args);
   };
+
+  process.on('unhandledRejection', (reason: any) => {
+    if (reason && typeof reason === 'object') {
+      const errorMessage = reason.message || reason.toString() || '';
+      const errorCode = reason.code;
+      const errorPath = reason.path || '';
+      
+      if (
+        errorCode === 'ENOENT' ||
+        errorMessage.includes('ENOENT') ||
+        errorMessage.includes('no such file or directory') ||
+        errorMessage.includes('.pack.gz') ||
+        errorPath.includes('.pack.gz') ||
+        errorPath.includes('webpack')
+      ) {
+        return;
+      }
+    }
+    
+    console.error('Unhandled Rejection:', reason);
+  });
 }
 
 const withBundleAnalyzer = bundleAnalyzer({
@@ -60,6 +88,17 @@ const nextConfig: NextConfig = {
       config.infrastructureLogging = {
         level: 'error',
       };
+      
+      if (process.platform === 'win32') {
+        config.cache = {
+          ...config.cache,
+          type: 'filesystem',
+          buildDependencies: {
+            config: [__filename],
+          },
+          cacheDirectory: path.resolve(__dirname, '.next/cache/webpack'),
+        };
+      }
       if (isServer) {
         const originalExternals = config.externals;
         if (Array.isArray(originalExternals)) {

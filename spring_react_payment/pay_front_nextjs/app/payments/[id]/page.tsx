@@ -9,13 +9,14 @@ import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { PaymentStatus } from '@/domain/types/payment.types';
 import { getStatusText, getStatusColor as getStatusColorUtil } from '@/utils/payment-status';
-import Link from 'next/link';
+import { TokenManager } from '@/lib/utils';
+import Link from 'next/link'; 
 
 function PaymentDetailPageContent() {
   const params = useParams();
   const router = useRouter();
   const paymentId = Number(params.id);
-  const { getPaymentDetail, downloadReceipt, loading, error } = usePayment();
+  const { getPaymentDetail, downloadReceipt, updatePaymentStatus, loading, error } = usePayment();
   const { paymentDetail } = usePaymentStore();
   const [refundLoading, setRefundLoading] = useState(false);
   const [receiptLoading, setReceiptLoading] = useState(false);
