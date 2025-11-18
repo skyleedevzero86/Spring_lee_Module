@@ -7,6 +7,7 @@ import com.sleekydz86.passykey.domain.port.outbound.WebAuthnCredentialRepository
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,9 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
     public WebAuthnCredential save(WebAuthnCredential credential) {
         try {
             String operation = (credential.getId() == null) ? "C" : "U";
+            logger.debug("Saving credential - operation: {}, id: {}, credentialId: {}", 
+                    operation, credential.getId(), credential.getCredentialId());
+            
             Map<String, Object> params = new HashMap<>();
 
             params.put("operation", operation);
@@ -53,7 +57,33 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
 
             params.put("resultId", null);
 
-            credentialMapper.save(params);
+            try {
+                credentialMapper.save(params);
+            } catch (DataIntegrityViolationException e) {
+                if (e.getMessage() != null && e.getMessage().contains("Duplicate entry")) {
+                    logger.warn("중복 키 오류 발생, UPDATE로 재시도: credentialId={}, id={}", 
+                            credential.getCredentialId(), credential.getId());
+                    
+                    if (credential.getId() == null) {
+                        WebAuthnCredential existing = credentialMapper.selectByCredentialId(credential.getCredentialId());
+                        if (existing != null && existing.getId() != null) {
+                            credential.setId(existing.getId());
+                            operation = "U";
+                            params.put("operation", operation);
+                            params.put("id", credential.getId());
+                            credentialMapper.save(params);
+                        } else {
+                            throw new IllegalArgumentException("인증서를 찾을 수 없습니다", e);
+                        }
+                    } else {
+                        operation = "U";
+                        params.put("operation", operation);
+                        credentialMapper.save(params);
+                    }
+                } else {
+                    throw e;
+                }
+            }
 
             if (credential.getId() == null && params.get("resultId") != null) {
                 Object resultIdValue = params.get("resultId");

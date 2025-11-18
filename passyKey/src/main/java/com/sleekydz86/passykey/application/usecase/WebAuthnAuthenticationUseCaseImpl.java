@@ -1,5 +1,6 @@
 package com.sleekydz86.passykey.application.usecase;
 
+import com.sleekydz86.passykey.domain.model.AuthenticationResult;
 import com.sleekydz86.passykey.domain.model.User;
 import com.sleekydz86.passykey.domain.model.WebAuthnCredential;
 import com.sleekydz86.passykey.domain.port.inbound.WebAuthnAuthenticationUseCase;
@@ -13,9 +14,13 @@ import com.sleekydz86.passykey.global.constants.WebAuthnConstants;
 import com.sleekydz86.passykey.global.exception.ChallengeExpiredException;
 import com.sleekydz86.passykey.global.exception.CredentialNotFoundException;
 import com.sleekydz86.passykey.global.exception.WebAuthnException;
-import com.sleekydz86.passykey.global.util.Base64UrlConverter;
 import com.webauthn4j.data.PublicKeyCredentialRequestOptions;
-import com.sleekydz86.passykey.adapter.outbound.webauthn.RegisteredCredential;
+import com.webauthn4j.authenticator.Authenticator;
+import com.webauthn4j.authenticator.AuthenticatorImpl;
+import com.webauthn4j.converter.util.ObjectConverter;
+import com.webauthn4j.data.attestation.authenticator.AAGUID;
+import com.webauthn4j.data.attestation.authenticator.AttestedCredentialData;
+import com.webauthn4j.data.attestation.authenticator.COSEKey;
 import com.webauthn4j.data.client.Origin;
 import com.webauthn4j.data.client.challenge.Challenge;
 import com.webauthn4j.server.ServerProperty;
@@ -25,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -87,13 +94,18 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
                             ? clientDataJSONBase64.substring(0, 100)
                             : clientDataJSONBase64);
 
+            Base64.Decoder urlDecoder = Base64.getUrlDecoder();
             try {
-                authenticatorDataBytes = Base64UrlConverter.decode(authenticatorDataBase64);
-                clientDataJSONBytes = Base64UrlConverter.decode(clientDataJSONBase64);
-                signatureBytes = Base64UrlConverter.decode(signatureBase64);
-                publicKeyCoseBytes = Base64UrlConverter.decode(credential.getPublicKeyCose());
-            } catch (Exception e) {
+                authenticatorDataBytes = urlDecoder.decode(authenticatorDataBase64);
+                clientDataJSONBytes = urlDecoder.decode(clientDataJSONBase64);
+                signatureBytes = urlDecoder.decode(signatureBase64);
+                publicKeyCoseBytes = urlDecoder.decode(credential.getPublicKeyCose());
+            } catch (IllegalArgumentException e) {
                 logger.error("Base64 디코딩 실패", e);
+                logger.error("clientDataJSONBase64: {}", clientDataJSONBase64);
+                throw new WebAuthnException("Base64 디코딩 실패: " + e.getMessage());
+            } catch (Exception e) {
+                logger.error("Base64 디코딩 중 예외 발생", e);
                 logger.error("clientDataJSONBase64: {}", clientDataJSONBase64);
                 throw new WebAuthnException("Base64 디코딩 실패: " + e.getMessage());
             }
@@ -102,21 +114,21 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
                 throw new WebAuthnException("clientDataJSON이 비어있습니다");
             }
 
-            try {
-                String clientDataJSONString = new String(clientDataJSONBytes, java.nio.charset.StandardCharsets.UTF_8);
-                logger.debug("Decoded clientDataJSON: {}", clientDataJSONString);
-                if (!clientDataJSONString.trim().startsWith("{")) {
-                    logger.error("clientDataJSON이 유효한 JSON이 아닙니다. 첫 문자: '{}'",
-                            clientDataJSONString.length() > 0 ? clientDataJSONString.charAt(0) : "empty");
-                    throw new WebAuthnException("clientDataJSON이 유효한 JSON 형식이 아닙니다");
-                }
-            } catch (Exception e) {
-                logger.error("clientDataJSON 검증 실패", e);
-                logger.error("clientDataJSONBytes length: {}", clientDataJSONBytes.length);
-                logger.error("clientDataJSONBytes (first 20 bytes): {}",
+            String clientDataJSONString = new String(clientDataJSONBytes, StandardCharsets.UTF_8);
+            logger.info("=== Decoded clientDataJSON ===");
+            logger.info("clientDataJSON: {}", clientDataJSONString);
+            logger.info("clientDataBytes length: {}", clientDataJSONBytes.length);
+            logger.info("First 20 bytes: {}", java.util.Arrays.toString(
+                    java.util.Arrays.copyOf(clientDataJSONBytes, Math.min(20, clientDataJSONBytes.length))));
+            
+            if (!clientDataJSONString.trim().startsWith("{")) {
+                logger.error("clientDataJSON이 유효한 JSON이 아닙니다. 첫 문자: '{}', length: {}",
+                        clientDataJSONString.length() > 0 ? clientDataJSONString.charAt(0) : "empty",
+                        clientDataJSONBytes.length);
+                logger.error("clientDataJSONBytes (first 50 bytes): {}",
                         java.util.Arrays.toString(java.util.Arrays.copyOf(clientDataJSONBytes,
-                                Math.min(20, clientDataJSONBytes.length))));
-                throw new WebAuthnException("clientDataJSON 검증 실패: " + e.getMessage());
+                                Math.min(50, clientDataJSONBytes.length))));
+                throw new WebAuthnException("clientDataJSON이 유효한 JSON 형식이 아닙니다");
             }
 
             String sessionId = session.getId();
@@ -130,23 +142,37 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
             Origin origin = new Origin(configPort.getAllowedOrigins());
             ServerProperty serverProperty = verifierPort.createServerProperty(origin, configPort.getRpId(), challenge);
 
-            RegisteredCredential registeredCredential = new RegisteredCredential(
-                    Base64UrlConverter.decode(credentialId),
-                    publicKeyCoseBytes,
-                    credential.getCounter(),
-                    null);
+            byte[] credentialIdBytes = urlDecoder.decode(credentialId);
+            ObjectConverter objectConverter = new ObjectConverter();
+            COSEKey coseKey = objectConverter.getCborConverter().readValue(publicKeyCoseBytes, COSEKey.class);
 
-            verifierPort.verifyAuthentication(
+            AttestedCredentialData attestedCredentialData = new AttestedCredentialData(
+                    AAGUID.ZERO,
+                    credentialIdBytes,
+                    coseKey);
+
+            Authenticator authenticator = new AuthenticatorImpl(
+                    attestedCredentialData,
+                    null,
+                    credential.getCounter());
+
+            AuthenticationResult authResult = verifierPort.verifyAuthentication(
                     authenticatorDataBytes,
                     clientDataJSONBytes,
                     signatureBytes,
-                    userHandle != null ? Base64UrlConverter.decode(userHandle) : null,
+                    userHandle != null ? urlDecoder.decode(userHandle) : null,
                     serverProperty,
-                    registeredCredential);
+                    authenticator);
 
             challengeService.removeChallenge(sessionId, WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
 
-            updateCredentialCounter(credential, authenticatorDataBytes);
+            if (credential.getId() == null) {
+                throw new WebAuthnException("인증서 ID가 없습니다. 인증서를 다시 등록해주세요.");
+            }
+
+            credentialDomainService.validateAndUpdateCounter(credential, authResult.getCounter());
+            credential.setLastUsedAt(java.time.LocalDateTime.now());
+            credentialRepository.save(credential);
 
             logger.info("사용자 인증 성공: {}", credential.getUser().getUsername());
             return credential.getUser();
@@ -158,13 +184,4 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
         }
     }
 
-    private void updateCredentialCounter(WebAuthnCredential credential, byte[] authenticatorDataBytes) {
-        try {
-            long newCounter = verifierPort.extractSignCount(authenticatorDataBytes);
-            credentialDomainService.validateAndUpdateCounter(credential, newCounter);
-            credentialRepository.save(credential);
-        } catch (Exception e) {
-            throw new WebAuthnException("인증서 카운터 업데이트 실패", e);
-        }
-    }
 }
