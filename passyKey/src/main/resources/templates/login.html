@@ -5,52 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="description" content="PassyKey 로그인">
     <title>로그인 - PassyKey</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard-dynamic-subset.min.css" />
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>PassyKey 로그인</h1>
-        </header>
-        <main>
-            <div class="auth-card">
-                <div class="tab-container">
-                    <button class="tab-btn active" data-tab="password">비밀번호 로그인</button>
-                    <button class="tab-btn" data-tab="passkey">패스키 로그인</button>
+    <a href="#main-content" class="skip-link">본문으로 바로가기</a>
+
+    <header class="header" role="banner">
+        <div class="header__container">
+            <div class="header__logo">
+                <a href="/" aria-label="홈으로 이동">PassyKey</a>
+            </div>
+            <div class="header__utils">
+                <a href="/register" class="btn btn-secondary">회원가입</a>
+            </div>
+            <button class="header__mobile-toggle" aria-label="모바일 메뉴 토글" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <main id="main-content" role="main">
+        <section class="auth-page">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h1>로그인</h1>
+                    <p>PassyKey에 오신 것을 환영합니다</p>
                 </div>
-                <div id="passwordTab" class="tab-content active">
-                    <form id="passwordLoginForm" action="/api/auth/login" method="post">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <div class="form-group">
-                            <label for="username">사용자명</label>
-                            <input type="text" id="username" name="username" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">비밀번호</label>
-                            <input type="password" id="password" name="password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">로그인</button>
-                    </form>
-                </div>
-                <div id="passkeyTab" class="tab-content">
-                    <form id="passkeyLoginForm">
-                        <div class="form-group">
-                            <label for="passkeyUsername">사용자명 (선택사항)</label>
-                            <input type="text" id="passkeyUsername" name="username">
-                            <small>등록된 패스키를 사용하려면 비워두세요</small>
-                        </div>
-                        <button type="submit" class="btn btn-primary">패스키로 로그인</button>
-                    </form>
-                    <div id="passkeyLoginMessage" class="message"></div>
-                </div>
-                <div id="loginMessage" class="message"></div>
-                <div class="link-section">
-                    <a href="/register">계정이 없으신가요? 회원가입</a>
+                <div class="auth-card">
+                    <div class="tab-container">
+                        <button class="tab-btn active" data-tab="password">비밀번호 로그인</button>
+                        <button class="tab-btn" data-tab="passkey">패스키 로그인</button>
+                    </div>
+                    <div id="passwordTab" class="tab-content active">
+                        <form id="passwordLoginForm" action="/api/auth/login" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <div class="form-group">
+                                <label for="username">사용자명</label>
+                                <input type="text" id="username" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">비밀번호</label>
+                                <input type="password" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn--primary" style="width: 100%;">로그인</button>
+                        </form>
+                    </div>
+                    <div id="passkeyTab" class="tab-content">
+                        <form id="passkeyLoginForm">
+                            <div class="form-group">
+                                <label for="passkeyUsername">사용자명 (선택사항)</label>
+                                <input type="text" id="passkeyUsername" name="username">
+                                <small>등록된 패스키를 사용하려면 비워두세요</small>
+                            </div>
+                            <button type="submit" class="btn btn--primary" style="width: 100%;">패스키로 로그인</button>
+                        </form>
+                        <div id="passkeyLoginMessage" class="message"></div>
+                    </div>
+                    <div id="loginMessage" class="message"></div>
+                    <div class="link-section">
+                        <a href="/register">계정이 없으신가요? 회원가입</a>
+                    </div>
                 </div>
             </div>
-        </main>
-    </div>
+        </section>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+        <div class="footer__bottom">
+            <div class="container">
+                <div class="footer__content">
+                    <p>© 2025 PassyKey. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <script th:src="@{/js/login.js}"></script>
 </body>
 </html>

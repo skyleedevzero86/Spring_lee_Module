@@ -97,3 +97,4 @@ class MoneyTest {
         assertThat(money.equalsValue(30000)).isFalse();
     }
 }
+

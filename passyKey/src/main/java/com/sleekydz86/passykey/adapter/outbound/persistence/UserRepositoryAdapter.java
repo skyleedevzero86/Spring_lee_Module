@@ -32,14 +32,31 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     public User save(User user) {
         try {
             String operation = (user.getId() == null) ? "C" : "U";
-            Map<String, Object> resultId = new HashMap<>();
-            
-            userMapper.save(operation, user, resultId);
-            
-            if (user.getId() == null && resultId.get("resultId") != null) {
-                user.setId(((Number) resultId.get("resultId")).longValue());
+            Map<String, Object> params = new HashMap<>();
+
+            params.put("operation", operation);
+            params.put("id", user.getId());
+            params.put("username", user.getUsername());
+            params.put("password", user.getPassword());
+            params.put("email", user.getEmail());
+            params.put("displayName", user.getDisplayName());
+            params.put("userHandle", user.getUserHandle());
+            params.put("enabled", user.isEnabled());
+            params.put("accountNonExpired", user.isAccountNonExpired());
+            params.put("accountNonLocked", user.isAccountNonLocked());
+            params.put("credentialsNonExpired", user.isCredentialsNonExpired());
+
+            params.put("resultId", null);
+
+            userMapper.save(params);
+
+            if (user.getId() == null && params.get("resultId") != null) {
+                Object resultIdValue = params.get("resultId");
+                if (resultIdValue instanceof Number) {
+                    user.setId(((Number) resultIdValue).longValue());
+                }
             }
-            
+
             userCacheService.cacheUser(user.getUsername(), user);
             return user;
         } catch (DuplicateKeyException e) {

@@ -31,3 +31,4 @@ public class CashReceiptApiResponse {
         private String message;
     }
 }
+

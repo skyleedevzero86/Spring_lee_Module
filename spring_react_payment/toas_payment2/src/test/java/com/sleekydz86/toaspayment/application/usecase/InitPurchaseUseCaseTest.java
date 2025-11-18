@@ -50,3 +50,4 @@ class InitPurchaseUseCaseTest {
         assertThat(savedOrder.getFinalAmount().toInteger()).isEqualTo(50000);
     }
 }
+

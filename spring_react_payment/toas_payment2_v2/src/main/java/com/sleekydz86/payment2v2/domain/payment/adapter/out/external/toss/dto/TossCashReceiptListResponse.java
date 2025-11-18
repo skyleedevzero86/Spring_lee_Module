@@ -19,3 +19,4 @@ public class TossCashReceiptListResponse {
     private List<TossCashReceiptResponse> data;
 }
 
+

@@ -2,7 +2,6 @@ package com.sleekydz86.passykey.adapter.outbound.persistence;
 
 import com.sleekydz86.passykey.domain.model.WebAuthnCredential;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,7 @@ import java.util.Map;
 @Mapper
 public interface WebAuthnCredentialMyBatisMapper {
 
-    void save(@Param("operation") String operation, @Param("credential") WebAuthnCredential credential, @Param("resultId") Map<String, Object> resultId);
+    void save(Map<String, Object> params);
 
     WebAuthnCredential selectById(Long id);
 

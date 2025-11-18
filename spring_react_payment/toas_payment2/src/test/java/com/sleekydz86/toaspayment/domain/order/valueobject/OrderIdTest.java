@@ -64,3 +64,4 @@ class OrderIdTest {
         assertThat(result).isEqualTo(value);
     }
 }
+

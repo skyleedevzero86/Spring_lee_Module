@@ -6,3 +6,4 @@ import com.sleekydz86.payment2v2.domain.member.application.dto.LoginResponse;
 public interface LoginUseCase {
     LoginResponse login(LoginCommand command);
 }
+

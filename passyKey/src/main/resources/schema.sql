@@ -1,181 +1,133 @@
--- ============================================================================
+-- ============================================
 -- PassyKey Database Schema
--- Created Date: 2025-11-10
--- Description: WebAuthn 기반 패스키 인증 시스템 데이터베이스 스키마
--- ============================================================================
+-- Version: 1.0.0
+-- Description: WebAuthn 기반 비밀번호 없는 인증 시스템 데이터베이스 스키마
+-- Created: 2025
+-- ============================================
 
--- ============================================================================
--- 사용자 테이블 (users)
--- 설명: 시스템 사용자 정보를 저장하는 테이블
--- ============================================================================
+-- ============================================
+-- 사용자(Users) 테이블
+-- ============================================
+-- 사용자 계정 정보 및 Spring Security 인증 정보를 저장
+-- ============================================
 CREATE TABLE IF NOT EXISTS users (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '사용자 고유 식별자',
-    username VARCHAR(50) NOT NULL UNIQUE COMMENT '로그인에 사용되는 사용자명 (중복 불가)',
-    password VARCHAR(255) NOT NULL COMMENT '암호화된 비밀번호 (BCrypt)',
-    email VARCHAR(100) NOT NULL COMMENT '사용자 이메일 주소',
-    display_name VARCHAR(100) NOT NULL COMMENT '화면에 표시되는 사용자 이름',
-    user_handle VARCHAR(255) NOT NULL COMMENT 'WebAuthn 인증에 사용되는 사용자 핸들 (Base64 URL 인코딩)',
+    -- Primary Key
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '사용자 고유 식별자',
+    
+    -- 사용자 식별 정보
+    user_id BIGINT UNSIGNED NULL COMMENT '외부 시스템 연동용 사용자 ID (선택적)',
+    username VARCHAR(50) NOT NULL COMMENT '사용자명 (로그인 ID)',
+    email VARCHAR(100) NOT NULL COMMENT '이메일 주소',
+    display_name VARCHAR(100) NOT NULL COMMENT '표시 이름',
+    user_handle VARCHAR(255) NOT NULL COMMENT 'WebAuthn 사용자 핸들 (Base64 URL 인코딩)',
+    
+    -- 인증 정보
+    password VARCHAR(255) NOT NULL COMMENT 'BCrypt 해시된 비밀번호 (전통적 로그인용)',
+    
+    -- 권한 및 상태
+    role VARCHAR(50) NULL DEFAULT 'ROLE_USER' COMMENT '사용자 권한 (ROLE_USER, ROLE_ADMIN 등)',
     enabled BOOLEAN NOT NULL DEFAULT TRUE COMMENT '계정 활성화 여부',
+    
+    -- Spring Security 계정 상태 플래그
     account_non_expired BOOLEAN NOT NULL DEFAULT TRUE COMMENT '계정 만료 여부',
     account_non_locked BOOLEAN NOT NULL DEFAULT TRUE COMMENT '계정 잠금 여부',
-    credentials_non_expired BOOLEAN NOT NULL DEFAULT TRUE COMMENT '인증 정보 만료 여부',
-    INDEX idx_username (username),
-    INDEX idx_email (email),
-    INDEX idx_user_handle (user_handle)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
-COMMENT='시스템 사용자 정보 테이블';
+    credentials_non_expired BOOLEAN NOT NULL DEFAULT TRUE COMMENT '자격 증명 만료 여부',
+    
+    -- 레거시 호환성 필드 (deprecated, account_non_* 필드 사용 권장)
+    account_locked BOOLEAN NOT NULL DEFAULT FALSE COMMENT '계정 잠금 여부 (deprecated)',
+    account_expired BOOLEAN NOT NULL DEFAULT FALSE COMMENT '계정 만료 여부 (deprecated)',
+    credentials_expired BOOLEAN NOT NULL DEFAULT FALSE COMMENT '자격 증명 만료 여부 (deprecated)',
+    
+    -- 메타데이터
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '계정 생성 일시',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '계정 정보 수정 일시',
+    
+    -- Primary Key 제약조건
+    PRIMARY KEY (id),
+    
+    -- Unique 제약조건
+    CONSTRAINT uk_users_username UNIQUE (username),
+    CONSTRAINT uk_users_email UNIQUE (email),
+    CONSTRAINT uk_users_user_handle UNIQUE (user_handle),
+    
+    -- 인덱스
+    INDEX idx_users_username (username),
+    INDEX idx_users_email (email),
+    INDEX idx_users_user_handle (user_handle),
+    INDEX idx_users_user_id (user_id),
+    INDEX idx_users_enabled (enabled),
+    INDEX idx_users_created_at (created_at)
+    
+) ENGINE=InnoDB 
+  DEFAULT CHARSET=utf8mb4 
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='사용자 계정 정보 테이블';
 
--- ============================================================================
--- WebAuthn 인증서 테이블 (webauthn_credentials)
--- 설명: 사용자가 등록한 WebAuthn 패스키 인증서 정보를 저장하는 테이블
--- ============================================================================
+-- ============================================
+-- WebAuthn 인증서(WebAuthn Credentials) 테이블
+-- ============================================
+-- WebAuthn 공개키 인증서 정보를 저장
+-- ============================================
 CREATE TABLE IF NOT EXISTS webauthn_credentials (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '인증서 고유 식별자',
-    credential_id VARCHAR(500) NOT NULL UNIQUE COMMENT 'WebAuthn 인증서 ID (Base64 URL 인코딩, 중복 불가)',
-    public_key_cose VARCHAR(2000) NOT NULL COMMENT '공개키 COSE 형식 데이터 (Base64 URL 인코딩)',
-    counter BIGINT NOT NULL COMMENT '인증서 사용 횟수 카운터 (리플레이 공격 방지)',
-    transports VARCHAR(255) NOT NULL COMMENT '인증서 전송 방식 (usb, nfc, ble, internal 등, 쉼표로 구분)',
-    label VARCHAR(100) COMMENT '사용자가 지정한 인증서 이름/라벨',
-    user_id BIGINT NOT NULL COMMENT '소유자 사용자 ID (users.id 참조)',
+    -- Primary Key
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '인증서 고유 식별자',
+    
+    -- 인증서 식별 정보
+    credential_id VARCHAR(500) NOT NULL COMMENT 'WebAuthn 인증서 ID (Base64 URL 인코딩)',
+    public_key_cose VARCHAR(2000) NOT NULL COMMENT '공개키 COSE 형식 (Base64 URL 인코딩)',
+    
+    -- 인증서 메타데이터
+    counter BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '리플레이 공격 방지를 위한 서명 카운터',
+    transports VARCHAR(255) NOT NULL COMMENT '지원하는 전송 방식 (usb,nfc,ble,internal 등 쉼표 구분)',
+    label VARCHAR(100) NULL COMMENT '사용자가 지정한 인증서 이름/라벨',
+    
+    -- 사용자 연관
+    user_id BIGINT UNSIGNED NOT NULL COMMENT '소유자 사용자 ID (users.id 참조)',
+    
+    -- 메타데이터
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '인증서 등록 일시',
-    last_used_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '인증서 마지막 사용 일시',
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_credential_id (credential_id),
-    INDEX idx_user_id (user_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
-COMMENT='WebAuthn 패스키 인증서 정보 테이블';
+    last_used_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '마지막 사용 일시',
+    
+    -- Primary Key 제약조건
+    PRIMARY KEY (id),
+    
+    -- Unique 제약조건
+    CONSTRAINT uk_webauthn_credentials_credential_id UNIQUE (credential_id),
+    
+    -- Foreign Key 제약조건
+    CONSTRAINT fk_webauthn_credentials_user_id 
+        FOREIGN KEY (user_id) 
+        REFERENCES users(id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    
+    -- 인덱스
+    INDEX idx_webauthn_credentials_credential_id (credential_id(255)),
+    INDEX idx_webauthn_credentials_user_id (user_id),
+    INDEX idx_webauthn_credentials_created_at (created_at),
+    INDEX idx_webauthn_credentials_last_used_at (last_used_at)
+    
+) ENGINE=InnoDB 
+  DEFAULT CHARSET=utf8mb4 
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='WebAuthn 공개키 인증서 정보 테이블';
 
--- ============================================================================
--- 사용자 조회 뷰 (v_users)
--- 설명: 사용자 정보 조회를 위한 뷰 (복수건 조회 최적화)
--- ============================================================================
-CREATE OR REPLACE VIEW v_users AS
-SELECT 
-    id,
-    username,
-    password,
-    email,
-    display_name,
-    user_handle,
-    enabled,
-    account_non_expired,
-    account_non_locked,
-    credentials_non_expired
-FROM users;
+-- ============================================
+-- 인덱스 최적화 힌트
+-- ============================================
+-- 복합 인덱스는 실제 쿼리 패턴에 따라 추가 고려 필요
+-- 예: INDEX idx_users_email_enabled (email, enabled) - 이메일로 활성 사용자 조회 시
 
--- ============================================================================
--- WebAuthn 인증서 조회 뷰 (v_webauthn_credentials)
--- 설명: 인증서와 사용자 정보를 조인하여 조회하는 뷰 (복수건 조회 최적화)
--- ============================================================================
-CREATE OR REPLACE VIEW v_webauthn_credentials AS
-SELECT 
-    c.id,
-    c.credential_id,
-    c.public_key_cose,
-    c.counter,
-    c.transports,
-    c.label,
-    c.user_id,
-    c.created_at,
-    c.last_used_at,
-    u.id as user_id,
-    u.username,
-    u.password,
-    u.email,
-    u.display_name,
-    u.user_handle,
-    u.enabled,
-    u.account_non_expired,
-    u.account_non_locked,
-    u.credentials_non_expired
-FROM webauthn_credentials c
-INNER JOIN users u ON c.user_id = u.id;
+-- ============================================
+-- 테이블 통계 정보 업데이트
+-- ============================================
+-- ANALYZE TABLE users;
+-- ANALYZE TABLE webauthn_credentials;
 
--- ============================================================================
--- 사용자 저장 프로시저 (sp_save_user)
--- 설명: 사용자 정보 INSERT/UPDATE를 통합 처리하는 프로시저
--- 파라미터:
---   p_operation: 'C' = INSERT, 'U' = UPDATE
---   p_result_id: 생성/수정된 사용자 ID (OUT 파라미터)
--- ============================================================================
-DROP PROCEDURE IF EXISTS sp_save_user;
+-- ============================================
+-- 스키마 버전 정보
+-- ============================================
+-- 현재 스키마 버전: 1.0.0
+-- 마지막 수정일: 2025-01-XX
+-- 다음 마이그레이션: procedures.sql (저장 프로시저)
 
-CREATE PROCEDURE sp_save_user(
-    IN p_operation CHAR(1),
-    IN p_id BIGINT,
-    IN p_username VARCHAR(50),
-    IN p_password VARCHAR(255),
-    IN p_email VARCHAR(100),
-    IN p_display_name VARCHAR(100),
-    IN p_user_handle VARCHAR(255),
-    IN p_enabled BOOLEAN,
-    IN p_account_non_expired BOOLEAN,
-    IN p_account_non_locked BOOLEAN,
-    IN p_credentials_non_expired BOOLEAN,
-    OUT p_result_id BIGINT
-)
-BEGIN
-    IF p_operation = 'C' THEN
-        INSERT INTO users (username, password, email, display_name, user_handle, 
-                          enabled, account_non_expired, account_non_locked, credentials_non_expired)
-        VALUES (p_username, p_password, p_email, p_display_name, p_user_handle,
-                p_enabled, p_account_non_expired, p_account_non_locked, p_credentials_non_expired);
-        SET p_result_id = LAST_INSERT_ID();
-    ELSEIF p_operation = 'U' THEN
-        UPDATE users
-        SET username = p_username,
-            password = p_password,
-            email = p_email,
-            display_name = p_display_name,
-            user_handle = p_user_handle,
-            enabled = p_enabled,
-            account_non_expired = p_account_non_expired,
-            account_non_locked = p_account_non_locked,
-            credentials_non_expired = p_credentials_non_expired
-        WHERE id = p_id;
-        SET p_result_id = p_id;
-    END IF;
-END;
-
--- ============================================================================
--- WebAuthn 인증서 저장 프로시저 (sp_save_webauthn_credential)
--- 설명: WebAuthn 인증서 정보 INSERT/UPDATE를 통합 처리하는 프로시저
--- 파라미터:
---   p_operation: 'C' = INSERT, 'U' = UPDATE
---   p_result_id: 생성/수정된 인증서 ID (OUT 파라미터)
--- ============================================================================
-DROP PROCEDURE IF EXISTS sp_save_webauthn_credential;
-
-CREATE PROCEDURE sp_save_webauthn_credential(
-    IN p_operation CHAR(1),
-    IN p_id BIGINT,
-    IN p_credential_id VARCHAR(500),
-    IN p_public_key_cose VARCHAR(2000),
-    IN p_counter BIGINT,
-    IN p_transports VARCHAR(255),
-    IN p_label VARCHAR(100),
-    IN p_user_id BIGINT,
-    IN p_created_at TIMESTAMP,
-    IN p_last_used_at TIMESTAMP,
-    OUT p_result_id BIGINT
-)
-BEGIN
-    IF p_operation = 'C' THEN
-        INSERT INTO webauthn_credentials (credential_id, public_key_cose, counter, transports, 
-                                         label, user_id, created_at, last_used_at)
-        VALUES (p_credential_id, p_public_key_cose, p_counter, p_transports,
-                p_label, p_user_id, 
-                IFNULL(p_created_at, CURRENT_TIMESTAMP),
-                IFNULL(p_last_used_at, CURRENT_TIMESTAMP));
-        SET p_result_id = LAST_INSERT_ID();
-    ELSEIF p_operation = 'U' THEN
-        UPDATE webauthn_credentials
-        SET public_key_cose = p_public_key_cose,
-            counter = p_counter,
-            transports = p_transports,
-            label = p_label,
-            last_used_at = IFNULL(p_last_used_at, CURRENT_TIMESTAMP)
-        WHERE id = p_id;
-        SET p_result_id = p_id;
-    END IF;
-END;

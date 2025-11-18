@@ -223,3 +223,4 @@ public class CashReceiptService implements CashReceiptUseCase {
                 .build();
     }
 }
+

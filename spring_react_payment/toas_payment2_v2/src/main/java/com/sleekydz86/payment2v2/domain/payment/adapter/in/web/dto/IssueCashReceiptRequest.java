@@ -31,3 +31,4 @@ public class IssueCashReceiptRequest {
 
     private BigDecimal taxFreeAmount;
 }
+

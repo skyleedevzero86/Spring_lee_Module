@@ -99,3 +99,4 @@ public class CsrfTokenController {
         private String message;
     }
 }
+

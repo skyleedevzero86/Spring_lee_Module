@@ -6,3 +6,4 @@ public interface PaymentGateway {
     TossPaymentResponse confirmPayment(String paymentKey, String orderId, Integer amount);
     TossPaymentResponse refundPayment(String paymentKey, String refundReason);
 }
+

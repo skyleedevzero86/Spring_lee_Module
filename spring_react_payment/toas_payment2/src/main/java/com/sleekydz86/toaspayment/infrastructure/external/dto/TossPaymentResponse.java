@@ -60,3 +60,4 @@ public record TossPaymentResponse(
     ) {
     }
 }
+

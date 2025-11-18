@@ -2,7 +2,9 @@ package com.sleekydz86.passykey.domain.service;
 
 import com.sleekydz86.passykey.domain.model.WebAuthnCredential;
 import com.sleekydz86.passykey.global.exception.InvalidCounterException;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CredentialDomainService {
 
     public void validateAndUpdateCounter(WebAuthnCredential credential, Long newCounter) {
@@ -12,6 +14,7 @@ public class CredentialDomainService {
         credential.updateCounter(newCounter);
     }
 }
+
 
 
 

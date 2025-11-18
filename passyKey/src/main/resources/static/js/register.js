@@ -109,6 +109,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 credentials: 'include'
             });
 
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                showMessage(passkeyMessage, '등록 옵션을 가져오는데 실패했습니다. 다시 로그인해주세요.', 'error');
+                console.error('Expected JSON but got:', contentType, text.substring(0, 100));
+                return;
+            }
+
             const result = await response.json();
 
             if (!result.success) {
@@ -158,6 +166,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 credentials: 'include',
                 body: JSON.stringify(publicKeyCredential)
             });
+
+            const registerContentType = registerResponse.headers.get('content-type');
+            if (!registerContentType || !registerContentType.includes('application/json')) {
+                const text = await registerResponse.text();
+                showMessage(passkeyMessage, '패스키 등록 실패: 서버 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+                console.error('Expected JSON but got:', registerContentType, text.substring(0, 100));
+                return;
+            }
 
             const registerResult = await registerResponse.json();
 

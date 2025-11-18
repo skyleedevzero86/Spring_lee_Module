@@ -36,14 +36,30 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
     public WebAuthnCredential save(WebAuthnCredential credential) {
         try {
             String operation = (credential.getId() == null) ? "C" : "U";
-            Map<String, Object> resultId = new HashMap<>();
-            
-            credentialMapper.save(operation, credential, resultId);
-            
-            if (credential.getId() == null && resultId.get("resultId") != null) {
-                credential.setId(((Number) resultId.get("resultId")).longValue());
+            Map<String, Object> params = new HashMap<>();
+
+            params.put("operation", operation);
+            params.put("id", credential.getId());
+            params.put("credentialId", credential.getCredentialId());
+            params.put("publicKeyCose", credential.getPublicKeyCose());
+            params.put("counter", credential.getCounter());
+            params.put("transports", credential.getTransports());
+            params.put("label", credential.getLabel());
+            params.put("userId", credential.getUser() != null ? credential.getUser().getId() : null);
+            params.put("createdAt", credential.getCreatedAt());
+            params.put("lastUsedAt", credential.getLastUsedAt());
+
+            params.put("resultId", null);
+
+            credentialMapper.save(params);
+
+            if (credential.getId() == null && params.get("resultId") != null) {
+                Object resultIdValue = params.get("resultId");
+                if (resultIdValue instanceof Number) {
+                    credential.setId(((Number) resultIdValue).longValue());
+                }
             }
-            
+
             if (credential.getUser() != null && credential.getUser().getId() != null) {
                 credentialCacheService.evictUserCredentials(credential.getUser().getId());
             }

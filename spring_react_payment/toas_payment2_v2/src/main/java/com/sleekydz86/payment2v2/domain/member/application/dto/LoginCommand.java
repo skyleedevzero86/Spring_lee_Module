@@ -9,3 +9,4 @@ public class LoginCommand {
     private String email;
     private String password;
 }
+

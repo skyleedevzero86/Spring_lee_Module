@@ -39,3 +39,4 @@ public class TossCashReceiptRequest {
     private BigDecimal taxFreeAmount;
 }
 
+

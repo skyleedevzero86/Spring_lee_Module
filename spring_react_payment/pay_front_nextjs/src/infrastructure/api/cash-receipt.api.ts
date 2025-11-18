@@ -40,3 +40,4 @@ class CashReceiptApi {
 
 export const cashReceiptApi = new CashReceiptApi();
 
+

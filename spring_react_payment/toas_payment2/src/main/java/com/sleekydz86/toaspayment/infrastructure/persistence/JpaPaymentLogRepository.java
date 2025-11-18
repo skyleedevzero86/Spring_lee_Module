@@ -46,3 +46,4 @@ class PaymentLogRepositoryImpl implements PaymentLogRepository {
         return jpaPaymentLogRepository.findById(id);
     }
 }
+

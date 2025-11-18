@@ -31,3 +31,4 @@ public class PaymentCallbackCommand {
     private String accountBankName;
     private String accountNumber;
 }
+

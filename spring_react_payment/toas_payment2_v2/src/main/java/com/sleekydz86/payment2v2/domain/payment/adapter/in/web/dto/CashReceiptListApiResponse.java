@@ -12,3 +12,4 @@ public class CashReceiptListApiResponse {
     private Long lastCursor;
     private List<CashReceiptApiResponse> data;
 }
+

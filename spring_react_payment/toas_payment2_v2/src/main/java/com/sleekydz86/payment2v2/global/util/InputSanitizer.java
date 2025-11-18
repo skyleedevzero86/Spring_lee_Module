@@ -70,3 +70,4 @@ public final class InputSanitizer {
                 .replace("'", "&#x27;");
     }
 }
+

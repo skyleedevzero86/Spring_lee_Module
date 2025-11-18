@@ -7,3 +7,4 @@ public enum PaymentMethod {
     BANK_TRANSFER,
     EASY_PAY
 }
+

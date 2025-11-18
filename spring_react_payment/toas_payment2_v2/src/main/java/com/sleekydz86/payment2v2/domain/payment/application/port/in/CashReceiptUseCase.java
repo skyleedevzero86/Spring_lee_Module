@@ -9,3 +9,4 @@ public interface CashReceiptUseCase {
     CashReceiptResponse cancelCashReceipt(CancelCashReceiptCommand command);
     CashReceiptListResponse getCashReceipts(String requestDate, Long cursor, Integer limit);
 }
+

@@ -10,3 +10,4 @@ public interface PaymentLogRepository {
     List<PaymentLog> findAll();
     Optional<PaymentLog> findById(Long id);
 }
+

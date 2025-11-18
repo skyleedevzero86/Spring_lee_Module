@@ -15,3 +15,4 @@ public class IssueCashReceiptCommand {
     private String customerIdentityNumber;
     private BigDecimal taxFreeAmount;
 }
+
