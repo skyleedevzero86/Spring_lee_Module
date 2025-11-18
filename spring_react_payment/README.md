@@ -2,6 +2,22 @@
 
 토스 페이먼츠를 활용한 풀스택 결제 시스템 프로젝트입니다.
 
+
+### 일반 결제화면
+<img width="1332" height="759" alt="image" src="https://github.com/user-attachments/assets/61b50101-4321-4c17-a68b-bd2feed80a7e" /><br/>
+
+
+### 관리자 결제 화면
+<img width="992" height="878" alt="image" src="https://github.com/user-attachments/assets/0b56b8b0-35db-4b4e-b3ef-f73bf8189f87" /><br/>
+
+
+### pdf인쇄 화면<br/>(영수증... 실제 api에서 사업자 필요해서 임시로만듬)
+<img width="709" height="774" alt="image" src="https://github.com/user-attachments/assets/f6dee2df-6dfd-4132-bd7e-6e1ca3f9ee47" /><br/>
+
+### Excel 결제화면
+<img width="1503" height="623" alt="image" src="https://github.com/user-attachments/assets/7376a13d-18f0-4883-a1ba-70b29648ede2" /><br/>
+
+
 ## 프로젝트 개요
 
 이 프로젝트는 Next.js 프론트엔드와 Spring Boot 백엔드로 구성된 결제 시스템입니다. 토스 페이먼츠 API를 연동하여 결제 생성, 승인, 환불, 조회 기능을 제공합니다. Hexagonal Architecture 기반으로 설계되었으며, Circuit Breaker와 Retry 패턴을 적용하여 안정성을 확보했습니다.
