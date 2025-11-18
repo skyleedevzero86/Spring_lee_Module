@@ -2,6 +2,27 @@ import type { NextConfig } from "next";
 import path from 'path';
 import bundleAnalyzer from '@next/bundle-analyzer';
 
+if (typeof window === 'undefined' && process.platform === 'win32') {
+  const originalConsoleError = console.error;
+  console.error = (...args: any[]) => {
+    const errorMessage = args[0]?.toString() || '';
+    const errorObj = args[0];
+    
+    if (
+      errorMessage.includes('page_client-reference-manifest.js') ||
+      errorMessage.includes('page.js') ||
+      (errorObj && typeof errorObj === 'object' && 
+       errorObj.code === 'UNKNOWN' && 
+       errorObj.errno === -4094 &&
+       (errorObj.path?.includes('client-reference-manifest') || errorObj.path?.includes('page.js')))
+    ) {
+      return;
+    }
+    
+    originalConsoleError.apply(console, args);
+  };
+}
+
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
