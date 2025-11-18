@@ -58,7 +58,7 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
             params.put("resultId", null);
 
             try {
-                credentialMapper.save(params);
+            credentialMapper.save(params);
             } catch (DataIntegrityViolationException e) {
                 if (e.getMessage() != null && e.getMessage().contains("Duplicate entry")) {
                     logger.warn("중복 키 오류 발생, UPDATE로 재시도: credentialId={}, id={}", 
