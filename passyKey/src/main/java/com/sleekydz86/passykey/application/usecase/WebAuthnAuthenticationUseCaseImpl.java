@@ -120,7 +120,7 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
             logger.info("clientDataBytes length: {}", clientDataJSONBytes.length);
             logger.info("First 20 bytes: {}", java.util.Arrays.toString(
                     java.util.Arrays.copyOf(clientDataJSONBytes, Math.min(20, clientDataJSONBytes.length))));
-            
+
             if (!clientDataJSONString.trim().startsWith("{")) {
                 logger.error("clientDataJSON이 유효한 JSON이 아닙니다. 첫 문자: '{}', length: {}",
                         clientDataJSONString.length() > 0 ? clientDataJSONString.charAt(0) : "empty",
@@ -172,7 +172,7 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
 
             credentialDomainService.validateAndUpdateCounter(credential, authResult.getCounter());
             credential.setLastUsedAt(java.time.LocalDateTime.now());
-            credentialRepository.save(credential);
+            credentialRepository.update(credential);
 
             logger.info("사용자 인증 성공: {}", credential.getUser().getUsername());
             return credential.getUser();

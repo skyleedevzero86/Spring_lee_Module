@@ -120,6 +120,47 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public WebAuthnCredential update(WebAuthnCredential credential) {
+        try {
+            if (credential.getId() == null) {
+                throw new IllegalArgumentException("인증서 ID가 없습니다. 업데이트할 수 없습니다.");
+            }
+
+            logger.debug("Updating credential - id: {}, credentialId: {}, counter: {}", 
+                    credential.getId(), credential.getCredentialId(), credential.getCounter());
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("operation", "U");
+            params.put("id", credential.getId());
+            params.put("credentialId", null);
+            params.put("publicKeyCose", null);
+            params.put("counter", credential.getCounter());
+            params.put("transports", null);
+            params.put("label", null);
+            params.put("userId", null);
+            params.put("createdAt", null);
+            params.put("lastUsedAt", credential.getLastUsedAt() != null ? credential.getLastUsedAt() : java.time.LocalDateTime.now());
+            params.put("resultId", null);
+
+            credentialMapper.save(params);
+
+            if (credential.getUser() != null && credential.getUser().getId() != null) {
+                credentialCacheService.evictUserCredentials(credential.getUser().getId());
+            }
+
+            logger.debug("Credential updated successfully - id: {}", credential.getId());
+            return credential;
+        } catch (DataAccessException e) {
+            logger.error("인증서 업데이트 중 데이터베이스 오류 발생: {}", credential.getCredentialId(), e);
+            throw new RuntimeException("인증서 업데이트 실패", e);
+        } catch (Exception e) {
+            logger.error("인증서 업데이트 중 예상치 못한 오류 발생: {}", credential.getCredentialId(), e);
+            throw new RuntimeException("인증서 업데이트 실패", e);
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<WebAuthnCredential> findByCredentialId(String credentialId) {
         try {

@@ -50,6 +50,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(WebAuthnException.class)
     public ResponseEntity<ApiResponse<Void>> handleWebAuthnException(WebAuthnException ex) {
         logger.error("WebAuthn 예외 발생", ex);
+        String message = ex.getMessage();
+        if (message != null && (message.contains("인증 실패") || message.contains("인증서") || message.contains("챌린지"))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error(ex.getMessage()));
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(ex.getMessage()));
     }

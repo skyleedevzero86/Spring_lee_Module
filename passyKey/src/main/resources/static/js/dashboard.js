@@ -3,6 +3,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const passkeyMessage = document.getElementById('passkeyMessage');
     const credentialsList = document.getElementById('credentialsList');
     const logoutBtn = document.getElementById('logoutBtn');
+    const mobileToggle = document.getElementById('mobileToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+    const mobileAddPasskeyBtn = document.getElementById('mobileAddPasskeyBtn');
+    const header = document.querySelector('.header');
 
     function showMessage(element, message, type) {
         element.textContent = message;
@@ -116,199 +121,226 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    addPasskeyBtn.addEventListener('click', async function() {
-        try {
-            const csrfToken = getCsrfToken();
-            const csrfHeaderName = getCsrfHeaderName();
-            const headers = {
-                'Content-Type': 'application/json'
-            };
-            headers[csrfHeaderName] = csrfToken;
 
-            const response = await fetch('/api/webauthn/register/options', {
-                method: 'POST',
-                headers: headers,
-                credentials: 'include'
-            });
-
-            const result = await response.json();
-
-            if (!result.success) {
-                showMessage(passkeyMessage, result.message || '등록 옵션을 가져오는데 실패했습니다', 'error');
-                return;
-            }
-
-            const options = result.data;
-            
-            if (!options.challenge) {
-                console.error('Challenge is missing from options');
-                throw new Error('Challenge is required but missing');
-            }
-            
+    function handleLogout() {
+        return async function() {
             try {
-                if (typeof options.challenge === 'string') {
-                    options.challenge = base64UrlToArrayBuffer(options.challenge);
-                } else if (options.challenge.value !== undefined) {
-                    if (Array.isArray(options.challenge.value)) {
-                        options.challenge = new Uint8Array(options.challenge.value).buffer;
-                    } else if (typeof options.challenge.value === 'string') {
-                        options.challenge = base64UrlToArrayBuffer(options.challenge.value);
-                    } else if (options.challenge.value instanceof ArrayBuffer) {
-                        options.challenge = options.challenge.value;
-                    } else {
-                        const value = options.challenge.value;
-                        if (value && typeof value === 'object') {
-                            const arr = Object.values(value).map(v => typeof v === 'number' ? v : 0);
-                            options.challenge = new Uint8Array(arr).buffer;
+                const csrfToken = getCsrfToken();
+                const csrfHeaderName = getCsrfHeaderName();
+                const headers = {};
+                headers[csrfHeaderName] = csrfToken;
+
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: headers,
+                    credentials: 'include'
+                });
+
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('로그아웃 오류:', error);
+                window.location.href = '/login';
+            }
+        };
+    }
+
+    logoutBtn.addEventListener('click', handleLogout());
+    mobileLogoutBtn.addEventListener('click', handleLogout());
+
+    function handleAddPasskey() {
+        return async function() {
+            try {
+                const csrfToken = getCsrfToken();
+                const csrfHeaderName = getCsrfHeaderName();
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                headers[csrfHeaderName] = csrfToken;
+
+                const response = await fetch('/api/webauthn/register/options', {
+                    method: 'POST',
+                    headers: headers,
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    showMessage(passkeyMessage, result.message || '등록 옵션을 가져오는데 실패했습니다', 'error');
+                    return;
+                }
+
+                const options = result.data;
+                
+                if (!options.challenge) {
+                    console.error('Challenge is missing from options');
+                    throw new Error('Challenge is required but missing');
+                }
+                
+                try {
+                    if (typeof options.challenge === 'string') {
+                        options.challenge = base64UrlToArrayBuffer(options.challenge);
+                    } else if (options.challenge.value !== undefined) {
+                        if (Array.isArray(options.challenge.value)) {
+                            options.challenge = new Uint8Array(options.challenge.value).buffer;
+                        } else if (typeof options.challenge.value === 'string') {
+                            options.challenge = base64UrlToArrayBuffer(options.challenge.value);
+                        } else if (options.challenge.value instanceof ArrayBuffer) {
+                            options.challenge = options.challenge.value;
                         } else {
-                            throw new Error('Unsupported challenge.value type: ' + typeof value);
-                        }
-                    }
-                } else if (Array.isArray(options.challenge)) {
-                    options.challenge = new Uint8Array(options.challenge).buffer;
-                } else if (options.challenge instanceof ArrayBuffer) {
-                } else if (options.challenge instanceof Uint8Array) {
-                    options.challenge = options.challenge.buffer;
-                } else if (typeof options.challenge === 'object') {
-                    const values = Object.values(options.challenge);
-                    if (values.length > 0 && values.every(v => typeof v === 'number')) {
-                        options.challenge = new Uint8Array(values).buffer;
-                    } else {
-                        const arr = [];
-                        for (const key in options.challenge) {
-                            const val = options.challenge[key];
-                            if (typeof val === 'number') {
-                                arr.push(val);
+                            const value = options.challenge.value;
+                            if (value && typeof value === 'object') {
+                                const arr = Object.values(value).map(v => typeof v === 'number' ? v : 0);
+                                options.challenge = new Uint8Array(arr).buffer;
+                            } else {
+                                throw new Error('Unsupported challenge.value type: ' + typeof value);
                             }
                         }
-                        if (arr.length > 0) {
-                            options.challenge = new Uint8Array(arr).buffer;
+                    } else if (Array.isArray(options.challenge)) {
+                        options.challenge = new Uint8Array(options.challenge).buffer;
+                    } else if (options.challenge instanceof ArrayBuffer) {
+                    } else if (options.challenge instanceof Uint8Array) {
+                        options.challenge = options.challenge.buffer;
+                    } else if (typeof options.challenge === 'object') {
+                        const values = Object.values(options.challenge);
+                        if (values.length > 0 && values.every(v => typeof v === 'number')) {
+                            options.challenge = new Uint8Array(values).buffer;
                         } else {
-                            throw new Error('Cannot convert challenge object to ArrayBuffer: ' + JSON.stringify(options.challenge));
+                            const arr = [];
+                            for (const key in options.challenge) {
+                                const val = options.challenge[key];
+                                if (typeof val === 'number') {
+                                    arr.push(val);
+                                }
+                            }
+                            if (arr.length > 0) {
+                                options.challenge = new Uint8Array(arr).buffer;
+                            } else {
+                                throw new Error('Cannot convert challenge object to ArrayBuffer: ' + JSON.stringify(options.challenge));
+                            }
                         }
+                    } else {
+                        throw new Error('Unsupported challenge type: ' + typeof options.challenge);
                     }
+                } catch (error) {
+                    console.error('Challenge conversion error:', error);
+                    console.error('Challenge value:', options.challenge);
+                    console.error('Challenge type:', typeof options.challenge);
+                    if (options.challenge && typeof options.challenge === 'object') {
+                        console.error('Challenge keys:', Object.keys(options.challenge));
+                    }
+                    throw new Error('Invalid challenge format: ' + error.message);
+                }
+                
+                if (options.user && options.user.id) {
+                    if (typeof options.user.id === 'string') {
+                        options.user.id = base64UrlToArrayBuffer(options.user.id);
+                    } else if (Array.isArray(options.user.id)) {
+                        options.user.id = new Uint8Array(options.user.id).buffer;
+                    } else if (options.user.id.value && Array.isArray(options.user.id.value)) {
+                        options.user.id = new Uint8Array(options.user.id.value).buffer;
+                    } else if (!(options.user.id instanceof ArrayBuffer)) {
+                        console.error('Unexpected user.id format:', options.user.id);
+                        throw new Error('Invalid user.id format');
+                    }
+                }
+
+                if (options.excludeCredentials && Array.isArray(options.excludeCredentials)) {
+                    options.excludeCredentials = options.excludeCredentials.map(cred => {
+                        let id = cred.id;
+                        if (typeof id === 'string') {
+                            id = base64UrlToArrayBuffer(id);
+                        } else if (Array.isArray(id)) {
+                            id = new Uint8Array(id).buffer;
+                        } else if (id && id.value && Array.isArray(id.value)) {
+                            id = new Uint8Array(id.value).buffer;
+                        }
+                        return {
+                            ...cred,
+                            id: id
+                        };
+                    });
+                }
+
+                if (options.hints !== undefined) {
+                    if (!Array.isArray(options.hints)) {
+                        delete options.hints;
+                    } else if (options.hints.length === 0) {
+                        delete options.hints;
+                    }
+                }
+
+                console.log('WebAuthn options before create:', {
+                    ...options,
+                    challenge: '[ArrayBuffer]',
+                    user: options.user ? { ...options.user, id: '[ArrayBuffer]' } : undefined,
+                    excludeCredentials: options.excludeCredentials ? options.excludeCredentials.map(c => ({ ...c, id: '[ArrayBuffer]' })) : undefined
+                });
+
+                const credential = await navigator.credentials.create({
+                    publicKey: options
+                });
+
+                const publicKeyCredential = {
+                    publicKey: {
+                        credential: {
+                            id: credential.id,
+                            rawId: arrayBufferToBase64Url(credential.rawId),
+                            response: {
+                                attestationObject: arrayBufferToBase64Url(credential.response.attestationObject),
+                                clientDataJSON: arrayBufferToBase64Url(credential.response.clientDataJSON),
+                                transports: credential.response.getTransports ? credential.response.getTransports() : []
+                            },
+                            type: credential.type
+                        },
+                        label: prompt('이 패스키의 이름을 입력하세요:') || '내 패스키'
+                    }
+                };
+
+                const registerHeaders = {
+                    'Content-Type': 'application/json'
+                };
+                registerHeaders[csrfHeaderName] = csrfToken;
+
+                const registerResponse = await fetch('/api/webauthn/register', {
+                    method: 'POST',
+                    headers: registerHeaders,
+                    credentials: 'include',
+                    body: JSON.stringify(publicKeyCredential)
+                });
+
+                const registerResult = await registerResponse.json();
+
+                if (registerResult.success) {
+                    showMessage(passkeyMessage, '패스키가 성공적으로 등록되었습니다!', 'success');
+                    loadCredentials();
                 } else {
-                    throw new Error('Unsupported challenge type: ' + typeof options.challenge);
+                    showMessage(passkeyMessage, registerResult.message || '패스키 등록 실패', 'error');
                 }
             } catch (error) {
-                console.error('Challenge conversion error:', error);
-                console.error('Challenge value:', options.challenge);
-                console.error('Challenge type:', typeof options.challenge);
-                if (options.challenge && typeof options.challenge === 'object') {
-                    console.error('Challenge keys:', Object.keys(options.challenge));
-                }
-                throw new Error('Invalid challenge format: ' + error.message);
+                showMessage(passkeyMessage, '패스키 등록 실패: ' + error.message, 'error');
             }
+        };
+    }
+
+    addPasskeyBtn.addEventListener('click', handleAddPasskey());
+    mobileAddPasskeyBtn.addEventListener('click', handleAddPasskey());
+
+    if (mobileToggle && mobileMenu) {
+        mobileToggle.addEventListener('click', function() {
+            const isExpanded = mobileToggle.getAttribute('aria-expanded') === 'true';
+            mobileToggle.setAttribute('aria-expanded', !isExpanded);
+            mobileMenu.setAttribute('aria-hidden', isExpanded);
             
-            if (options.user && options.user.id) {
-                if (typeof options.user.id === 'string') {
-                    options.user.id = base64UrlToArrayBuffer(options.user.id);
-                } else if (Array.isArray(options.user.id)) {
-                    options.user.id = new Uint8Array(options.user.id).buffer;
-                } else if (options.user.id.value && Array.isArray(options.user.id.value)) {
-                    options.user.id = new Uint8Array(options.user.id.value).buffer;
-                } else if (!(options.user.id instanceof ArrayBuffer)) {
-                    console.error('Unexpected user.id format:', options.user.id);
-                    throw new Error('Invalid user.id format');
-                }
-            }
-
-            if (options.excludeCredentials && Array.isArray(options.excludeCredentials)) {
-                options.excludeCredentials = options.excludeCredentials.map(cred => {
-                    let id = cred.id;
-                    if (typeof id === 'string') {
-                        id = base64UrlToArrayBuffer(id);
-                    } else if (Array.isArray(id)) {
-                        id = new Uint8Array(id).buffer;
-                    } else if (id && id.value && Array.isArray(id.value)) {
-                        id = new Uint8Array(id.value).buffer;
-                    }
-                    return {
-                        ...cred,
-                        id: id
-                    };
-                });
-            }
-
-            if (options.hints !== undefined) {
-                if (!Array.isArray(options.hints)) {
-                    delete options.hints;
-                } else if (options.hints.length === 0) {
-                    delete options.hints;
-                }
-            }
-
-            console.log('WebAuthn options before create:', {
-                ...options,
-                challenge: '[ArrayBuffer]',
-                user: options.user ? { ...options.user, id: '[ArrayBuffer]' } : undefined,
-                excludeCredentials: options.excludeCredentials ? options.excludeCredentials.map(c => ({ ...c, id: '[ArrayBuffer]' })) : undefined
-            });
-
-            const credential = await navigator.credentials.create({
-                publicKey: options
-            });
-
-            const publicKeyCredential = {
-                publicKey: {
-                    credential: {
-                        id: credential.id,
-                        rawId: arrayBufferToBase64Url(credential.rawId),
-                        response: {
-                            attestationObject: arrayBufferToBase64Url(credential.response.attestationObject),
-                            clientDataJSON: arrayBufferToBase64Url(credential.response.clientDataJSON),
-                            transports: credential.response.getTransports ? credential.response.getTransports() : []
-                        },
-                        type: credential.type
-                    },
-                    label: prompt('이 패스키의 이름을 입력하세요:') || '내 패스키'
-                }
-            };
-
-            const registerHeaders = {
-                'Content-Type': 'application/json'
-            };
-            registerHeaders[csrfHeaderName] = csrfToken;
-
-            const registerResponse = await fetch('/api/webauthn/register', {
-                method: 'POST',
-                headers: registerHeaders,
-                credentials: 'include',
-                body: JSON.stringify(publicKeyCredential)
-            });
-
-            const registerResult = await registerResponse.json();
-
-            if (registerResult.success) {
-                showMessage(passkeyMessage, '패스키가 성공적으로 등록되었습니다!', 'success');
-                loadCredentials();
+            if (!isExpanded) {
+                header.classList.add('header__mobile-menu-open');
+                document.body.classList.add('header__mobile-menu-open');
             } else {
-                showMessage(passkeyMessage, registerResult.message || '패스키 등록 실패', 'error');
+                header.classList.remove('header__mobile-menu-open');
+                document.body.classList.remove('header__mobile-menu-open');
             }
-        } catch (error) {
-            showMessage(passkeyMessage, '패스키 등록 실패: ' + error.message, 'error');
-        }
-    });
-
-    logoutBtn.addEventListener('click', async function() {
-        try {
-            const csrfToken = getCsrfToken();
-            const csrfHeaderName = getCsrfHeaderName();
-            const headers = {};
-            headers[csrfHeaderName] = csrfToken;
-
-            const response = await fetch('/api/auth/logout', {
-                method: 'POST',
-                headers: headers,
-                credentials: 'include'
-            });
-
-            window.location.href = '/login';
-        } catch (error) {
-            console.error('로그아웃 오류:', error);
-            window.location.href = '/login';
-        }
-    });
+        });
+    }
 
     function base64UrlToArrayBuffer(base64url) {
         if (base64url instanceof ArrayBuffer) {

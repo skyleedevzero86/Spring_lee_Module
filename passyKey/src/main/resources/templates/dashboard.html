@@ -27,6 +27,7 @@
           <button id="logoutBtn" class="btn btn-secondary">로그아웃</button>
         </div>
         <button
+          id="mobileToggle"
           class="header__mobile-toggle"
           aria-label="모바일 메뉴 토글"
           aria-expanded="false"
@@ -36,6 +37,12 @@
           <span></span>
         </button>
       </div>
+      <nav id="mobileMenu" class="header__mobile-menu" aria-hidden="true">
+        <div class="mobile-menu__content">
+          <button id="mobileLogoutBtn" class="btn btn-secondary mobile-menu__btn">로그아웃</button>
+          <button id="mobileAddPasskeyBtn" class="btn btn--primary mobile-menu__btn">새 패스키 추가</button>
+        </div>
+      </nav>
     </header>
 
     <main id="main-content" role="main">
@@ -48,7 +55,7 @@
           <div class="dashboard-card">
             <div class="dashboard-header">
               <h2>내 패스키</h2>
-              <button id="addPasskeyBtn" class="btn btn--primary">
+              <button id="addPasskeyBtn" class="btn btn--primary dashboard-add-btn">
                 새 패스키 추가
               </button>
             </div>
