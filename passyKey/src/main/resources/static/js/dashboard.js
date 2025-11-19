@@ -334,10 +334,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!isExpanded) {
                 header.classList.add('header__mobile-menu-open');
-                document.body.classList.add('header__mobile-menu-open');
+                if (logoutBtn) logoutBtn.style.display = 'none';
             } else {
                 header.classList.remove('header__mobile-menu-open');
-                document.body.classList.remove('header__mobile-menu-open');
+                if (logoutBtn) logoutBtn.style.display = '';
             }
         });
     }

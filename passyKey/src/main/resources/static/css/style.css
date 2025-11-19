@@ -152,7 +152,7 @@ ul, ol {
   justify-content: flex-start;
   gap: 1rem;
 }
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .header__utils {
     display: none;
   }
@@ -232,9 +232,6 @@ ul, ol {
   display: none !important;
 }
 
-body.header__mobile-menu-open .dashboard-add-btn {
-  display: none !important;
-}
 
 .nav-list {
   display: flex;
@@ -550,8 +547,23 @@ body.header__mobile-menu-open .dashboard-add-btn {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+@media (max-width: 767px) {
+  .credential-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+  
+  .credential-item .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .credential-info {
   flex: 1;
+  width: 100%;
 }
 
 .credential-info h3 {
@@ -561,10 +573,24 @@ body.header__mobile-menu-open .dashboard-add-btn {
   font-weight: 600;
 }
 
+@media (max-width: 767px) {
+  .credential-info h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
 .credential-info p {
   color: #666;
   font-size: 0.875rem;
   margin-bottom: 0.25rem;
+}
+
+@media (max-width: 767px) {
+  .credential-info p {
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+  }
 }
 
 small {
@@ -585,6 +611,18 @@ small {
   font-size: 1.5rem;
   font-weight: 700;
   color: #222;
+}
+
+@media (max-width: 1023px) {
+  .dashboard-add-btn {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-menu__btn.mobile-add-passkey {
+    display: none;
+  }
 }
 
 .footer {
@@ -779,11 +817,15 @@ small {
 
 @media (max-width: 767px) {
   .auth-card, .dashboard-card, .auth-section {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 
   .auth-header h1 {
     font-size: 1.5rem;
+  }
+
+  .auth-header p {
+    font-size: 0.875rem;
   }
 
   .button-group {
@@ -792,5 +834,35 @@ small {
 
   .btn {
     width: 100%;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .dashboard-header h2 {
+    font-size: 1.25rem;
+    width: 100%;
+  }
+
+  .credentials-list {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .auth-card, .dashboard-card, .auth-section {
+    padding: 2rem;
+  }
+
+  .dashboard-header {
+    margin-bottom: 1.75rem;
+  }
+
+  .dashboard-header h2 {
+    font-size: 1.375rem;
   }
 }
