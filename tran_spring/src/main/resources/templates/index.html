@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 번역 서비스</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2f456e 0%, #60bde6 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .template-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+        }
+
+        .status-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #e74c3c;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #222;
+        }
+
+        .usage-info {
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            color: #856404;
+            font-size: 0.875rem;
+        }
+
+        .template-form {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .translation-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .translation-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: #f6f7f7;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .panel-header {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #60bde6;
+        }
+
+        .panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #2f456e;
+        }
+
+        .detected-language {
+            display: inline-block;
+            background: #60bde6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .language-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .language-select:focus {
+            outline: none;
+            border-color: #60bde6;
+            box-shadow: 0 0 0 3px rgba(96, 189, 230, 0.1);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 250px;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            resize: vertical;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #60bde6;
+            box-shadow: 0 0 0 3px rgba(96, 189, 230, 0.1);
+        }
+
+        .char-counter {
+            text-align: right;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .result-box {
+            width: 100%;
+            min-height: 250px;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            overflow-y: auto;
+            color: #222;
+        }
+
+        .result-box.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-style: italic;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 32px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #2f456e;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1f2d47;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(47, 69, 110, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2f456e;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .error-field {
+            color: #e74c3c;
+            font-size: 0.75rem;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+<div class="template-container">
+    <div class="header">
+        <h1>실시간 번역 서비스</h1>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-indicator">
+            <div class="status-dot" th:classappend="${!serviceAvailable} ? 'offline' : ''"></div>
+            <span class="status-text" th:text="${serviceAvailable} ? '서비스 정상' : '서비스 중단'">서비스 정상</span>
+        </div>
+        <div class="usage-info" th:text="${usageInfo}">사용량: 로딩 중...</div>
+    </div>
+
+    <div class="alert" th:if="${errorMessage}">
+        <strong>오류:</strong>
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <form class="template-form" th:action="@{/translate}" th:object="${translationRequest}" method="post" id="translationForm">
+        <div class="translation-container">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">원본 텍스트</div>
+                </div>
+
+                <div class="form-group">
+                    <select class="language-select" th:field="*{sourceLanguage}" id="sourceLanguage">
+                        <option th:each="lang : ${languages}" th:value="${lang.code}" th:text="${lang.name}" th:selected="${lang.code == 'auto'}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <textarea th:field="*{text}" id="sourceText" placeholder="번역할 텍스트를 입력하세요 (최대 5000자)" maxlength="5000" required></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span> / 5000 자
+                    </div>
+                    <div class="error-field" th:if="${#fields.hasErrors('text')}" th:errors="*{text}"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">번역 결과</div>
+                    <span class="detected-language" th:if="${translationResponse}" th:text="'감지: ' + ${translationResponse.detectedSourceLanguageName}"></span>
+                </div>
+
+                <div class="form-group">
+                    <select class="language-select" th:field="*{targetLanguage}" id="targetLanguage">
+                        <option th:each="lang : ${languages}" th:if="${lang.code != 'auto'}" th:value="${lang.code}" th:text="${lang.name}" th:selected="${lang.code == 'ko'}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <div class="result-box" th:classappend="${translationResponse == null} ? 'empty' : ''" id="resultBox">
+                        <span th:if="${translationResponse == null}">번역 결과가 여기에 표시됩니다</span>
+                        <span th:if="${translationResponse}" th:text="${translationResponse.translatedText}"></span>
+                    </div>
+                    <div class="char-counter" th:if="${translationResponse}">
+                        번역 완료: <span th:text="${translationResponse.translatedAt}"></span>
+                    </div>
+                    <div class="error-field" th:if="${#fields.hasErrors('targetLanguage')}" th:errors="*{targetLanguage}"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button type="submit" class="btn btn-primary" id="translateBtn" th:disabled="${!serviceAvailable}">
+                번역하기
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                초기화
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>번역 중입니다...</p>
+        </div>
+    </form>
+</div>
+
+<script>
+    const sourceText = document.getElementById('sourceText');
+    const charCount = document.getElementById('charCount');
+
+    sourceText.addEventListener('input', function() {
+        charCount.textContent = this.value.length;
+    });
+
+    charCount.textContent = sourceText.value.length;
+
+    document.getElementById('translationForm').addEventListener('submit', function() {
+        document.getElementById('loading').classList.add('active');
+        document.getElementById('translateBtn').disabled = true;
+    });
+
+    function clearForm() {
+        document.getElementById('sourceText').value = '';
+        document.getElementById('resultBox').innerHTML = '<span>번역 결과가 여기에 표시됩니다</span>';
+        document.getElementById('resultBox').classList.add('empty');
+        charCount.textContent = '0';
+
+        const detectedLang = document.querySelector('.detected-language');
+        if (detectedLang) {
+            detectedLang.remove();
+        }
+    }
+
+    sourceText.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+</script>
+</body>
+</html>
