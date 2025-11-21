@@ -1,6 +1,6 @@
 # 실시간 번역 서비스 (Real-time Translation Service)
 
-> DeepL API 기반 고품질 번역 웹 애플리케이션
+<img width="1269" height="874" alt="image" src="https://github.com/user-attachments/assets/4d2e93c1-4321-456e-ac0c-d5243a2fc8de" />
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.8-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -10,7 +10,7 @@
 
 ## 프로젝트 소개
 
-DeepL API를 활용한 실시간 번역 웹 애플리케이션입니다. DDD(Domain-Driven Design)와 헥사고날 아키텍처를 적용하여 확장 가능하고 유지보수가 용이한 구조로 설계했습니다.
+DeepL API를 활용한 실시간 번역 웹 애플리케이션입니다.
 
 ### 주요 기능
 - 실시간 텍스트 번역 (14개 언어 지원)
@@ -24,19 +24,11 @@ DeepL API를 활용한 실시간 번역 웹 애플리케이션입니다. DDD(Dom
 ## 프로젝트 목표
 
 ### 1. 아키텍처 설계 역량 증명
-- DDD 및 헥사고날 아키텍처 실무 적용
-- 도메인 중심 설계로 비즈니스 로직 분리
-- SOLID 원칙 준수
 
 ### 2. 확장 가능한 설계
-- 다른 번역 API로 쉽게 교체 가능한 구조
-- 테스트 용이성 (포트 인터페이스 활용)
-- 관심사의 명확한 분리
 
 ### 3. 실무 수준의 코드 품질
-- 불변 객체 패턴 적용
-- 전역 예외 처리
-- 명확한 로깅 전략
+
 
 ---
 
@@ -47,7 +39,6 @@ DeepL API를 활용한 실시간 번역 웹 애플리케이션입니다. DDD(Dom
 - **Spring Boot 3.5.8** - 웹 프레임워크
 - **Thymeleaf** - 템플릿 엔진
 - **Spring Validation** - 입력 검증
-- **DeepL Java SDK 1.5.0** - 번역 API 클라이언트
 
 
 ---
@@ -82,26 +73,13 @@ DeepL API를 활용한 실시간 번역 웹 애플리케이션입니다. DDD(Dom
 
 ### 계층별 책임
 
-#### 1. Domain Layer (핵심)
-- 비즈니스 로직
-- 도메인 모델 (Entity, Value Object)
-- 포트 인터페이스 정의
-- 외부 의존성 없음
+#### 1. Domain Layer 
 
 #### 2. Application Layer
-- 유스케이스 조율
-- DTO 변환 (Domain ↔ DTO)
-- 트랜잭션 관리
 
 #### 3. Adapter Layer
-- 외부 시스템과의 통신
-- 웹 요청 처리 (Controller)
-- API 클라이언트 구현
 
 #### 4. Infrastructure Layer
-- 기술적 구현
-- 설정 관리
-- 전역 예외 처리
 
 ---
 
@@ -129,10 +107,10 @@ src/main/java/com/sleekydz86/tran/
 │   │       └── ViewController.java    # 웹 컨트롤러
 │   └── out/
 │       └── translation/
-│           └── DeepLTranslationAdapter.java # DeepL API 어댑터
+│           └── DeepLTranslationAdapter.java # API 어댑터
 └── global/
     ├── config/
-    │   └── DeepLConfig.java           # DeepL 설정
+    │   └── DeepLConfig.java           # 환경설정
     └── exception/
         ├── TranslationException.java  # 도메인 예외
         └── GlobalExceptionHandler.java # 전역 예외 핸들러
@@ -151,18 +129,6 @@ src/main/resources/
 - JDK 21 이상
 - Gradle 8.x
 
-
-
-### 설정
-
-**application.yml 방식**
-```yaml
-deepl:
-  api:
-    key: your-api-key-here
-    base-url: https://api-free.deepl.com
-    enabled: true
-```
 
 **환경 변수 방식 (권장)**
 ```bash
@@ -190,92 +156,6 @@ cd translation-service
 ```
 http://localhost:8080
 ```
-
----
-
-## 핵심 설계 원칙
-
-### 1. 도메인 중심 설계
-
-**불변 Value Object**
-```java
-public record Language(String code, String displayName) {
-    public static Language of(String code) {
-        validateCode(code);
-        return new Language(code, getDisplayName(code));
-    }
-    
-    private static void validateCode(String code) {
-        if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("언어 코드는 필수입니다");
-        }
-    }
-}
-```
-
-**도메인 모델**
-```java
-public record Translation(
-    String originalText,
-    String translatedText,
-    Language detectedSourceLanguage,
-    Language targetLanguage,
-    LocalDateTime translatedAt
-) {
-    public static Translation of(
-        String originalText,
-        String translatedText,
-        Language sourceLanguage,
-        Language targetLanguage
-    ) {
-        validate(originalText, translatedText);
-        return new Translation(
-            originalText,
-            translatedText,
-            sourceLanguage,
-            targetLanguage,
-            LocalDateTime.now()
-        );
-    }
-}
-```
-
-### 2. 포트와 어댑터 패턴
-
-**Port (도메인 인터페이스)**
-```java
-public interface TranslationPort {
-    Translation translate(TranslationRequest request);
-    boolean isAvailable();
-    String getUsageInfo();
-}
-```
-
-**Adapter (구현체)**
-```java
-@Component
-public class DeepLTranslationAdapter implements TranslationPort {
-    private final Translator translator;
-    
-    @Override
-    public Translation translate(TranslationRequest request) {
-        // DeepL API 호출 로직
-        TextResult result = translator.translateText(
-            request.getSourceText(),
-            request.getSourceLanguage().getCode(),
-            request.getTargetLanguage().getCode()
-        );
-        
-        return Translation.of(
-            request.getSourceText(),
-            result.getText(),
-            Language.of(result.getDetectedSourceLanguage()),
-            request.getTargetLanguage()
-        );
-    }
-}
-```
-
 
 
 ---
