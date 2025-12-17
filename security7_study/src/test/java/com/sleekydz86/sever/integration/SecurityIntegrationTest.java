@@ -18,103 +18,150 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Security 통합 테스트")
 class SecurityIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Test
-    @DisplayName("공개 엔드포인트 접근 - 인증 없이 접근 가능")
-    void testPublicEndpoints_AccessibleWithoutAuth() throws Exception {
-        // given
-        // when
-        mockMvc.perform(get("/login"))
-                .andExpect(status().isOk());
+        @Test
+        @DisplayName("공개 엔드포인트 접근 - 인증 없이 접근 가능")
+        void testPublicEndpoints_AccessibleWithoutAuth() throws Exception {
+                // given
+                // when
+                mockMvc.perform(get("/login"))
+                                .andExpect(status().isOk());
 
-        mockMvc.perform(get("/"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/home"));
-        // then
-    }
+                mockMvc.perform(get("/"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/home"));
 
-    @Test
-    @DisplayName("보호된 엔드포인트 접근 - 인증 필요")
-    void testProtectedEndpoints_RequireAuth() throws Exception {
-        // given
-        // when
-        mockMvc.perform(get("/home"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/login"));
+                mockMvc.perform(get("/users/register"))
+                                .andExpect(status().isOk());
+                // then
+        }
 
-        mockMvc.perform(get("/user"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/login"));
+        @Test
+        @DisplayName("보호된 엔드포인트 접근 - 인증 필요")
+        void testProtectedEndpoints_RequireAuth() throws Exception {
+                // given
+                // when
+                mockMvc.perform(get("/home"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrlPattern("**/login"));
 
-        mockMvc.perform(get("/admin"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/login"));
-        // then
-    }
+                mockMvc.perform(get("/user"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrlPattern("**/login"));
 
-    @Test
-    @DisplayName("사용자 페이지 접근 - USER 권한")
-    @WithMockUser(username = "user", roles = {"USER"})
-    void testUserRole_CanAccessUserPage() throws Exception {
-        // given
-        // when
-        mockMvc.perform(get("/user"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("user"));
-        // then
-    }
+                mockMvc.perform(get("/admin"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrlPattern("**/login"));
+                // then
+        }
 
-    @Test
-    @DisplayName("관리자 페이지 접근 - USER 권한 접근 거부")
-    @WithMockUser(username = "user", roles = {"USER"})
-    void testUserRole_CannotAccessAdminPage() throws Exception {
-        // given
-        // when
-        mockMvc.perform(get("/admin"))
-                .andExpect(status().isForbidden());
-        // then
-    }
+        @Test
+        @DisplayName("사용자 페이지 접근 - USER 권한")
+        @WithMockUser(username = "user", roles = { "USER" })
+        void testUserRole_CanAccessUserPage() throws Exception {
+                // given
+                // when
+                mockMvc.perform(get("/user"))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("user"));
+                // then
+        }
 
-    @Test
-    @DisplayName("모든 페이지 접근 - ADMIN 권한")
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void testAdminRole_CanAccessAllPages() throws Exception {
-        // given
-        // when
-        mockMvc.perform(get("/user"))
-                .andExpect(status().isOk());
+        @Test
+        @DisplayName("관리자 페이지 접근 - USER 권한 접근 거부")
+        @WithMockUser(username = "user", roles = { "USER" })
+        void testUserRole_CannotAccessAdminPage() throws Exception {
+                // given
+                // when
+                mockMvc.perform(get("/admin"))
+                                .andExpect(status().isForbidden());
+                // then
+        }
 
-        mockMvc.perform(get("/admin"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("admin"));
-        // then
-    }
+        @Test
+        @DisplayName("모든 페이지 접근 - ADMIN 권한")
+        @WithMockUser(username = "admin", roles = { "ADMIN" })
+        void testAdminRole_CanAccessAllPages() throws Exception {
+                // given
+                // when
+                mockMvc.perform(get("/user"))
+                                .andExpect(status().isOk());
 
-    @Test
-    @DisplayName("로그아웃 처리")
-    @WithMockUser(username = "user", roles = {"USER"})
-    void testLogout() throws Exception {
-        // given
-        // when
-        mockMvc.perform(post("/logout").with(csrf()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/login?logout=true"));
-        // then
-    }
+                mockMvc.perform(get("/admin"))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("admin"));
+                // then
+        }
 
-    @Test
-    @DisplayName("로그인 처리 - Spring Security가 PasswordEncoder로 비밀번호 검증")
-    void testLogin_WithPasswordEncoder() throws Exception {
-        // given
-        // when
-        mockMvc.perform(post("/login")
-                        .param("username", "user")
-                        .param("password", "password")
-                        .with(csrf()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/home"));
-        // then
-    }
+        @Test
+        @DisplayName("로그아웃 처리")
+        @WithMockUser(username = "user", roles = { "USER" })
+        void testLogout() throws Exception {
+                // given
+                // when
+                mockMvc.perform(post("/logout").with(csrf()))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/login?logout=true"));
+                // then
+        }
+
+        @Test
+        @DisplayName("로그인 처리 - Spring Security가 PasswordEncoder로 비밀번호 검증")
+        void testLogin_WithPasswordEncoder() throws Exception {
+                // given
+                // when
+                mockMvc.perform(post("/login")
+                                .param("username", "user")
+                                .param("password", "password")
+                                .with(csrf()))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/home"));
+                // then
+        }
+
+        @Test
+        @DisplayName("관리자 전용 엔드포인트 - /users/list (ADMIN 권한 필요)")
+        @WithMockUser(username = "admin", roles = { "ADMIN" })
+        void testAdminEndpoint_UserList_WithAdminRole() throws Exception {
+                // given
+                // when
+                mockMvc.perform(get("/users/list"))
+                                .andExpect(status().isOk());
+                // then
+        }
+
+        @Test
+        @DisplayName("관리자 전용 엔드포인트 - /users/list (USER 권한 접근 거부)")
+        @WithMockUser(username = "user", roles = { "USER" })
+        void testAdminEndpoint_UserList_WithUserRole_AccessDenied() throws Exception {
+                // given
+                // when
+                mockMvc.perform(get("/users/list"))
+                                .andExpect(status().isForbidden());
+                // then
+        }
+
+        @Test
+        @DisplayName("사용자 엔드포인트 - /users/profile (인증 필요)")
+        @WithMockUser(username = "user", roles = { "USER" })
+        void testUserEndpoint_Profile_WithUserRole() throws Exception {
+                // given
+                // when
+                mockMvc.perform(get("/users/profile"))
+                                .andExpect(status().isOk());
+                // then
+        }
+
+        @Test
+        @DisplayName("사용자 엔드포인트 - /users/profile (비인증 접근 거부)")
+        void testUserEndpoint_Profile_Unauthenticated() throws Exception {
+                // given
+                // when
+                mockMvc.perform(get("/users/profile"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrlPattern("**/login"));
+                // then
+        }
 }

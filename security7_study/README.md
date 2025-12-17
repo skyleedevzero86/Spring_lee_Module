@@ -216,14 +216,20 @@ CREATE DATABASE security7_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ## 주요 엔드포인트
 
-| 엔드포인트       | 설명             | 권한            |
-| ---------------- | ---------------- | --------------- |
-| `/`              | 홈 리다이렉트    | 공개            |
-| `/login`         | 로그인 페이지    | 공개            |
-| `/home`          | 홈 페이지        | 인증 필요       |
-| `/user`          | 사용자 페이지    | USER 또는 ADMIN |
-| `/admin`         | 관리자 페이지    | ADMIN만         |
-| `/access-denied` | 접근 거부 페이지 | 공개            |
+| 엔드포인트              | 설명             | 권한            |
+| ---------------------- | ---------------- | --------------- |
+| `/`                     | 홈 리다이렉트    | 공개            |
+| `/login`                | 로그인 페이지    | 공개            |
+| `/users/register`       | 회원가입 페이지  | 공개            |
+| `/home`                 | 홈 페이지        | 인증 필요       |
+| `/user`                 | 사용자 페이지    | USER 또는 ADMIN |
+| `/users/profile`        | 내 정보 조회     | USER 또는 ADMIN |
+| `/users/edit`           | 내 정보 수정     | USER 또는 ADMIN |
+| `/admin`                | 관리자 페이지    | ADMIN만         |
+| `/admin/**`             | 관리자 전용      | ADMIN만         |
+| `/users/list`           | 회원 목록        | ADMIN만         |
+| `/users/detail/{id}`    | 회원 상세보기    | ADMIN만         |
+| `/access-denied`        | 접근 거부 페이지 | 공개            |
 
 ## Spring Security 설정 예시
 
@@ -240,9 +246,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/home", "/login", "/public/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/", "/login", "/public/**", "/css/**", 
+                                "/js/**", "/users/register").permitAll()
+                .requestMatchers("/admin/**", "/users/list", "/users/detail/**")
+                    .hasRole("ADMIN")
+                .requestMatchers("/home", "/user/**", "/users/**").authenticated()
                 .anyRequest().authenticated())
             .formLogin(form -> form
                 .loginPage("/login")
@@ -254,7 +262,8 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID", "remember-me")
                 .permitAll())
             .sessionManagement(session -> session
                 .maximumSessions(1)
@@ -308,8 +317,38 @@ public class CustomUserDetailsService implements UserDetailsService {
 ### 테스트 실행
 
 ```bash
+# 전체 테스트 실행
 ./gradlew test
+
+# 특정 테스트 클래스 실행
+./gradlew test --tests SecurityConfigTest
+
+# 테스트 리포트 확인
+./gradlew test --info
 ```
+
+### 테스트 커버리지
+
+테스트는 다음 영역을 포함합니다:
+
+- **SecurityConfig 테스트**: Spring Security 7 설정 검증
+  - PasswordEncoder Bean 검증
+  - 공개/보호된 엔드포인트 접근 제어 검증
+  - CSRF, 세션 관리, 예외 처리 설정 검증
+
+- **컨트롤러 테스트**: 각 엔드포인트의 동작 검증
+  - HomeController: 홈, 사용자, 관리자 페이지
+  - LoginController: 로그인 페이지 및 파라미터 처리
+  - UserController: 회원가입, 프로필, 관리자 기능
+
+- **서비스 테스트**: 비즈니스 로직 검증
+  - UserService: 사용자 등록, 조회, 수정, 삭제
+  - CustomUserDetailsService: 사용자 인증 정보 로드
+
+- **통합 테스트**: 전체 플로우 검증
+  - SecurityIntegrationTest: 보안 설정 통합 검증
+  - LoginIntegrationTest: 로그인 프로세스 및 비밀번호 암호화 검증
+  - UserIntegrationTest: 사용자 관리 통합 검증
 
 ### 테스트 구조
 
@@ -317,6 +356,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 ```
 src/test/java/com/sleekydz86/sever/
+├── global/
+│   ├── config/
+│   │   └── SecurityConfigTest.java      # SecurityConfig 설정 테스트
+│   └── security/
+│       ├── CustomUserDetailsServiceTest.java
+│       └── PasswordEncryptionTest.java
 ├── model/
 │   ├── domain/
 │   │   └── UserTest.java
@@ -324,16 +369,57 @@ src/test/java/com/sleekydz86/sever/
 │   │   └── UserServiceTest.java
 │   └── presentation/controller/
 │       ├── HomeControllerTest.java
-│       └── LoginControllerTest.java
-├── global/security/
-│   └── CustomUserDetailsServiceTest.java
+│       ├── LoginControllerTest.java
+│       └── UserControllerTest.java
 └── integration/
-    └── SecurityIntegrationTest.java
+    ├── SecurityIntegrationTest.java
+    ├── LoginIntegrationTest.java
+    └── UserIntegrationTest.java
 ```
 
 ### Spring Security 테스트
 
 Spring Security Test를 사용한 인증/인가 테스트 예시:
+
+#### 1. SecurityConfig 테스트
+
+```java
+@SpringBootTest
+@AutoConfigureMockMvc
+class SecurityConfigTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Test
+    @DisplayName("PasswordEncoder - DelegatingPasswordEncoder 사용")
+    void testPasswordEncoder_DelegatingPasswordEncoder() {
+        assertNotNull(passwordEncoder);
+        assertTrue(passwordEncoder.getClass().getSimpleName()
+                  .contains("DelegatingPasswordEncoder"));
+    }
+
+    @Test
+    @DisplayName("공개 엔드포인트 접근 - /users/register")
+    void testPublicEndpoint_Register() throws Exception {
+        mockMvc.perform(get("/users/register"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("관리자 전용 엔드포인트 - /users/list (ADMIN 권한 필요)")
+    @WithMockUser(username = "user", roles = {"USER"})
+    void testAdminEndpoint_UserList_WithUserRole() throws Exception {
+        mockMvc.perform(get("/users/list"))
+                .andExpect(status().isForbidden());
+    }
+}
+```
+
+#### 2. 컨트롤러 테스트
 
 ```java
 @WebMvcTest(HomeController.class)
@@ -355,6 +441,29 @@ class HomeControllerTest {
     void testAdminPage_WithUserRole_AccessDenied() throws Exception {
         mockMvc.perform(get("/admin"))
                 .andExpect(status().isForbidden());
+    }
+}
+```
+
+#### 3. 통합 테스트
+
+```java
+@SpringBootTest
+@AutoConfigureMockMvc
+class SecurityIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("로그인 처리 - PasswordEncoder로 비밀번호 검증")
+    void testLogin_WithPasswordEncoder() throws Exception {
+        mockMvc.perform(post("/login")
+                        .param("username", "user")
+                        .param("password", "password")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/home"));
     }
 }
 ```
