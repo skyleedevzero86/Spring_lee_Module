@@ -12,16 +12,25 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/home";
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+            return "redirect:/home";
+        }
+        return "redirect:/login";
     }
 
     @GetMapping("/home")
     public String homePage(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        model.addAttribute("username", auth != null ? auth.getName() : "Guest");
-        model.addAttribute("authorities", auth != null ? auth.getAuthorities() : null);
+        
+        if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
 
-        boolean hasAdminRole = auth != null && auth.getAuthorities().stream()
+        model.addAttribute("username", auth.getName());
+        model.addAttribute("authorities", auth.getAuthorities());
+
+        boolean hasAdminRole = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         model.addAttribute("hasAdminRole", hasAdminRole);
 

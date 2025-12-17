@@ -22,13 +22,19 @@ public class DataInitializer implements CommandLineRunner {
             String encodedPassword = passwordEncoder.encode("password");
             userMapper.executeUserProcedure("C", null, "user", encodedPassword, true, "ROLE_USER");
         }
-        if (userMapper.findByUsername("admin") == null) {
+        
+        Long adminUserId = userMapper.findUserIdByUsername("admin");
+        if (adminUserId == null) {
             String encodedPassword = passwordEncoder.encode("admin");
             userMapper.executeUserProcedure("C", null, "admin", encodedPassword, true, "ROLE_ADMIN");
-            Long userId = userMapper.findUserIdByUsername("admin");
-            if (userId != null) {
-                userMapper.insertAuthority(userId, "ROLE_USER");
+            adminUserId = userMapper.findUserIdByUsername("admin");
+            if (adminUserId != null) {
+                userMapper.insertAuthority(adminUserId, "ROLE_USER");
             }
+        } else {
+            String encodedPassword = passwordEncoder.encode("admin");
+            userMapper.executeUserProcedure("U", adminUserId, "admin", encodedPassword, true, "ROLE_ADMIN");
+            userMapper.insertAuthority(adminUserId, "ROLE_USER");
         }
     }
 }

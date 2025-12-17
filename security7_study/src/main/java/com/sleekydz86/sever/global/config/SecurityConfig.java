@@ -19,11 +19,12 @@ public class SecurityConfig {
                 http
                                 .csrf(csrf -> csrf.disable())
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/", "/home", "/login", "/public/**", "/css/**",
+                                                .requestMatchers("/", "/login", "/public/**", "/css/**",
                                                                 "/js/**", "/users/register")
                                                 .permitAll()
-                                .requestMatchers("/admin/**", "/users/list", "/users/detail/**").hasRole("ADMIN")
-                                .requestMatchers("/user/**", "/users/**").hasAnyRole("USER", "ADMIN")
+                                                .requestMatchers("/admin/**", "/users/list", "/users/detail/**")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers("/home", "/user/**", "/users/**").authenticated()
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")
@@ -35,7 +36,8 @@ public class SecurityConfig {
                                                 .logoutUrl("/logout")
                                                 .logoutSuccessUrl("/login?logout=true")
                                                 .invalidateHttpSession(true)
-                                                .deleteCookies("JSESSIONID")
+                                                .clearAuthentication(true)
+                                                .deleteCookies("JSESSIONID", "remember-me")
                                                 .permitAll())
                                 .sessionManagement(session -> session
                                                 .maximumSessions(1)
