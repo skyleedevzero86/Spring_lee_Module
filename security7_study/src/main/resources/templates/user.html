@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Page</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f5f5;
+      }
+      .navbar {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .navbar a {
+        color: white;
+        text-decoration: none;
+        margin-left: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      .card h1 {
+        color: #3498db;
+        margin-bottom: 20px;
+      }
+      .success {
+        background: #e6f3ff;
+        color: #3498db;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+      <h1>Security 7 Study - User</h1>
+      <div>
+        <a th:href="@{/home}">Home</a>
+        <a th:href="@{/logout}">Logout</a>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <h1>User Page</h1>
+        <div class="success">
+          <p>Welcome, <strong th:text="${username}"></strong>!</p>
+          <p>You have successfully accessed the USER page.</p>
+          <p>Your role: <strong th:text="${role}"></strong></p>
+        </div>
+        <a th:href="@{/home}" class="btn">Back to Home</a>
+      </div>
+    </div>
+  </body>
+</html>

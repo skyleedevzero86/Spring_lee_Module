@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 정보</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            margin-bottom: 15px;
+        }
+        .info-item strong {
+            color: #667eea;
+            display: inline-block;
+            width: 120px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            margin-top: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .authorities {
+            list-style: none;
+            padding: 0;
+        }
+        .authorities li {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin: 5px 5px 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Security 7 Study</h1>
+        <div>
+            <a th:href="@{/home}">Home</a>
+            <a th:href="@{/logout}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>내 정보</h2>
+            <div th:if="${user}">
+                <div class="info-item">
+                    <strong>ID:</strong>
+                    <span th:text="${user.id}"></span>
+                </div>
+                <div class="info-item">
+                    <strong>사용자명:</strong>
+                    <span th:text="${user.username}"></span>
+                </div>
+                <div class="info-item">
+                    <strong>상태:</strong>
+                    <span th:text="${user.enabled ? '활성' : '비활성'}"></span>
+                </div>
+                <div class="info-item">
+                    <strong>권한:</strong>
+                    <ul class="authorities" th:if="${user.authorities}">
+                        <li th:each="auth : ${user.authorities}" th:text="${auth}"></li>
+                    </ul>
+                </div>
+            </div>
+            <a th:href="@{/users/edit}" class="btn">정보 수정</a>
+            <form th:action="@{/users/delete}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('정말 탈퇴하시겠습니까?')">탈퇴</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

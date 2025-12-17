@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sleekydz86.sever.model.infrastructure.persistence.UserMapper">
+
+    <resultMap id="userResultMap" type="com.sleekydz86.sever.model.domain.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="enabled" column="enabled"/>
+        <collection property="authorities" ofType="string" javaType="list">
+            <result column="authority"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="userListViewResultMap" type="map">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="enabled" column="enabled"/>
+        <result property="authorities" column="authorities"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findByUsername" resultMap="userResultMap">
+        SELECT u.id, u.username, u.password, u.enabled, a.authority
+        FROM users u
+        LEFT JOIN authorities a ON u.id = a.user_id
+        WHERE u.username = #{username}
+    </select>
+
+    <select id="findAuthoritiesByUsername" resultType="string">
+        SELECT a.authority
+        FROM authorities a
+        INNER JOIN users u ON a.user_id = u.id
+        WHERE u.username = #{username}
+    </select>
+
+    <select id="findUserIdByUsername" resultType="long">
+        SELECT id FROM users WHERE username = #{username}
+    </select>
+
+    <select id="findUserById" resultMap="userResultMap">
+        SELECT u.id, u.username, u.password, u.enabled, a.authority
+        FROM users u
+        LEFT JOIN authorities a ON u.id = a.user_id
+        WHERE u.id = #{id}
+    </select>
+
+    <select id="findUserByIdOrUsername" resultMap="userResultMap">
+        SELECT u.id, u.username, u.password, u.enabled, a.authority
+        FROM users u
+        LEFT JOIN authorities a ON u.id = a.user_id
+        WHERE (u.id = #{id} OR #{id} IS NULL)
+          AND (u.username = #{username} OR #{username} IS NULL)
+        ORDER BY u.id
+        LIMIT 1
+    </select>
+
+    <select id="findAllUsersFromView" resultMap="userListViewResultMap">
+        SELECT id, username, password, enabled, authorities, created_at, updated_at
+        FROM v_user_list
+        ORDER BY id DESC
+    </select>
+
+    <select id="searchUsersFromView" resultMap="userListViewResultMap">
+        SELECT id, username, password, enabled, authorities, created_at, updated_at
+        FROM v_user_list
+        WHERE username LIKE CONCAT('%', #{keyword}, '%')
+           OR id LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id DESC
+    </select>
+
+    <insert id="insertUser">
+        INSERT INTO users (username, password, enabled)
+        VALUES (#{username}, #{password}, #{enabled})
+    </insert>
+
+    <insert id="insertAuthority">
+        INSERT INTO authorities (user_id, authority)
+        VALUES (#{userId}, #{authority})
+    </insert>
+
+    <select id="executeUserProcedure" statementType="CALLABLE">
+        {CALL sp_user_management(
+            #{operation, mode=IN, jdbcType=VARCHAR},
+            #{id, mode=IN, jdbcType=BIGINT},
+            #{username, mode=IN, jdbcType=VARCHAR},
+            #{password, mode=IN, jdbcType=VARCHAR},
+            #{enabled, mode=IN, jdbcType=BOOLEAN},
+            #{authority, mode=IN, jdbcType=VARCHAR}
+        )}
+    </select>
+
+</mapper>
