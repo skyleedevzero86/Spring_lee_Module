@@ -20,6 +20,11 @@ public class HomeController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         model.addAttribute("username", auth != null ? auth.getName() : "Guest");
         model.addAttribute("authorities", auth != null ? auth.getAuthorities() : null);
+
+        boolean hasAdminRole = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        model.addAttribute("hasAdminRole", hasAdminRole);
+
         return "home";
     }
 
@@ -46,4 +51,3 @@ public class HomeController {
         return "access-denied";
     }
 }
-

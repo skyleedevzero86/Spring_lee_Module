@@ -118,8 +118,9 @@
         <a th:href="@{/users/profile}" class="btn">내 정보</a>
         <a th:href="@{/user}" class="btn">User Page</a>
         <a th:href="@{/admin}" class="btn">Admin Page</a>
-        <a th:if="${authorities != null and #lists.contains(authorities, T(org.springframework.security.core.authority.SimpleGrantedAuthority).forName('ROLE_ADMIN'))}" 
-           th:href="@{/users/list}" class="btn">회원 관리</a>
+        <a th:if="${hasAdminRole}" th:href="@{/users/list}" class="btn"
+          >회원 관리</a
+        >
       </div>
     </div>
   </body>
