@@ -368,6 +368,7 @@ class HomeControllerTest {
 
 - [Spring Security 7 Release Notes](https://github.com/spring-projects/spring-security/releases)
 - [Spring Security 7 What's New](https://docs.spring.io/spring-security/reference/whats-new.html)
+- [개발을 하면서 Spring Security 7 변경후 느낀점](https://velog.io/@sleekydevzero86/spring-security-7-lambda-mfa)
 - [Spring Security Reference Documentation](https://docs.spring.io/spring-security/reference/index.html)
 
 ## 라이선스
