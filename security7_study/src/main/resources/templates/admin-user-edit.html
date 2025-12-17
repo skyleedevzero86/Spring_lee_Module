@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 정보 수정</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        .navbar {
+            background: #001f3f;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        input[type="text"],
+        input[type="checkbox"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #001f3f;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #001f3f;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            margin-top: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .error {
+            color: #e74c3c;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .message {
+            color: #27ae60;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .info {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Security 7 Study - 회원 정보 수정</h1>
+        <div>
+            <a th:href="@{/users/list}">목록</a>
+            <a th:href="@{/home}">홈</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>회원 정보 수정</h2>
+
+            <div th:if="${error}" class="error" th:text="${error}"></div>
+            <div th:if="${message}" class="message" th:text="${message}"></div>
+
+            <form th:action="@{/users/edit/{id}(id=${user.id})}" method="post">
+                <div class="form-group">
+                    <div class="info">ID: <strong th:text="${user.id}"></strong></div>
+                </div>
+                <div class="form-group">
+                    <div class="info">사용자명: <strong th:text="${user.username}"></strong></div>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" name="enabled" th:checked="${user.enabled}" value="true">
+                        <span>계정 활성화</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="authority">주요 권한 (기존 권한은 삭제되고 선택한 권한으로 교체됩니다)</label>
+                    <select id="authority" name="authority">
+                        <option value="">권한 변경 안 함</option>
+                        <option value="ROLE_USER" th:selected="${user.authorities != null and user.authorities.contains('ROLE_USER') and !user.authorities.contains('ROLE_ADMIN')}">ROLE_USER</option>
+                        <option value="ROLE_ADMIN" th:selected="${user.authorities != null and user.authorities.contains('ROLE_ADMIN')}">ROLE_ADMIN</option>
+                    </select>
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        현재 권한: 
+                        <span th:each="auth, iterStat : ${user.authorities}" th:text="${auth} + (${!iterStat.last} ? ', ' : '')"></span>
+                    </small>
+                </div>
+                <button type="submit" class="btn">수정</button>
+                <a th:href="@{/users/detail/{id}(id=${user.id})}" class="btn">취소</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

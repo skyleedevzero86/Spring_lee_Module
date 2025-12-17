@@ -5,6 +5,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class DataInitializer implements CommandLineRunner {
 
@@ -33,8 +35,18 @@ public class DataInitializer implements CommandLineRunner {
             }
         } else {
             String encodedPassword = passwordEncoder.encode("admin");
-            userMapper.executeUserProcedure("U", adminUserId, "admin", encodedPassword, true, "ROLE_ADMIN");
-            userMapper.insertAuthority(adminUserId, "ROLE_USER");
+            userMapper.executeUserProcedure("U", adminUserId, "admin", encodedPassword, true, null);
+            
+            List<String> existingAuthorities = userMapper.findAuthoritiesByUsername("admin");
+            boolean hasAdminRole = existingAuthorities != null && existingAuthorities.contains("ROLE_ADMIN");
+            boolean hasUserRole = existingAuthorities != null && existingAuthorities.contains("ROLE_USER");
+            
+            if (!hasAdminRole) {
+                userMapper.insertAuthority(adminUserId, "ROLE_ADMIN");
+            }
+            if (!hasUserRole) {
+                userMapper.insertAuthority(adminUserId, "ROLE_USER");
+            }
         }
     }
 }

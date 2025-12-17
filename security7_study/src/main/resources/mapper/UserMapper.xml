@@ -25,17 +25,17 @@
     </resultMap>
 
     <select id="findByUsername" resultMap="userResultMap">
-        SELECT u.id, u.username, u.password, u.enabled, a.authority
-        FROM users u
-        LEFT JOIN authorities a ON u.id = a.user_id
-        WHERE u.username = #{username}
+        SELECT v.id, v.username, v.password, v.enabled, a.authority
+        FROM v_user_detail v
+        LEFT JOIN authorities a ON v.id = a.user_id
+        WHERE v.username = #{username}
     </select>
 
     <select id="findAuthoritiesByUsername" resultType="string">
         SELECT a.authority
-        FROM authorities a
-        INNER JOIN users u ON a.user_id = u.id
-        WHERE u.username = #{username}
+        FROM v_user_detail v
+        INNER JOIN authorities a ON v.id = a.user_id
+        WHERE v.username = #{username}
     </select>
 
     <select id="findUserIdByUsername" resultType="long">
@@ -43,19 +43,19 @@
     </select>
 
     <select id="findUserById" resultMap="userResultMap">
-        SELECT u.id, u.username, u.password, u.enabled, a.authority
-        FROM users u
-        LEFT JOIN authorities a ON u.id = a.user_id
-        WHERE u.id = #{id}
+        SELECT v.id, v.username, v.password, v.enabled, a.authority
+        FROM v_user_detail v
+        LEFT JOIN authorities a ON v.id = a.user_id
+        WHERE v.id = #{id}
     </select>
 
     <select id="findUserByIdOrUsername" resultMap="userResultMap">
-        SELECT u.id, u.username, u.password, u.enabled, a.authority
-        FROM users u
-        LEFT JOIN authorities a ON u.id = a.user_id
-        WHERE (u.id = #{id} OR #{id} IS NULL)
-          AND (u.username = #{username} OR #{username} IS NULL)
-        ORDER BY u.id
+        SELECT v.id, v.username, v.password, v.enabled, a.authority
+        FROM v_user_detail v
+        LEFT JOIN authorities a ON v.id = a.user_id
+        WHERE (v.id = #{id} OR #{id} IS NULL)
+          AND (v.username = #{username} OR #{username} IS NULL)
+        ORDER BY v.id
         LIMIT 1
     </select>
 
@@ -73,14 +73,21 @@
         ORDER BY id DESC
     </select>
 
-    <insert id="insertUser">
-        INSERT INTO users (username, password, enabled)
-        VALUES (#{username}, #{password}, #{enabled})
-    </insert>
+    <select id="insertUser" statementType="CALLABLE">
+        {CALL sp_user_management(
+            'C',
+            NULL,
+            #{username, mode=IN, jdbcType=VARCHAR},
+            #{password, mode=IN, jdbcType=VARCHAR},
+            #{enabled, mode=IN, jdbcType=BOOLEAN},
+            NULL
+        )}
+    </select>
 
     <insert id="insertAuthority">
         INSERT INTO authorities (user_id, authority)
         VALUES (#{userId}, #{authority})
+        ON DUPLICATE KEY UPDATE authority = authority
     </insert>
 
     <select id="executeUserProcedure" statementType="CALLABLE">

@@ -16,9 +16,9 @@ public interface UserMapper {
 
     Long findUserIdByUsername(String username);
 
-    void insertUser(String username, String password, boolean enabled);
+    void insertUser(@Param("username") String username, @Param("password") String password, @Param("enabled") boolean enabled);
 
-    void insertAuthority(Long userId, String authority);
+    void insertAuthority(@Param("userId") Long userId, @Param("authority") String authority);
 
     void executeUserProcedure(@Param("operation") String operation,
                                @Param("id") Long id,
