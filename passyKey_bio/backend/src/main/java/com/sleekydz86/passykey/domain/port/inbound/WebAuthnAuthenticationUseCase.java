@@ -5,7 +5,7 @@ import com.webauthn4j.data.PublicKeyCredentialRequestOptions;
 import jakarta.servlet.http.HttpSession;
 
 public interface WebAuthnAuthenticationUseCase {
-    PublicKeyCredentialRequestOptions createAuthenticationOptions(User user, HttpSession session);
+    PublicKeyCredentialRequestOptions createAuthenticationOptions(User user, HttpSession session, String rpId);
     User authenticate(String credentialId, String authenticatorDataBase64,
                      String clientDataJSONBase64, String signatureBase64,
                      String userHandle, HttpSession session);

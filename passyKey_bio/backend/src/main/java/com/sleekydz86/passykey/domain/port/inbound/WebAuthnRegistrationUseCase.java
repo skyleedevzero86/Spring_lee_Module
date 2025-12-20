@@ -5,9 +5,9 @@ import com.webauthn4j.data.PublicKeyCredentialCreationOptions;
 import jakarta.servlet.http.HttpSession;
 
 public interface WebAuthnRegistrationUseCase {
-    PublicKeyCredentialCreationOptions createRegistrationOptions(User user, HttpSession session);
+    PublicKeyCredentialCreationOptions createRegistrationOptions(User user, HttpSession session, String rpId);
     void registerCredential(User user, String credentialId, String attestationObjectBase64,
-                            String clientDataJSONBase64, String[] transports, HttpSession session);
+                            String clientDataJSONBase64, String[] transports, String label, HttpSession session);
 }
 
 

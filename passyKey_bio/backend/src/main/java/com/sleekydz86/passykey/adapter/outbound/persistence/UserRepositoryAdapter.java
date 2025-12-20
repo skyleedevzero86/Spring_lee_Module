@@ -75,13 +75,18 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
         try {
+            logger.debug("username으로 사용자 조회 시도: {}", username);
             User cachedUser = userCacheService.getUserFromCache(username);
             if (cachedUser != null) {
+                logger.debug("캐시에서 사용자 찾음: {}", username);
                 return Optional.of(cachedUser);
             }
             User user = userMapper.selectByUsername(username);
             if (user != null) {
+                logger.debug("데이터베이스에서 사용자 찾음: {} (display_name: {})", username, user.getDisplayName());
                 userCacheService.cacheUser(username, user);
+            } else {
+                logger.debug("데이터베이스에서 사용자 찾지 못함: {}", username);
             }
             return Optional.ofNullable(user);
         } catch (DataAccessException e) {
@@ -110,6 +115,24 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
             return Optional.ofNullable(user);
         } catch (DataAccessException e) {
             logger.error("사용자 핸들로 조회 중 데이터베이스 오류 발생: {}", userHandle, e);
+            throw new RuntimeException("사용자 조회 실패", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> findByDisplayName(String displayName) {
+        try {
+            logger.debug("display_name으로 사용자 조회 시도: {}", displayName);
+            User user = userMapper.selectByDisplayName(displayName);
+            if (user != null) {
+                logger.debug("display_name으로 사용자 찾음: {} (username: {})", displayName, user.getUsername());
+            } else {
+                logger.debug("display_name으로 사용자 찾지 못함: {}", displayName);
+            }
+            return Optional.ofNullable(user);
+        } catch (DataAccessException e) {
+            logger.error("표시 이름으로 사용자 조회 중 데이터베이스 오류 발생: {}", displayName, e);
             throw new RuntimeException("사용자 조회 실패", e);
         }
     }

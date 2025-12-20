@@ -20,6 +20,8 @@ public interface UserMyBatisMapper {
 
     User selectByUserHandle(String userHandle);
 
+    User selectByDisplayName(String displayName);
+
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);

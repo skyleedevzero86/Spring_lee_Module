@@ -32,7 +32,15 @@ public final class ClientDataJSONParser {
         try {
             String clientDataJSONString = new String(clientDataJSONBytes, StandardCharsets.UTF_8);
             JsonNode jsonNode = objectMapper.readTree(clientDataJSONString);
-            return jsonNode.get("origin").asText();
+            String origin = jsonNode.get("origin").asText();
+            
+            try {
+                java.net.URL url = new java.net.URL(origin);
+                return url.getHost();
+            } catch (Exception e) {
+                logger.debug("Origin URL 파싱 실패, 원본 반환: {}", origin);
+                return origin;
+            }
         } catch (Exception e) {
             logger.error("clientDataJSON에서 Origin 추출 실패", e);
             throw new RuntimeException("Origin 추출 실패: " + e.getMessage(), e);

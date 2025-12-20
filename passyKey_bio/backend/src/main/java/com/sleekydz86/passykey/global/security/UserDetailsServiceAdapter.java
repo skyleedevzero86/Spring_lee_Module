@@ -20,7 +20,11 @@ public class UserDetailsServiceAdapter implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userUseCase.findByUsername(username);
+        try {
+            return userUseCase.findByUsernameOrEmail(username);
+        } catch (com.sleekydz86.passykey.global.exception.UserNotFoundException e) {
+            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username, e);
+        }
     }
 }
 

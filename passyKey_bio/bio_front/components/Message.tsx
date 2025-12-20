@@ -9,7 +9,12 @@ interface MessageProps {
 }
 
 export default function Message({ message, type, onClose }: MessageProps) {
-  const [visible, setVisible] = useState(!!message);
+  const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (message) {
@@ -24,7 +29,7 @@ export default function Message({ message, type, onClose }: MessageProps) {
     }
   }, [message, onClose]);
 
-  if (!visible || !message) return null;
+  if (!mounted || !visible || !message) return null;
 
   return (
     <div className={`message ${type}`}>

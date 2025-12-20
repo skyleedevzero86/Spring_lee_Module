@@ -153,7 +153,14 @@ export default function RegisterPage() {
         showPasskeyMessage(registerResult.message || '패스키 등록 실패', 'error');
       }
     } catch (error: any) {
-      showPasskeyMessage('패스키 등록 실패: ' + (error.message || '알 수 없는 오류'), 'error');
+      let errorMessage = error.message || '알 수 없는 오류';
+      
+      if (errorMessage.includes('not allowed by the user agent') || 
+          errorMessage.includes('user denied permission')) {
+        errorMessage = '생체 인증이 거부되었습니다. 브라우저 설정에서 생체 인증 권한을 확인하거나, 다른 인증 방법을 시도해주세요.';
+      }
+      
+      showPasskeyMessage('패스키 등록 실패: ' + errorMessage, 'error');
     }
   };
 

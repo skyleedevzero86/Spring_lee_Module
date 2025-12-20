@@ -37,3 +37,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# well-known
+.well-known/
+public/.well-known/
+

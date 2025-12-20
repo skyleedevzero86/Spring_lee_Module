@@ -66,9 +66,31 @@ public class UserUseCaseImpl implements UserUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("이메일로 사용자를 찾을 수 없습니다: " + email));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User findByUsernameOrEmail(String identifier) {
+        return userRepository.findByUsername(identifier)
+                .or(() -> userRepository.findByEmail(identifier))
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다: " + identifier));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public User findByUserHandle(String userHandle) {
         return userRepository.findByUserHandle(userHandle)
                 .orElseThrow(() -> new UserNotFoundException("핸들로 사용자를 찾을 수 없습니다: " + userHandle));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User findByDisplayName(String displayName) {
+        return userRepository.findByDisplayName(displayName)
+                .orElseThrow(() -> new UserNotFoundException("표시 이름으로 사용자를 찾을 수 없습니다: " + displayName));
     }
 
     @Override

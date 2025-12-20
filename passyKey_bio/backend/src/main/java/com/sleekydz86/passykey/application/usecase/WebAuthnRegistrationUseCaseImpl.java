@@ -48,19 +48,32 @@ public class WebAuthnRegistrationUseCaseImpl implements WebAuthnRegistrationUseC
     }
 
     @Override
-    public PublicKeyCredentialCreationOptions createRegistrationOptions(User user, HttpSession session) {
+    public PublicKeyCredentialCreationOptions createRegistrationOptions(User user, HttpSession session, String rpId) {
         String sessionId = session.getId();
         Challenge challenge = challengeService.generateAndStoreChallenge(
                 sessionId, WebAuthnConstants.CHALLENGE_TYPE_REGISTRATION);
 
+        String effectiveRpId = determineRpId(rpId);
         return optionsFactory.createRegistrationOptions(
-                user, challenge, configPort.getRpId(), configPort.getRpName());
+                user, challenge, effectiveRpId, configPort.getRpName());
+    }
+
+    private String determineRpId(String requestHost) {
+        if (requestHost != null && !requestHost.isEmpty()) {
+            if (requestHost.contains(".ngrok.io") || requestHost.contains(".ngrok-free.app")) {
+                return requestHost;
+            }
+            if (!requestHost.equals("localhost") && !requestHost.startsWith("localhost:")) {
+                return requestHost;
+            }
+        }
+        return configPort.getRpId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void registerCredential(User user, String credentialId, String attestationObjectBase64,
-                                   String clientDataJSONBase64, String[] transports, HttpSession session) {
+                                   String clientDataJSONBase64, String[] transports, String label, HttpSession session) {
         try {
             byte[] attestationObjectBytes = Base64UrlConverter.decode(attestationObjectBase64);
             byte[] clientDataJSONBytes = Base64UrlConverter.decode(clientDataJSONBase64);
@@ -77,13 +90,15 @@ public class WebAuthnRegistrationUseCaseImpl implements WebAuthnRegistrationUseC
 
             Origin origin = ClientDataJSONParser.extractOrigin(clientDataJSONBytes);
             validateOrigin(origin);
+            String originHost = ClientDataJSONParser.extractOriginString(clientDataJSONBytes);
+            String effectiveRpId = determineRpId(originHost);
             ServerProperty serverProperty = verifierPort.createServerProperty(
-                    origin, configPort.getRpId(), challenge);
+                    origin, effectiveRpId, challenge);
 
             verifierPort.verifyRegistration(attestationObjectBytes, clientDataJSONBytes, serverProperty);
             challengeService.removeChallenge(sessionId, WebAuthnConstants.CHALLENGE_TYPE_REGISTRATION);
 
-            saveCredential(user, credentialId, publicKeyCose, transports);
+            saveCredential(user, credentialId, publicKeyCose, transports, label);
             logger.info("사용자 인증서 등록 성공: {}", user.getUsername());
         } catch (WebAuthnException e) {
             throw e;
@@ -118,7 +133,7 @@ public class WebAuthnRegistrationUseCaseImpl implements WebAuthnRegistrationUseC
         throw new WebAuthnException("잘못된 CORS 요청: Origin " + originString + "이(가) 허용되지 않습니다");
     }
 
-    private void saveCredential(User user, String credentialId, byte[] publicKeyCose, String[] transports) {
+    private void saveCredential(User user, String credentialId, byte[] publicKeyCose, String[] transports, String label) {
         String transportsString = transports != null
                 ? String.join(WebAuthnConstants.TRANSPORT_SEPARATOR, transports)
                 : "";
@@ -130,6 +145,10 @@ public class WebAuthnRegistrationUseCaseImpl implements WebAuthnRegistrationUseC
                 transportsString,
                 user
         );
+        
+        if (label != null && !label.trim().isEmpty()) {
+            credential.setLabel(label.trim());
+        }
 
         credentialRepository.save(credential);
     }

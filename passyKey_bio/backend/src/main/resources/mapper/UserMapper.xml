@@ -69,6 +69,13 @@
         FROM users WHERE user_handle = #{userHandle}
     </select>
 
+    <select id="selectByDisplayName" parameterType="String" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
+        FROM users WHERE display_name = #{displayName}
+    </select>
+
     <select id="selectAll" resultMap="userResultMap">
         SELECT id, username, password, email, display_name, user_handle,
                enabled, account_non_expired, account_non_locked, credentials_non_expired,

@@ -30,10 +30,13 @@ public class WebAuthnOptionsFactoryAdapter implements WebAuthnOptionsFactoryPort
 
                 List<PublicKeyCredentialParameters> pubKeyCredParams = createPublicKeyCredentialParameters();
 
-                AuthenticatorSelectionCriteria authenticatorSelection = new AuthenticatorSelectionCriteria(
-                                AuthenticatorAttachment.PLATFORM,
-                                true,
-                                UserVerificationRequirement.PREFERRED);
+                AuthenticatorSelectionCriteria authenticatorSelection = null;
+                if (!isNgrokDomain(rpId)) {
+                    authenticatorSelection = new AuthenticatorSelectionCriteria(
+                                    AuthenticatorAttachment.PLATFORM,
+                                    true,
+                                    UserVerificationRequirement.PREFERRED);
+                }
 
                 return new PublicKeyCredentialCreationOptions(
                                 rpEntity,
@@ -45,6 +48,10 @@ public class WebAuthnOptionsFactoryAdapter implements WebAuthnOptionsFactoryPort
                                 authenticatorSelection,
                                 AttestationConveyancePreference.NONE,
                                 null);
+        }
+
+        private boolean isNgrokDomain(String rpId) {
+                return rpId != null && (rpId.contains(".ngrok.io") || rpId.contains(".ngrok-free.app"));
         }
 
         @Override

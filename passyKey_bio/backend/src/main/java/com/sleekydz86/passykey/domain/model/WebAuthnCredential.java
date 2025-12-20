@@ -37,8 +37,8 @@ public class WebAuthnCredential {
     }
 
     public void updateCounter(Long newCounter) {
-        if (newCounter <= this.counter) {
-            throw new IllegalArgumentException("카운터는 현재 값보다 커야 합니다");
+        if (newCounter == null) {
+            return;
         }
         this.counter = newCounter;
         updateLastUsed();

@@ -103,7 +103,14 @@ export default function DashboardPage() {
         showMessage(registerResult.message || '패스키 등록 실패', 'error');
       }
     } catch (error: any) {
-      showMessage('패스키 등록 실패: ' + (error.message || '알 수 없는 오류'), 'error');
+      let errorMessage = error.message || '알 수 없는 오류';
+      
+      if (errorMessage.includes('not allowed by the user agent') || 
+          errorMessage.includes('user denied permission')) {
+        errorMessage = '생체 인증이 거부되었습니다. 브라우저 설정에서 생체 인증 권한을 확인하거나, 다른 인증 방법을 시도해주세요.';
+      }
+      
+      showMessage('패스키 등록 실패: ' + errorMessage, 'error');
     }
   };
 
@@ -202,21 +209,27 @@ export default function DashboardPage() {
                 {credentials.length === 0 ? (
                   <p>등록된 패스키가 없습니다.</p>
                 ) : (
-                  credentials.map((cred) => (
-                    <div key={cred.credentialId} className="credential-item">
-                      <div className="credential-info">
-                        <h3>{cred.label || '이름 없는 패스키'}</h3>
-                        <p>생성일: {formatDate(cred.createdAt)}</p>
-                        <p>마지막 사용: {formatDate(cred.lastUsedAt)}</p>
+                  credentials.map((cred, index) => {
+                    const displayLabel = cred.label && cred.label.trim() 
+                      ? cred.label.trim() 
+                      : `패스키 ${index + 1}`;
+                    
+                    return (
+                      <div key={cred.credentialId} className="credential-item">
+                        <div className="credential-info">
+                          <h3>{displayLabel}</h3>
+                          <p>생성일: {formatDate(cred.createdAt)}</p>
+                          <p>마지막 사용: {formatDate(cred.lastUsedAt)}</p>
+                        </div>
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => handleDeleteCredential(cred.credentialId)}
+                        >
+                          삭제
+                        </button>
                       </div>
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => handleDeleteCredential(cred.credentialId)}
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>

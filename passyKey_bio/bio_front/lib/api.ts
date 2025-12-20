@@ -44,7 +44,6 @@ async function fetchApi<T>(
 }
 
 export const api = {
-  // User APIs
   register: async (data: RegisterRequest): Promise<ApiResponse<User>> => {
     return fetchApi<User>('/api/public/register', {
       method: 'POST',
@@ -60,7 +59,6 @@ export const api = {
     return fetchApi<boolean>(`/api/public/check-email?email=${encodeURIComponent(email)}`);
   },
 
-  // WebAuthn Registration APIs
   getRegistrationOptions: async (username?: string): Promise<ApiResponse<any>> => {
     const url = username 
       ? `/api/webauthn/register/options?username=${encodeURIComponent(username)}`
@@ -77,7 +75,6 @@ export const api = {
     });
   },
 
-  // WebAuthn Authentication APIs
   getAuthenticationOptions: async (username?: string): Promise<ApiResponse<any>> => {
     const url = username
       ? `/api/webauthn/authenticate/options?username=${encodeURIComponent(username)}`
@@ -94,7 +91,6 @@ export const api = {
     });
   },
 
-  // Credential Management APIs
   getCredentials: async (): Promise<ApiResponse<WebAuthnCredential[]>> => {
     return fetchApi<WebAuthnCredential[]>('/api/webauthn/credentials', {
       method: 'GET',
@@ -107,7 +103,6 @@ export const api = {
     });
   },
 
-  // Auth APIs
   logout: async (): Promise<ApiResponse<void>> => {
     return fetchApi<void>('/api/auth/logout', {
       method: 'POST',

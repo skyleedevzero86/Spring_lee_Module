@@ -43,8 +43,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthenticationException ex) {
         logger.error("인증 예외 발생", ex);
+        String message = ex.getMessage();
+        if (message != null && !message.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("인증 실패: " + translateErrorMessage(message)));
+        }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("인증 실패: " + ex.getMessage()));
+                .body(ApiResponse.error("인증 실패"));
     }
 
     @ExceptionHandler(WebAuthnException.class)
@@ -105,14 +110,64 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Void>> handleRuntimeException(RuntimeException ex) {
         logger.error("런타임 예외 발생", ex);
+        String message = ex.getMessage();
+        if (message != null && (message.contains("등록 검증 실패") || message.contains("인증 검증 실패") ||
+                message.contains("사용자 저장 실패") || message.contains("사용자 조회 실패") ||
+                message.contains("Origin 추출 실패") || message.contains("clientDataJSON"))) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(message));
+        }
+        if (message != null && !message.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("오류가 발생했습니다: " + translateErrorMessage(message)));
+        }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("오류가 발생했습니다: " + ex.getMessage()));
+                .body(ApiResponse.error("오류가 발생했습니다"));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
         logger.error("예상치 못한 예외 발생", ex);
+        String message = ex.getMessage();
+        if (message != null && !message.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("예상치 못한 오류가 발생했습니다: " + translateErrorMessage(message)));
+        }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("예상치 못한 오류가 발생했습니다"));
+    }
+
+    private String translateErrorMessage(String message) {
+        if (message == null) {
+            return "알 수 없는 오류";
+        }
+        if (message.contains("challenge") || message.contains("Challenge")) {
+            return message.replace("challenge", "챌린지").replace("Challenge", "챌린지");
+        }
+        if (message.contains("origin") || message.contains("Origin")) {
+            return message.replace("origin", "출처").replace("Origin", "출처");
+        }
+        if (message.contains("signature") || message.contains("Signature")) {
+            return message.replace("signature", "서명").replace("Signature", "서명");
+        }
+        if (message.contains("credential") || message.contains("Credential")) {
+            return message.replace("credential", "인증서").replace("Credential", "인증서");
+        }
+        if (message.contains("verification") || message.contains("Verification")) {
+            return message.replace("verification", "검증").replace("Verification", "검증");
+        }
+        if (message.contains("validation") || message.contains("Validation")) {
+            return message.replace("validation", "유효성 검사").replace("Validation", "유효성 검사");
+        }
+        if (message.contains("invalid") || message.contains("Invalid")) {
+            return message.replace("invalid", "잘못된").replace("Invalid", "잘못된");
+        }
+        if (message.contains("failed") || message.contains("Failed")) {
+            return message.replace("failed", "실패").replace("Failed", "실패");
+        }
+        if (message.contains("error") || message.contains("Error")) {
+            return message.replace("error", "오류").replace("Error", "오류");
+        }
+        return message;
     }
 }

@@ -100,9 +100,16 @@ export function convertCredentials(credentials: any[]): any[] {
   });
 }
 
+function isNgrokEnvironment(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.location.hostname.includes('.ngrok.io') || 
+         window.location.hostname.includes('.ngrok-free.app');
+}
+
 export function prepareRegistrationOptions(options: any): any {
   const prepared = { ...options };
   const isMobile = isMobileDevice();
+  const isNgrok = isNgrokEnvironment();
   
   if (prepared.challenge) {
     prepared.challenge = convertChallenge(prepared.challenge);
@@ -122,7 +129,7 @@ export function prepareRegistrationOptions(options: any): any {
     }
   }
   
-  if (isMobile) {
+  if (isMobile && !isNgrok) {
     if (!prepared.authenticatorSelection) {
       prepared.authenticatorSelection = {};
     }
@@ -131,6 +138,8 @@ export function prepareRegistrationOptions(options: any): any {
     if (prepared.authenticatorSelection.requireResidentKey === undefined) {
       prepared.authenticatorSelection.requireResidentKey = true;
     }
+  } else if (isMobile && isNgrok) {
+    delete prepared.authenticatorSelection;
   }
   
   return prepared;
@@ -139,6 +148,7 @@ export function prepareRegistrationOptions(options: any): any {
 export function prepareAuthenticationOptions(options: any): any {
   const prepared = { ...options };
   const isMobile = isMobileDevice();
+  const isNgrok = isNgrokEnvironment();
   
   if (prepared.challenge) {
     prepared.challenge = convertChallenge(prepared.challenge);
@@ -154,7 +164,12 @@ export function prepareAuthenticationOptions(options: any): any {
     }
   }
   
-  if (isMobile) {
+  if (isMobile && isNgrok) {
+    prepared.userVerification = 'preferred';
+    if (prepared.timeout === undefined || prepared.timeout < 60000) {
+      prepared.timeout = 60000;
+    }
+  } else if (isMobile) {
     prepared.userVerification = 'required';
   }
   

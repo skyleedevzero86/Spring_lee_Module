@@ -57,7 +57,8 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
                 try {
                         webAuthnManager.validate(registrationRequest, registrationParameters);
                 } catch (WebAuthnException e) {
-                        throw new RuntimeException("등록 검증 실패: " + e.getMessage(), e);
+                        String errorMessage = translateErrorMessage(e.getMessage());
+                        throw new RuntimeException("등록 검증 실패: " + errorMessage, e);
                 }
         }
 
@@ -107,7 +108,8 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
                                         .build();
                 } catch (WebAuthnException e) {
                         logger.error("WebAuthn 검증 실패", e);
-                        throw new RuntimeException("인증 검증 실패: " + e.getMessage(), e);
+                        String errorMessage = translateErrorMessage(e.getMessage());
+                        throw new RuntimeException("인증 검증 실패: " + errorMessage, e);
                 }
         }
 
@@ -164,5 +166,39 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
                 parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY,
                                 com.webauthn4j.data.attestation.statement.COSEAlgorithmIdentifier.create(-39)));
                 return parameters;
+        }
+
+        private String translateErrorMessage(String message) {
+                if (message == null) {
+                        return "알 수 없는 오류";
+                }
+                if (message.contains("challenge") || message.contains("Challenge")) {
+                        return message.replace("challenge", "챌린지").replace("Challenge", "챌린지");
+                }
+                if (message.contains("origin") || message.contains("Origin")) {
+                        return message.replace("origin", "출처").replace("Origin", "출처");
+                }
+                if (message.contains("signature") || message.contains("Signature")) {
+                        return message.replace("signature", "서명").replace("Signature", "서명");
+                }
+                if (message.contains("credential") || message.contains("Credential")) {
+                        return message.replace("credential", "인증서").replace("Credential", "인증서");
+                }
+                if (message.contains("verification") || message.contains("Verification")) {
+                        return message.replace("verification", "검증").replace("Verification", "검증");
+                }
+                if (message.contains("validation") || message.contains("Validation")) {
+                        return message.replace("validation", "유효성 검사").replace("Validation", "유효성 검사");
+                }
+                if (message.contains("invalid") || message.contains("Invalid")) {
+                        return message.replace("invalid", "잘못된").replace("Invalid", "잘못된");
+                }
+                if (message.contains("failed") || message.contains("Failed")) {
+                        return message.replace("failed", "실패").replace("Failed", "실패");
+                }
+                if (message.contains("error") || message.contains("Error")) {
+                        return message.replace("error", "오류").replace("Error", "오류");
+                }
+                return message;
         }
 }

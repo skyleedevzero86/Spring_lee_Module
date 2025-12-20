@@ -63,13 +63,26 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
     }
 
     @Override
-    public PublicKeyCredentialRequestOptions createAuthenticationOptions(User user, HttpSession session) {
+    public PublicKeyCredentialRequestOptions createAuthenticationOptions(User user, HttpSession session, String rpId) {
         String sessionId = session.getId();
         Challenge challenge = challengeService.generateAndStoreChallenge(
                 sessionId, WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
 
         List<WebAuthnCredential> credentials = credentialRepository.findByUser(user);
-        return optionsFactory.createAuthenticationOptions(challenge, configPort.getRpId(), credentials);
+        String effectiveRpId = determineRpId(rpId);
+        return optionsFactory.createAuthenticationOptions(challenge, effectiveRpId, credentials);
+    }
+
+    private String determineRpId(String requestHost) {
+        if (requestHost != null && !requestHost.isEmpty()) {
+            if (requestHost.contains(".ngrok.io") || requestHost.contains(".ngrok-free.app")) {
+                return requestHost;
+            }
+            if (!requestHost.equals("localhost") && !requestHost.startsWith("localhost:")) {
+                return requestHost;
+            }
+        }
+        return configPort.getRpId();
     }
 
     @Override
@@ -142,7 +155,9 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
 
             Origin origin = ClientDataJSONParser.extractOrigin(clientDataJSONBytes);
             validateOrigin(origin);
-            ServerProperty serverProperty = verifierPort.createServerProperty(origin, configPort.getRpId(), challenge);
+            String originHost = ClientDataJSONParser.extractOriginString(clientDataJSONBytes);
+            String effectiveRpId = determineRpId(originHost);
+            ServerProperty serverProperty = verifierPort.createServerProperty(origin, effectiveRpId, challenge);
 
             byte[] credentialIdBytes = urlDecoder.decode(credentialId);
             ObjectConverter objectConverter = new ObjectConverter();

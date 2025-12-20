@@ -8,14 +8,19 @@ import com.sleekydz86.passykey.domain.port.inbound.CredentialManagementUseCase;
 import com.sleekydz86.passykey.domain.port.inbound.UserUseCase;
 import com.sleekydz86.passykey.domain.port.inbound.WebAuthnAuthenticationUseCase;
 import com.sleekydz86.passykey.domain.port.inbound.WebAuthnRegistrationUseCase;
+import com.sleekydz86.passykey.domain.port.outbound.ChallengeServicePort;
+import com.sleekydz86.passykey.domain.port.outbound.WebAuthnOptionsFactoryPort;
+import com.sleekydz86.passykey.global.constants.WebAuthnConstants;
 import com.webauthn4j.data.PublicKeyCredentialCreationOptions;
 import com.webauthn4j.data.PublicKeyCredentialRequestOptions;
+import com.webauthn4j.data.client.challenge.Challenge;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -26,16 +31,22 @@ public class WebAuthnController extends BaseController {
     private final WebAuthnRegistrationUseCase registrationUseCase;
     private final WebAuthnAuthenticationUseCase authenticationUseCase;
     private final CredentialManagementUseCase credentialManagementUseCase;
+    private final ChallengeServicePort challengeService;
+    private final WebAuthnOptionsFactoryPort optionsFactory;
 
     public WebAuthnController(
             UserUseCase userUseCase,
             WebAuthnRegistrationUseCase registrationUseCase,
             WebAuthnAuthenticationUseCase authenticationUseCase,
-            CredentialManagementUseCase credentialManagementUseCase) {
+            CredentialManagementUseCase credentialManagementUseCase,
+            ChallengeServicePort challengeService,
+            WebAuthnOptionsFactoryPort optionsFactory) {
         super(userUseCase);
         this.registrationUseCase = registrationUseCase;
         this.authenticationUseCase = authenticationUseCase;
         this.credentialManagementUseCase = credentialManagementUseCase;
+        this.challengeService = challengeService;
+        this.optionsFactory = optionsFactory;
     }
 
     @PostMapping("/register/options")
@@ -52,13 +63,50 @@ public class WebAuthnController extends BaseController {
                 }
                 user = getUserByUsernameOrAuthenticated(username);
             }
+
+            String origin = request.getHeader("Origin");
+            String rpId = extractHostFromOrigin(origin, request);
+
             PublicKeyCredentialCreationOptions options = registrationUseCase.createRegistrationOptions(
-                    user, request.getSession());
+                    user, request.getSession(), rpId);
             return successResponse("등록 옵션 생성 완료", options);
         } catch (Exception e) {
             logger.error("등록 옵션 생성 실패", e);
             return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "등록 옵션 생성 실패: " + e.getMessage());
         }
+    }
+
+    private String extractHostFromOrigin(String origin, HttpServletRequest request) {
+        if (origin != null && !origin.isEmpty()) {
+            try {
+                java.net.URL url = new java.net.URL(origin);
+                return url.getHost();
+            } catch (Exception e) {
+                logger.debug("Origin에서 호스트 추출 실패: {}", origin);
+            }
+        }
+
+        String host = request.getHeader("Host");
+        if (host != null && !host.isEmpty()) {
+            if (host.contains(":")) {
+                return host.split(":")[0];
+            }
+            return host;
+        }
+
+        return request.getServerName();
+    }
+
+    private String determineRpId(String requestHost) {
+        if (requestHost != null && !requestHost.isEmpty()) {
+            if (requestHost.contains(".ngrok.io") || requestHost.contains(".ngrok-free.app")) {
+                return requestHost;
+            }
+            if (!requestHost.equals("localhost") && !requestHost.startsWith("localhost:")) {
+                return requestHost;
+            }
+        }
+        return "localhost";
     }
 
     @PostMapping("/register")
@@ -77,8 +125,8 @@ public class WebAuthnController extends BaseController {
                     response.getAttestationObject(),
                     response.getClientDataJSON(),
                     response.getTransports(),
-                    httpRequest.getSession()
-            );
+                    publicKey.getLabel(),
+                    httpRequest.getSession());
 
             return successResponse("인증서 등록 성공", Map.of("success", true));
         } catch (Exception e) {
@@ -92,10 +140,50 @@ public class WebAuthnController extends BaseController {
             @RequestParam(required = false) String username,
             HttpServletRequest request) {
         try {
-            User user = getUserByUsernameOrAuthenticated(username);
-            PublicKeyCredentialRequestOptions options = authenticationUseCase.createAuthenticationOptions(
-                    user, request.getSession());
+            User user = null;
+            try {
+                user = getAuthenticatedUser();
+            } catch (IllegalStateException | com.sleekydz86.passykey.global.exception.UserNotFoundException e) {
+                if (username != null && !username.isEmpty()) {
+                    String trimmedUsername = username.trim();
+                    logger.debug("사용자 검색 시도: {}", trimmedUsername);
+                    try {
+                        user = userUseCase.findByUsername(trimmedUsername);
+                        logger.debug("사용자명으로 사용자 찾음: {}", trimmedUsername);
+                    } catch (com.sleekydz86.passykey.global.exception.UserNotFoundException ex) {
+                        logger.debug("사용자명으로 사용자 찾기 실패, display_name으로 시도: {}", trimmedUsername);
+                        try {
+                            user = userUseCase.findByDisplayName(trimmedUsername);
+                            logger.debug("display_name으로 사용자 찾음: {}", trimmedUsername);
+                        } catch (com.sleekydz86.passykey.global.exception.UserNotFoundException ex2) {
+                            logger.warn("인증 옵션 요청 - 존재하지 않는 사용자 (username 또는 display_name): {}", trimmedUsername);
+                            return errorResponse(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + trimmedUsername);
+                        }
+                    }
+                }
+            }
+
+            if (user == null) {
+                logger.debug("사용자가 null이므로 discoverable credentials 옵션 생성");
+            }
+
+            String origin = request.getHeader("Origin");
+            String rpId = extractHostFromOrigin(origin, request);
+
+            PublicKeyCredentialRequestOptions options;
+            if (user != null) {
+                options = authenticationUseCase.createAuthenticationOptions(
+                        user, request.getSession(), rpId);
+            } else {
+                Challenge challenge = challengeService.generateAndStoreChallenge(
+                        request.getSession().getId(), WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
+                String effectiveRpId = determineRpId(rpId);
+                options = optionsFactory.createAuthenticationOptions(challenge, effectiveRpId, Collections.emptyList());
+            }
             return successResponse("인증 옵션 생성 완료", options);
+        } catch (com.sleekydz86.passykey.global.exception.UserNotFoundException e) {
+            logger.warn("인증 옵션 생성 실패 - 사용자 없음: {}", username, e);
+            return errorResponse(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + (username != null ? username : "알 수 없음"));
         } catch (Exception e) {
             logger.error("인증 옵션 생성 실패", e);
             return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "인증 옵션 생성 실패: " + e.getMessage());
