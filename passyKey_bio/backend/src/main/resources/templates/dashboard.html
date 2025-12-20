@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <meta name="description" content="PassyKey 대시보드" />
+    <title>대시보드 - PassyKey</title>
+    <link
+      rel="stylesheet"
+      as="style"
+      crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">본문으로 바로가기</a>
+
+    <header class="header" role="banner">
+      <div class="header__container">
+        <div class="header__logo">
+          <a href="/" aria-label="홈으로 이동">PassyKey</a>
+        </div>
+        <div class="header__utils">
+          <button id="logoutBtn" class="btn btn-secondary">로그아웃</button>
+        </div>
+        <button
+          id="mobileToggle"
+          class="header__mobile-toggle"
+          aria-label="모바일 메뉴 토글"
+          aria-expanded="false"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+      <nav id="mobileMenu" class="header__mobile-menu" aria-hidden="true">
+        <div class="mobile-menu__content">
+          <button id="mobileLogoutBtn" class="btn btn-secondary mobile-menu__btn">로그아웃</button>
+          <button id="mobileAddPasskeyBtn" class="btn btn--primary mobile-menu__btn mobile-add-passkey">새 패스키 추가</button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main-content" role="main">
+      <section class="auth-page">
+        <div class="auth-container" style="max-width: 800px">
+          <div class="auth-header">
+            <h1>대시보드</h1>
+            <p>내 패스키를 관리하세요</p>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-header">
+              <h2>내 패스키</h2>
+              <button id="addPasskeyBtn" class="btn btn--primary dashboard-add-btn">
+                새 패스키 추가
+              </button>
+            </div>
+            <div id="passkeyMessage" class="message"></div>
+            <div id="credentialsList" class="credentials-list"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+      <div class="footer__bottom">
+        <div class="container">
+          <div class="footer__content">
+            <p>© 2025 PassyKey. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script th:src="@{/js/dashboard.js}"></script>
+  </body>
+</html>

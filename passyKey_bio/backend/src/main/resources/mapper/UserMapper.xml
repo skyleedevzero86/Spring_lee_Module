@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.passykey.adapter.outbound.persistence.UserMyBatisMapper">
+
+    <resultMap id="userResultMap" type="User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <result property="displayName" column="display_name"/>
+        <result property="userHandle" column="user_handle"/>
+        <result property="enabled" column="enabled"/>
+        <result property="accountNonExpired" column="account_non_expired"/>
+        <result property="accountNonLocked" column="account_non_locked"/>
+        <result property="credentialsNonExpired" column="credentials_non_expired"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="resultId" keyColumn="id">
+        INSERT INTO users (
+            username, password, email, display_name, user_handle,
+            enabled, account_non_expired, account_non_locked, credentials_non_expired
+        ) VALUES (
+            #{username}, #{password}, #{email}, #{displayName}, #{userHandle},
+            #{enabled}, #{accountNonExpired}, #{accountNonLocked}, #{credentialsNonExpired}
+        )
+    </insert>
+
+    <update id="update" parameterType="map">
+        UPDATE users
+        SET username = #{username},
+            password = #{password},
+            email = #{email},
+            display_name = #{displayName},
+            user_handle = #{userHandle},
+            enabled = #{enabled},
+            account_non_expired = #{accountNonExpired},
+            account_non_locked = #{accountNonLocked},
+            credentials_non_expired = #{credentialsNonExpired}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectById" parameterType="Long" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
+        FROM users WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" parameterType="String" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
+        FROM users WHERE username = #{username}
+    </select>
+
+    <select id="selectByEmail" parameterType="String" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
+        FROM users WHERE email = #{email}
+    </select>
+
+    <select id="selectByUserHandle" parameterType="String" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
+        FROM users WHERE user_handle = #{userHandle}
+    </select>
+
+    <select id="selectAll" resultMap="userResultMap">
+        SELECT id, username, password, email, display_name, user_handle,
+               enabled, account_non_expired, account_non_locked, credentials_non_expired,
+               created_at, updated_at
+        FROM users
+    </select>
+
+    <select id="existsByUsername" parameterType="String" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM users WHERE username = #{username}
+    </select>
+
+    <select id="existsByEmail" parameterType="String" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM users WHERE email = #{email}
+    </select>
+
+</mapper>
