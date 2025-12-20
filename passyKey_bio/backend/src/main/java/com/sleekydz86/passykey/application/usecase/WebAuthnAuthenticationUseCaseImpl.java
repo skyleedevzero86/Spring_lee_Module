@@ -14,6 +14,7 @@ import com.sleekydz86.passykey.global.constants.WebAuthnConstants;
 import com.sleekydz86.passykey.global.exception.ChallengeExpiredException;
 import com.sleekydz86.passykey.global.exception.CredentialNotFoundException;
 import com.sleekydz86.passykey.global.exception.WebAuthnException;
+import com.sleekydz86.passykey.global.util.ClientDataJSONParser;
 import com.webauthn4j.data.PublicKeyCredentialRequestOptions;
 import com.webauthn4j.authenticator.Authenticator;
 import com.webauthn4j.authenticator.AuthenticatorImpl;
@@ -85,11 +86,11 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
             byte[] signatureBytes;
             byte[] publicKeyCoseBytes;
 
-            logger.debug("=== Authentication Debug ===");
+            logger.debug("=== 인증 디버그 ===");
             logger.debug("credentialId: {}", credentialId);
-            logger.debug("clientDataJSONBase64 length: {}",
+            logger.debug("clientDataJSONBase64 길이: {}",
                     clientDataJSONBase64 != null ? clientDataJSONBase64.length() : 0);
-            logger.debug("clientDataJSONBase64 (first 100 chars): {}",
+            logger.debug("clientDataJSONBase64 (처음 100자): {}",
                     clientDataJSONBase64 != null && clientDataJSONBase64.length() > 100
                             ? clientDataJSONBase64.substring(0, 100)
                             : clientDataJSONBase64);
@@ -115,17 +116,17 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
             }
 
             String clientDataJSONString = new String(clientDataJSONBytes, StandardCharsets.UTF_8);
-            logger.info("=== Decoded clientDataJSON ===");
+            logger.info("=== 디코딩된 clientDataJSON ===");
             logger.info("clientDataJSON: {}", clientDataJSONString);
-            logger.info("clientDataBytes length: {}", clientDataJSONBytes.length);
-            logger.info("First 20 bytes: {}", java.util.Arrays.toString(
+            logger.info("clientDataBytes 길이: {}", clientDataJSONBytes.length);
+            logger.info("처음 20바이트: {}", java.util.Arrays.toString(
                     java.util.Arrays.copyOf(clientDataJSONBytes, Math.min(20, clientDataJSONBytes.length))));
 
             if (!clientDataJSONString.trim().startsWith("{")) {
                 logger.error("clientDataJSON이 유효한 JSON이 아닙니다. 첫 문자: '{}', length: {}",
                         clientDataJSONString.length() > 0 ? clientDataJSONString.charAt(0) : "empty",
                         clientDataJSONBytes.length);
-                logger.error("clientDataJSONBytes (first 50 bytes): {}",
+                logger.error("clientDataJSONBytes (처음 50바이트): {}",
                         java.util.Arrays.toString(java.util.Arrays.copyOf(clientDataJSONBytes,
                                 Math.min(50, clientDataJSONBytes.length))));
                 throw new WebAuthnException("clientDataJSON이 유효한 JSON 형식이 아닙니다");
@@ -139,7 +140,8 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
                 throw new ChallengeExpiredException("챌린지를 찾을 수 없거나 만료되었습니다");
             }
 
-            Origin origin = new Origin(configPort.getAllowedOrigins());
+            Origin origin = ClientDataJSONParser.extractOrigin(clientDataJSONBytes);
+            validateOrigin(origin);
             ServerProperty serverProperty = verifierPort.createServerProperty(origin, configPort.getRpId(), challenge);
 
             byte[] credentialIdBytes = urlDecoder.decode(credentialId);
@@ -182,6 +184,27 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
             logger.error("인증 실패", e);
             throw new WebAuthnException("인증 실패: " + e.getMessage(), e);
         }
+    }
+
+    private void validateOrigin(Origin origin) {
+        String allowedOrigins = configPort.getAllowedOrigins();
+        String originString = origin.toString();
+        
+        if (allowedOrigins == null || allowedOrigins.isEmpty()) {
+            return;
+        }
+        
+        String[] allowedOriginsArray = allowedOrigins.split(",");
+        for (String allowed : allowedOriginsArray) {
+            String trimmed = allowed.trim();
+            if (originString.equals(trimmed) || 
+                originString.equals(trimmed + "/") ||
+                (trimmed.endsWith("/") && originString.equals(trimmed.substring(0, trimmed.length() - 1)))) {
+                return;
+            }
+        }
+        
+        throw new WebAuthnException("잘못된 CORS 요청: Origin " + originString + "이(가) 허용되지 않습니다");
     }
 
 }

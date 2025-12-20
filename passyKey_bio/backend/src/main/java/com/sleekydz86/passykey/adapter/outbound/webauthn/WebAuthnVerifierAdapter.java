@@ -57,7 +57,7 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
                 try {
                         webAuthnManager.validate(registrationRequest, registrationParameters);
                 } catch (WebAuthnException e) {
-                        throw new RuntimeException("Registration validation failed: " + e.getMessage(), e);
+                        throw new RuntimeException("등록 검증 실패: " + e.getMessage(), e);
                 }
         }
 
@@ -66,13 +66,13 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
                         byte[] signatureBytes, byte[] userHandle, ServerProperty serverProperty,
                         Authenticator authenticator) {
                 if (clientDataJSONBytes == null || clientDataJSONBytes.length == 0) {
-                        throw new RuntimeException("clientDataJSONBytes is null or empty");
+                        throw new RuntimeException("clientDataJSON이 null이거나 비어있습니다");
                 }
 
                 String clientDataJSONString = new String(clientDataJSONBytes, StandardCharsets.UTF_8);
-                logger.info("Received clientDataJSON (decoded): {}", clientDataJSONString);
-                logger.info("clientDataJSONBytes length: {}", clientDataJSONBytes.length);
-                logger.info("First 20 bytes: {}", java.util.Arrays.toString(
+                logger.info("수신된 clientDataJSON (디코딩됨): {}", clientDataJSONString);
+                logger.info("clientDataJSONBytes 길이: {}", clientDataJSONBytes.length);
+                logger.info("처음 20바이트: {}", java.util.Arrays.toString(
                                 java.util.Arrays.copyOf(clientDataJSONBytes,
                                                 Math.min(20, clientDataJSONBytes.length))));
 
@@ -93,10 +93,10 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
 
                 try {
                         webAuthnManager.validate(authenticationRequest, authenticationParameters);
-                        logger.info("Authentication validation successful");
+                        logger.info("인증 검증 성공");
 
                         long newSignCount = extractSignCountFromBytes(authenticatorDataBytes);
-                        logger.info("New sign count: {}", newSignCount);
+                        logger.info("새로운 서명 카운터: {}", newSignCount);
 
                         String credentialIdBase64 = Base64.getUrlEncoder().withoutPadding().encodeToString(
                                         authenticator.getAttestedCredentialData().getCredentialId());
@@ -106,8 +106,8 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
                                         .counter(newSignCount)
                                         .build();
                 } catch (WebAuthnException e) {
-                        logger.error("WebAuthn validation failed", e);
-                        throw new RuntimeException("Authentication validation failed: " + e.getMessage(), e);
+                        logger.error("WebAuthn 검증 실패", e);
+                        throw new RuntimeException("인증 검증 실패: " + e.getMessage(), e);
                 }
         }
 
@@ -130,7 +130,7 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
 
         private long extractSignCountFromBytes(byte[] authenticatorDataBytes) {
                 if (authenticatorDataBytes == null || authenticatorDataBytes.length < 37) {
-                        logger.warn("Invalid authenticatorDataBytes length: {}",
+                        logger.warn("잘못된 authenticatorDataBytes 길이: {}",
                                         authenticatorDataBytes != null ? authenticatorDataBytes.length : 0);
                         return 0;
                 }

@@ -37,7 +37,7 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
     public WebAuthnCredential save(WebAuthnCredential credential) {
         try {
             String operation = (credential.getId() == null) ? "C" : "U";
-            logger.debug("Saving credential - operation: {}, id: {}, credentialId: {}", 
+            logger.debug("인증서 저장 중 - 작업: {}, id: {}, credentialId: {}", 
                     operation, credential.getId(), credential.getCredentialId());
             
             Map<String, Object> params = new HashMap<>();
@@ -127,7 +127,7 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
                 throw new IllegalArgumentException("인증서 ID가 없습니다. 업데이트할 수 없습니다.");
             }
 
-            logger.debug("Updating credential - id: {}, credentialId: {}, counter: {}", 
+            logger.debug("인증서 업데이트 중 - id: {}, credentialId: {}, counter: {}", 
                     credential.getId(), credential.getCredentialId(), credential.getCounter());
 
             Map<String, Object> params = new HashMap<>();
@@ -149,7 +149,7 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
                 credentialCacheService.evictUserCredentials(credential.getUser().getId());
             }
 
-            logger.debug("Credential updated successfully - id: {}", credential.getId());
+            logger.debug("인증서 업데이트 성공 - id: {}", credential.getId());
             return credential;
         } catch (DataAccessException e) {
             logger.error("인증서 업데이트 중 데이터베이스 오류 발생: {}", credential.getCredentialId(), e);

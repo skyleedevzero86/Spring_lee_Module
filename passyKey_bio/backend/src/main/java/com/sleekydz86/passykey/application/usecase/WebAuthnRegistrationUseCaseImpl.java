@@ -12,6 +12,7 @@ import com.sleekydz86.passykey.global.constants.WebAuthnConstants;
 import com.sleekydz86.passykey.global.exception.ChallengeExpiredException;
 import com.sleekydz86.passykey.global.exception.WebAuthnException;
 import com.sleekydz86.passykey.global.util.Base64UrlConverter;
+import com.sleekydz86.passykey.global.util.ClientDataJSONParser;
 import com.webauthn4j.data.PublicKeyCredentialCreationOptions;
 import com.webauthn4j.data.client.Origin;
 import com.webauthn4j.data.client.challenge.Challenge;
@@ -74,7 +75,8 @@ public class WebAuthnRegistrationUseCaseImpl implements WebAuthnRegistrationUseC
                 throw new ChallengeExpiredException("챌린지를 찾을 수 없거나 만료되었습니다");
             }
 
-            Origin origin = new Origin(configPort.getAllowedOrigins());
+            Origin origin = ClientDataJSONParser.extractOrigin(clientDataJSONBytes);
+            validateOrigin(origin);
             ServerProperty serverProperty = verifierPort.createServerProperty(
                     origin, configPort.getRpId(), challenge);
 
@@ -89,6 +91,27 @@ public class WebAuthnRegistrationUseCaseImpl implements WebAuthnRegistrationUseC
             logger.error("인증서 등록 실패", e);
             throw new WebAuthnException("인증서 등록 실패: " + e.getMessage(), e);
         }
+    }
+
+    private void validateOrigin(Origin origin) {
+        String allowedOrigins = configPort.getAllowedOrigins();
+        String originString = origin.toString();
+        
+        if (allowedOrigins == null || allowedOrigins.isEmpty()) {
+            return;
+        }
+        
+        String[] allowedOriginsArray = allowedOrigins.split(",");
+        for (String allowed : allowedOriginsArray) {
+            String trimmed = allowed.trim();
+            if (originString.equals(trimmed) || 
+                originString.equals(trimmed + "/") ||
+                (trimmed.endsWith("/") && originString.equals(trimmed.substring(0, trimmed.length() - 1)))) {
+                return;
+            }
+        }
+        
+        throw new WebAuthnException("잘못된 CORS 요청: Origin " + originString + "이(가) 허용되지 않습니다");
     }
 
     private void saveCredential(User user, String credentialId, byte[] publicKeyCose, String[] transports) {
