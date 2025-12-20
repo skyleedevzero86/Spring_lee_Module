@@ -84,11 +84,16 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         String allowedOriginsEnv = System.getenv("CORS_ALLOWED_ORIGINS");
+        List<String> allowedOriginsList;
+        
         if (allowedOriginsEnv != null && !allowedOriginsEnv.isEmpty()) {
-            configuration.setAllowedOrigins(Arrays.asList(allowedOriginsEnv.split(",")));
+            allowedOriginsList = new java.util.ArrayList<>(Arrays.asList(allowedOriginsEnv.split(",")));
         } else {
-            configuration.setAllowedOrigins(List.of("http://localhost", "http://localhost:80", "http://localhost:8080"));
+            allowedOriginsList = new java.util.ArrayList<>(List.of("http://localhost", "http://localhost:80", "http://localhost:8080"));
         }
+        
+        configuration.setAllowedOriginPatterns(Arrays.asList("https://*.ngrok.io", "https://*.ngrok-free.app"));
+        configuration.setAllowedOrigins(allowedOriginsList);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

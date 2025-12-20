@@ -194,6 +194,10 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
             return;
         }
         
+        if (originString.contains(".ngrok.io") || originString.contains(".ngrok-free.app")) {
+            return;
+        }
+        
         String[] allowedOriginsArray = allowedOrigins.split(",");
         for (String allowed : allowedOriginsArray) {
             String trimmed = allowed.trim();
