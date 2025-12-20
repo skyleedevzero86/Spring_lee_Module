@@ -127,7 +127,9 @@ export default function RegisterPage() {
       }
 
       const response = credential.response as AuthenticatorAttestationResponse;
-      const label = prompt('이 패스키의 이름을 입력하세요:') || '내 패스키';
+      
+      const labelInput = prompt('이 패스키의 이름을 입력하세요:');
+      const label = labelInput && labelInput.trim() ? labelInput.trim() : '내 패스키';
 
       const publicKeyCredential = {
         publicKey: {

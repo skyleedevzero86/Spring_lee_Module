@@ -129,7 +129,7 @@ export function prepareRegistrationOptions(options: any): any {
     }
   }
   
-  if (isMobile && !isNgrok) {
+  if (isMobile) {
     if (!prepared.authenticatorSelection) {
       prepared.authenticatorSelection = {};
     }
@@ -138,8 +138,6 @@ export function prepareRegistrationOptions(options: any): any {
     if (prepared.authenticatorSelection.requireResidentKey === undefined) {
       prepared.authenticatorSelection.requireResidentKey = true;
     }
-  } else if (isMobile && isNgrok) {
-    delete prepared.authenticatorSelection;
   }
   
   return prepared;

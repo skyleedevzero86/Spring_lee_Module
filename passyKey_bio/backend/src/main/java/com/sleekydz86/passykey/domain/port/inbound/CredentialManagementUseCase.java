@@ -8,6 +8,7 @@ import java.util.List;
 public interface CredentialManagementUseCase {
     List<WebAuthnCredential> getUserCredentials(User user);
     void deleteCredential(String credentialId);
+    void updateCredentialLabel(String credentialId, String label);
 }
 
 

@@ -193,6 +193,46 @@ public class WebAuthnCredentialRepositoryAdapter implements WebAuthnCredentialRe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void updateLabel(WebAuthnCredential credential) {
+        try {
+            if (credential.getId() == null) {
+                throw new IllegalArgumentException("인증서 ID가 없습니다. 업데이트할 수 없습니다.");
+            }
+
+            logger.debug("인증서 label 업데이트 중 - id: {}, credentialId: {}, label: {}", 
+                    credential.getId(), credential.getCredentialId(), credential.getLabel());
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("operation", "U");
+            params.put("id", credential.getId());
+            params.put("credentialId", null);
+            params.put("publicKeyCose", null);
+            params.put("counter", null);
+            params.put("transports", null);
+            params.put("label", credential.getLabel());
+            params.put("userId", null);
+            params.put("createdAt", null);
+            params.put("lastUsedAt", null);
+            params.put("resultId", null);
+
+            credentialMapper.save(params);
+
+            if (credential.getUser() != null && credential.getUser().getId() != null) {
+                credentialCacheService.evictUserCredentials(credential.getUser().getId());
+            }
+
+            logger.debug("인증서 label 업데이트 성공 - id: {}", credential.getId());
+        } catch (DataAccessException e) {
+            logger.error("인증서 label 업데이트 중 데이터베이스 오류 발생: {}", credential.getCredentialId(), e);
+            throw new RuntimeException("인증서 label 업데이트 실패", e);
+        } catch (Exception e) {
+            logger.error("인증서 label 업데이트 중 예상치 못한 오류 발생: {}", credential.getCredentialId(), e);
+            throw new RuntimeException("인증서 label 업데이트 실패", e);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteByCredentialId(String credentialId) {
         try {
             WebAuthnCredential credential = credentialMapper.selectByCredentialId(credentialId);

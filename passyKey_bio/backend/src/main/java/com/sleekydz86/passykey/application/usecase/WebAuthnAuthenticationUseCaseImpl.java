@@ -84,7 +84,7 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
                 return requestHost;
             }
         }
-        return configPort.getRpId();
+        return "localhost";
     }
 
     @Override
@@ -209,14 +209,14 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
     }
 
     private void validateOrigin(Origin origin) {
-        String allowedOrigins = configPort.getAllowedOrigins();
         String originString = origin.toString();
         
-        if (allowedOrigins == null || allowedOrigins.isEmpty()) {
+        if (originString.contains(".ngrok.io") || originString.contains(".ngrok-free.app")) {
             return;
         }
         
-        if (originString.contains(".ngrok.io") || originString.contains(".ngrok-free.app")) {
+        String allowedOrigins = configPort.getAllowedOrigins();
+        if (allowedOrigins == null || allowedOrigins.isEmpty()) {
             return;
         }
         

@@ -17,6 +17,10 @@ export default function DashboardPage() {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
   const [isMobile, setIsMobile] = useState(false);
+  const [showLabelModal, setShowLabelModal] = useState(false);
+  const [labelInput, setLabelInput] = useState('');
+  const [editingCredentialId, setEditingCredentialId] = useState<string | null>(null);
+  const [pendingCredential, setPendingCredential] = useState<any>(null);
 
   const showMessage = (msg: string, type: 'success' | 'error') => {
     setMessage(msg);
@@ -88,11 +92,8 @@ export default function DashboardPage() {
       }
 
       const response = credential.response as AuthenticatorAttestationResponse;
-      const label = prompt('이 패스키의 이름을 입력하세요:') || '내 패스키';
 
-      const publicKeyCredential = {
-        publicKey: {
-          credential: {
+      setPendingCredential({
             id: credential.id,
             rawId: arrayBufferToBase64Url(credential.rawId),
             response: {
@@ -101,19 +102,11 @@ export default function DashboardPage() {
               transports: response.getTransports ? response.getTransports() : [],
             },
             type: credential.type,
-          },
-          label: label,
-        },
-      };
-
-      const registerResult = await api.registerCredential(publicKeyCredential);
-
-      if (registerResult.success) {
-        showMessage('패스키가 성공적으로 등록되었습니다!', 'success');
-        loadCredentials();
-      } else {
-        showMessage(registerResult.message || '패스키 등록 실패', 'error');
-      }
+      });
+      
+      setLabelInput('');
+      setEditingCredentialId(null);
+      setShowLabelModal(true);
     } catch (error: any) {
       let errorMessage = error.message || '알 수 없는 오류';
       
@@ -142,6 +135,68 @@ export default function DashboardPage() {
     } catch (error: any) {
       showMessage('패스키 삭제 실패: ' + (error.message || '알 수 없는 오류'), 'error');
     }
+  };
+
+  const handleEditLabel = (credential: WebAuthnCredential) => {
+    setLabelInput(credential.label || '');
+    setEditingCredentialId(credential.credentialId);
+    setShowLabelModal(true);
+  };
+
+  const handleLabelModalConfirm = async () => {
+    const trimmedLabel = labelInput.trim() || '내 패스키';
+    
+    if (editingCredentialId) {
+      try {
+        const result = await api.updateCredentialLabel(editingCredentialId, trimmedLabel);
+        if (result.success) {
+          showMessage('패스키 이름이 변경되었습니다', 'success');
+          loadCredentials();
+        } else {
+          showMessage(result.message || '패스키 이름 변경 실패', 'error');
+        }
+      } catch (error: any) {
+        showMessage('패스키 이름 변경 실패: ' + (error.message || '알 수 없는 오류'), 'error');
+      }
+      setShowLabelModal(false);
+      setEditingCredentialId(null);
+      setLabelInput('');
+    } else if (pendingCredential) {
+      setShowLabelModal(false);
+      
+      const publicKeyCredential = {
+        publicKey: {
+          credential: {
+            id: pendingCredential.id,
+            rawId: pendingCredential.rawId,
+            response: pendingCredential.response,
+            type: pendingCredential.type,
+          },
+          label: trimmedLabel,
+        },
+      };
+
+      try {
+        const registerResult = await api.registerCredential(publicKeyCredential);
+        if (registerResult.success) {
+          showMessage('패스키가 성공적으로 등록되었습니다!', 'success');
+          loadCredentials();
+        } else {
+          showMessage(registerResult.message || '패스키 등록 실패', 'error');
+        }
+      } catch (error: any) {
+        showMessage('패스키 등록 실패: ' + (error.message || '알 수 없는 오류'), 'error');
+      }
+      setPendingCredential(null);
+      setLabelInput('');
+    }
+  };
+
+  const handleLabelModalCancel = () => {
+    setShowLabelModal(false);
+    setEditingCredentialId(null);
+    setLabelInput('');
+    setPendingCredential(null);
   };
 
   const loadLoginHistory = async () => {
@@ -281,12 +336,21 @@ export default function DashboardPage() {
                           <p>생성일: {formatDate(cred.createdAt)}</p>
                           <p>마지막 사용: {formatDate(cred.lastUsedAt)}</p>
                         </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            className="btn btn--secondary"
+                            onClick={() => handleEditLabel(cred)}
+                            style={{ fontSize: '0.875rem', padding: '8px 16px' }}
+                          >
+                            이름 변경
+                          </button>
                         <button
                           className="btn btn-danger"
                           onClick={() => handleDeleteCredential(cred.credentialId)}
                         >
                           삭제
                         </button>
+                        </div>
                       </div>
                     );
                   })
@@ -353,6 +417,67 @@ export default function DashboardPage() {
           </div>
         </section>
       </main>
+
+      {showLabelModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '24px',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: '16px' }}>
+              {editingCredentialId ? '패스키 이름 변경' : '패스키 이름 입력'}
+            </h3>
+            <div className="form-group" style={{ marginBottom: '16px' }}>
+              <label htmlFor="labelInput">패스키 이름</label>
+              <input
+                type="text"
+                id="labelInput"
+                value={labelInput}
+                onChange={(e) => setLabelInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleLabelModalConfirm();
+                  } else if (e.key === 'Escape') {
+                    handleLabelModalCancel();
+                  }
+                }}
+                autoFocus
+                placeholder="패스키 이름을 입력하세요"
+                style={{ width: '100%', padding: '8px', fontSize: '1rem' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button
+                className="btn btn--secondary"
+                onClick={handleLabelModalCancel}
+              >
+                취소
+              </button>
+              <button
+                className="btn btn--primary"
+                onClick={handleLabelModalConfirm}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </>

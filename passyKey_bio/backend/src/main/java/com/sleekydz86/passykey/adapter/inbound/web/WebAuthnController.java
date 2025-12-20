@@ -65,7 +65,8 @@ public class WebAuthnController extends BaseController {
             }
 
             String origin = request.getHeader("Origin");
-            String rpId = extractHostFromOrigin(origin, request);
+            String host = extractHostFromOrigin(origin, request);
+            String rpId = determineRpId(host);
 
             PublicKeyCredentialCreationOptions options = registrationUseCase.createRegistrationOptions(
                     user, request.getSession(), rpId);
@@ -168,11 +169,12 @@ public class WebAuthnController extends BaseController {
             }
 
             String origin = request.getHeader("Origin");
-            String rpId = extractHostFromOrigin(origin, request);
+            String host = extractHostFromOrigin(origin, request);
+            String rpId = determineRpId(host);
 
             jakarta.servlet.http.HttpSession session = request.getSession();
             String sessionId = session.getId();
-            logger.debug("인증 옵션 생성 - 세션 ID: {}, 사용자: {}", sessionId, user != null ? user.getUsername() : "null");
+            logger.debug("인증 옵션 생성 - 세션 ID: {}, 사용자: {}, RP ID: {}", sessionId, user != null ? user.getUsername() : "null", rpId);
             
             PublicKeyCredentialRequestOptions options;
             if (user != null) {
@@ -181,8 +183,7 @@ public class WebAuthnController extends BaseController {
             } else {
                 Challenge challenge = challengeService.generateAndStoreChallenge(
                         sessionId, WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
-                String effectiveRpId = determineRpId(rpId);
-                options = optionsFactory.createAuthenticationOptions(challenge, effectiveRpId, Collections.emptyList());
+                options = optionsFactory.createAuthenticationOptions(challenge, rpId, Collections.emptyList());
             }
             return successResponse("인증 옵션 생성 완료", options);
         } catch (com.sleekydz86.passykey.global.exception.UserNotFoundException e) {
@@ -215,6 +216,21 @@ public class WebAuthnController extends BaseController {
         } catch (Exception e) {
             logger.error("인증서 삭제 실패", e);
             return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "인증서 삭제 실패: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/credentials/{credentialId}/label")
+    public ResponseEntity<ApiResponse<Void>> updateCredentialLabel(
+            @PathVariable String credentialId,
+            @RequestBody Map<String, String> request) {
+        try {
+            getAuthenticatedUser();
+            String label = request.get("label");
+            credentialManagementUseCase.updateCredentialLabel(credentialId, label);
+            return successResponse("패스키 이름 변경 성공", null);
+        } catch (Exception e) {
+            logger.error("패스키 이름 변경 실패", e);
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "패스키 이름 변경 실패: " + e.getMessage());
         }
     }
 }

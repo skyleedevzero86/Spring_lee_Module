@@ -114,6 +114,13 @@ export const api = {
     });
   },
 
+  updateCredentialLabel: async (credentialId: string, label: string): Promise<ApiResponse<void>> => {
+    return fetchApi<void>(`/api/webauthn/credentials/${encodeURIComponent(credentialId)}/label`, {
+      method: 'PUT',
+      body: JSON.stringify({ label }),
+    });
+  },
+
   logout: async (): Promise<ApiResponse<void>> => {
     return fetchApi<void>('/api/auth/logout', {
       method: 'POST',

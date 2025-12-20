@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface WebAuthnCredentialRepositoryPort {
     WebAuthnCredential save(WebAuthnCredential credential);
     WebAuthnCredential update(WebAuthnCredential credential);
+    void updateLabel(WebAuthnCredential credential);
     Optional<WebAuthnCredential> findByCredentialId(String credentialId);
     List<WebAuthnCredential> findByUser(User user);
     void deleteByCredentialId(String credentialId);

@@ -39,4 +39,33 @@ public class CredentialManagementUseCaseImpl implements CredentialManagementUseC
             throw new RuntimeException("인증서 삭제 실패", e);
         }
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCredentialLabel(String credentialId, String label) {
+        try {
+            WebAuthnCredential credential = credentialRepository.findByCredentialId(credentialId)
+                    .orElseThrow(() -> new RuntimeException("인증서를 찾을 수 없습니다: " + credentialId));
+            
+            if (label != null && !label.trim().isEmpty()) {
+                String trimmedLabel = label.trim();
+                List<WebAuthnCredential> userCredentials = credentialRepository.findByUser(credential.getUser());
+                boolean labelExists = userCredentials.stream()
+                        .filter(cred -> !cred.getCredentialId().equals(credentialId))
+                        .anyMatch(cred -> cred.getLabel() != null && cred.getLabel().trim().equals(trimmedLabel));
+                if (labelExists) {
+                    throw new RuntimeException("이미 사용 중인 패스키 이름입니다. 다른 이름을 사용해주세요.");
+                }
+                credential.setLabel(trimmedLabel);
+            } else {
+                credential.setLabel(null);
+            }
+            
+            credentialRepository.updateLabel(credential);
+            logger.info("인증서 label 업데이트됨: {}, label: {}", credentialId, label);
+        } catch (Exception e) {
+            logger.error("인증서 label 업데이트 실패: {}", credentialId, e);
+            throw new RuntimeException("인증서 label 업데이트 실패: " + e.getMessage(), e);
+        }
+    }
 }
