@@ -170,13 +170,17 @@ public class WebAuthnController extends BaseController {
             String origin = request.getHeader("Origin");
             String rpId = extractHostFromOrigin(origin, request);
 
+            jakarta.servlet.http.HttpSession session = request.getSession();
+            String sessionId = session.getId();
+            logger.debug("인증 옵션 생성 - 세션 ID: {}, 사용자: {}", sessionId, user != null ? user.getUsername() : "null");
+            
             PublicKeyCredentialRequestOptions options;
             if (user != null) {
                 options = authenticationUseCase.createAuthenticationOptions(
-                        user, request.getSession(), rpId);
+                        user, session, rpId);
             } else {
                 Challenge challenge = challengeService.generateAndStoreChallenge(
-                        request.getSession().getId(), WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
+                        sessionId, WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
                 String effectiveRpId = determineRpId(rpId);
                 options = optionsFactory.createAuthenticationOptions(challenge, effectiveRpId, Collections.emptyList());
             }

@@ -26,6 +26,9 @@ public class ChallengeServiceAdapter implements ChallengeServicePort {
         String key = getKey(sessionId, type);
         String challengeValue = Base64UrlUtil.encodeToString(challenge.getValue());
         redisTemplate.opsForValue().set(key, challengeValue, WebAuthnConstants.CHALLENGE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ChallengeServiceAdapter.class);
+        logger.debug("Challenge 생성 및 저장 - Redis 키: {}, 세션 ID: {}, 타입: {}, Challenge 값: {}", 
+            key, sessionId, type, challengeValue);
         return challenge;
     }
 
@@ -34,6 +37,8 @@ public class ChallengeServiceAdapter implements ChallengeServicePort {
         String key = getKey(sessionId, type);
         String challengeValue = redisTemplate.opsForValue().get(key);
         if (challengeValue == null) {
+            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ChallengeServiceAdapter.class);
+            logger.warn("Challenge를 찾을 수 없음 - Redis 키: {}, 세션 ID: {}, 타입: {}", key, sessionId, type);
             return null;
         }
         byte[] challengeBytes = Base64UrlUtil.decode(challengeValue);

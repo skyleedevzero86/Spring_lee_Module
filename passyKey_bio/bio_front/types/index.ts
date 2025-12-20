@@ -40,6 +40,18 @@ export interface RegisterRequest {
 export interface AuthenticationResponse {
   redirectUrl: string;
   authenticated: boolean;
+  passkeyLogin?: boolean;
+}
+
+export interface LoginHistory {
+  id?: number;
+  userId: number;
+  loginType: 'PASSWORD' | 'PASSKEY';
+  sessionId: string;
+  ipAddress?: string;
+  userAgent?: string;
+  loginAt: string;
+  logoutAt?: string;
 }
 
 export interface PasskeyRegistrationRequest {

@@ -93,6 +93,26 @@ public class WebAuthnVerifierAdapter implements WebAuthnVerifierPort {
                                 true);
 
                 try {
+                        if (serverProperty.getChallenge() != null) {
+                                String expectedChallenge = com.webauthn4j.util.Base64UrlUtil.encodeToString(
+                                                serverProperty.getChallenge().getValue());
+                                logger.debug("예상되는 Challenge: {}", expectedChallenge);
+                                
+                                try {
+                                        com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                                        com.fasterxml.jackson.databind.JsonNode clientDataJson = objectMapper.readTree(clientDataJSONString);
+                                        if (clientDataJson.has("challenge")) {
+                                                String actualChallenge = clientDataJson.get("challenge").asText();
+                                                logger.debug("실제 Challenge (clientDataJSON에서): {}", actualChallenge);
+                                                if (!expectedChallenge.equals(actualChallenge)) {
+                                                        logger.error("Challenge 불일치! 예상: {}, 실제: {}", expectedChallenge, actualChallenge);
+                                                }
+                                        }
+                                } catch (Exception e) {
+                                        logger.debug("clientDataJSON에서 challenge 추출 실패", e);
+                                }
+                        }
+                        
                         webAuthnManager.validate(authenticationRequest, authenticationParameters);
                         logger.info("인증 검증 성공");
 

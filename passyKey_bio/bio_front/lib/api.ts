@@ -1,4 +1,4 @@
-import { ApiResponse, User, WebAuthnCredential, RegisterRequest, AuthenticationResponse, PasskeyRegistrationRequest, PasskeyAuthenticationRequest } from '@/types';
+import { ApiResponse, User, WebAuthnCredential, RegisterRequest, AuthenticationResponse, PasskeyRegistrationRequest, PasskeyAuthenticationRequest, LoginHistory } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -24,14 +24,25 @@ async function fetchApi<T>(
       credentials: 'include',
     });
 
+    const contentType = response.headers.get('content-type');
+    const isJson = contentType && contentType.includes('application/json');
+
     if (!response.ok) {
       const errorText = await response.text();
-      try {
-        const errorJson = JSON.parse(errorText);
-        throw new Error(errorJson.message || `API 요청 실패 (${response.status})`);
-      } catch {
-        throw new Error(errorText || `API 요청 실패 (${response.status})`);
+      if (isJson) {
+        try {
+          const errorJson = JSON.parse(errorText);
+          throw new Error(errorJson.message || `API 요청 실패 (${response.status})`);
+        } catch {
+          throw new Error(errorText || `API 요청 실패 (${response.status})`);
+        }
+      } else {
+        throw new Error(`API 요청 실패 (${response.status})`);
       }
+    }
+
+    if (!isJson) {
+      return { success: true, data: null } as ApiResponse<T>;
     }
 
     return response.json();
@@ -106,6 +117,12 @@ export const api = {
   logout: async (): Promise<ApiResponse<void>> => {
     return fetchApi<void>('/api/auth/logout', {
       method: 'POST',
+    });
+  },
+
+  getLoginHistory: async (limit: number = 20): Promise<ApiResponse<LoginHistory[]>> => {
+    return fetchApi<LoginHistory[]>(`/api/auth/login-history?limit=${limit}`, {
+      method: 'GET',
     });
   },
 };

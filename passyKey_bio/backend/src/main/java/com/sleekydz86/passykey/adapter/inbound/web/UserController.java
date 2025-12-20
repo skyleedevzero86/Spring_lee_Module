@@ -28,7 +28,7 @@ public class UserController extends BaseController {
             HttpServletRequest httpRequest) {
         try {
             User user = userUseCase.register(request);
-            authenticationService.setAuthentication(user, httpRequest);
+            authenticationService.setAuthentication(user, httpRequest, "REGISTER");
             return createdResponse("사용자 등록 성공", user);
         } catch (IllegalArgumentException e) {
             logger.error("사용자 등록 실패", e);

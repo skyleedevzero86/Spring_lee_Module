@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
@@ -17,6 +17,11 @@ export default function LoginPage() {
   const [passkeyUsername, setPasskeyUsername] = useState('');
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(isMobileDevice());
+  }, []);
 
   const showMessage = (msg: string, type: 'success' | 'error') => {
     setMessage(msg);
@@ -51,7 +56,17 @@ export default function LoginPage() {
           router.push('/dashboard');
         }, 1000);
       } else if (response.status === 401 || response.status === 403) {
-        showMessage('로그인 실패: 사용자명 또는 비밀번호가 올바르지 않습니다', 'error');
+        const errorText = await response.text();
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.message && (errorJson.message.includes('중복 로그인') || errorJson.message.includes('다른 세션'))) {
+            showMessage('이미 다른 곳에서 로그인되어 있습니다. 중복 로그인은 허용되지 않습니다.', 'error');
+          } else {
+            showMessage(errorJson.message || '로그인 실패: 사용자명 또는 비밀번호가 올바르지 않습니다', 'error');
+          }
+        } catch {
+          showMessage('로그인 실패: 사용자명 또는 비밀번호가 올바르지 않습니다', 'error');
+        }
       } else {
         const errorText = await response.text();
         try {
@@ -72,8 +87,6 @@ export default function LoginPage() {
     setMessageType('');
 
     try {
-      const isMobile = isMobileDevice();
-      
       if (isMobile) {
         if (!navigator.credentials || !navigator.credentials.get) {
           showMessage('이 브라우저는 생체 인증을 지원하지 않습니다. 최신 브라우저를 사용해주세요.', 'error');
@@ -115,7 +128,11 @@ export default function LoginPage() {
       const authResult = await api.authenticate(authenticationRequest);
 
       if (authResult.success && authResult.data?.authenticated) {
-        showMessage('인증 성공! 리다이렉트 중...', 'success');
+        if (authResult.data?.passkeyLogin) {
+          showMessage('패스키로 로그인되었습니다! 리다이렉트 중...', 'success');
+        } else {
+          showMessage('인증 성공! 리다이렉트 중...', 'success');
+        }
         setTimeout(() => {
           router.push(authResult.data?.redirectUrl || '/dashboard');
         }, 1000);
@@ -124,7 +141,9 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       let errorMessage = error.message || '알 수 없는 오류';
-      if (errorMessage.includes('not allowed by the user agent') || 
+      if (errorMessage.includes('중복 로그인') || errorMessage.includes('다른 세션')) {
+        errorMessage = '이미 다른 곳에서 로그인되어 있습니다. 중복 로그인은 허용되지 않습니다.';
+      } else if (errorMessage.includes('not allowed by the user agent') || 
           errorMessage.includes('user denied permission') ||
           errorMessage.includes('The request is not allowed')) {
         errorMessage = '생체 인증이 거부되었습니다. 브라우저 설정에서 생체 인증 권한을 확인하거나, 다른 인증 방법을 시도해주세요.';
@@ -205,7 +224,7 @@ export default function LoginPage() {
                 id="passkeyTab"
                 className={`tab-content ${activeTab === 'passkey' ? 'active' : ''}`}
               >
-                {isMobileDevice() && (
+                {isMobile && (
                   <div style={{ 
                     padding: '12px', 
                     marginBottom: '1rem', 
@@ -230,7 +249,7 @@ export default function LoginPage() {
                     <small>등록된 패스키를 사용하려면 비워두세요</small>
                   </div>
                   <button type="submit" className="btn btn--primary" style={{ width: '100%' }}>
-                    {isMobileDevice() ? '생체 인증으로 로그인' : '패스키로 로그인'}
+                    {isMobile ? '생체 인증으로 로그인' : '패스키로 로그인'}
                   </button>
                 </form>
                 <Message

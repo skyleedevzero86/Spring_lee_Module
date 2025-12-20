@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.passykey.adapter.outbound.persistence.LoginHistoryMyBatisMapper">
+
+    <resultMap id="loginHistoryResultMap" type="LoginHistory">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="loginType" column="login_type"/>
+        <result property="sessionId" column="session_id"/>
+        <result property="ipAddress" column="ip_address"/>
+        <result property="userAgent" column="user_agent"/>
+        <result property="loginAt" column="login_at"/>
+        <result property="logoutAt" column="logout_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="map" statementType="CALLABLE">
+        {CALL sp_save_login_history(
+            #{operation, mode=IN, jdbcType=CHAR},
+            #{id, mode=IN, jdbcType=BIGINT},
+            #{userId, mode=IN, jdbcType=BIGINT},
+            #{loginType, mode=IN, jdbcType=VARCHAR},
+            #{sessionId, mode=IN, jdbcType=VARCHAR},
+            #{ipAddress, mode=IN, jdbcType=VARCHAR},
+            #{userAgent, mode=IN, jdbcType=VARCHAR},
+            #{loginAt, mode=IN, jdbcType=TIMESTAMP},
+            #{logoutAt, mode=IN, jdbcType=TIMESTAMP},
+            #{resultId, mode=OUT, jdbcType=BIGINT}
+        )}
+    </insert>
+
+    <select id="selectActiveSessionByUserId" parameterType="Long" resultMap="loginHistoryResultMap">
+        SELECT id, user_id, login_type, session_id, ip_address, user_agent, login_at, logout_at
+        FROM login_history
+        WHERE user_id = #{userId} AND logout_at IS NULL
+        ORDER BY login_at DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectBySessionId" parameterType="String" resultMap="loginHistoryResultMap">
+        SELECT id, user_id, login_type, session_id, ip_address, user_agent, login_at, logout_at
+        FROM login_history
+        WHERE session_id = #{sessionId}
+        ORDER BY login_at DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectByUserIdOrderByLoginAtDesc" resultMap="loginHistoryResultMap">
+        SELECT id, user_id, login_type, session_id, ip_address, user_agent, login_at, logout_at
+        FROM v_login_history
+        WHERE user_id = #{userId}
+        ORDER BY login_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <update id="updateLogoutAt" parameterType="map" statementType="CALLABLE">
+        {CALL sp_save_login_history(
+            #{operation, mode=IN, jdbcType=CHAR},
+            #{id, mode=IN, jdbcType=BIGINT},
+            #{userId, mode=IN, jdbcType=BIGINT},
+            #{loginType, mode=IN, jdbcType=VARCHAR},
+            #{sessionId, mode=IN, jdbcType=VARCHAR},
+            #{ipAddress, mode=IN, jdbcType=VARCHAR},
+            #{userAgent, mode=IN, jdbcType=VARCHAR},
+            #{loginAt, mode=IN, jdbcType=TIMESTAMP},
+            #{logoutAt, mode=IN, jdbcType=TIMESTAMP},
+            #{resultId, mode=OUT, jdbcType=BIGINT}
+        )}
+    </update>
+
+    <select id="selectAllActiveSessions" resultMap="loginHistoryResultMap">
+        SELECT id, user_id, login_type, session_id, ip_address, user_agent, login_at, logout_at
+        FROM login_history
+        WHERE logout_at IS NULL
+    </select>
+
+</mapper>
+

@@ -65,6 +65,8 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
     @Override
     public PublicKeyCredentialRequestOptions createAuthenticationOptions(User user, HttpSession session, String rpId) {
         String sessionId = session.getId();
+        logger.debug("인증 옵션 생성 - 사용자: {}, 세션 ID: {}", user.getUsername(), sessionId);
+        
         Challenge challenge = challengeService.generateAndStoreChallenge(
                 sessionId, WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
 
@@ -146,12 +148,17 @@ public class WebAuthnAuthenticationUseCaseImpl implements WebAuthnAuthentication
             }
 
             String sessionId = session.getId();
+            logger.debug("Challenge 조회 시도 - 세션 ID: {}, 타입: {}", sessionId, WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
+            
             Challenge challenge = challengeService.getChallenge(
                     sessionId, WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
 
             if (challenge == null) {
-                throw new ChallengeExpiredException("챌린지를 찾을 수 없거나 만료되었습니다");
+                logger.error("Challenge를 찾을 수 없음 - 세션 ID: {}, 타입: {}", sessionId, WebAuthnConstants.CHALLENGE_TYPE_AUTHENTICATION);
+                throw new ChallengeExpiredException("챌린지를 찾을 수 없거나 만료되었습니다. 인증 옵션을 다시 요청해주세요.");
             }
+            
+            logger.debug("Challenge 조회 성공 - 세션 ID: {}", sessionId);
 
             Origin origin = ClientDataJSONParser.extractOrigin(clientDataJSONBytes);
             validateOrigin(origin);

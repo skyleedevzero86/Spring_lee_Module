@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
@@ -27,6 +27,11 @@ export default function RegisterPage() {
   const [passkeyMessageType, setPasskeyMessageType] = useState<'success' | 'error' | ''>('');
   const [showAddPasskey, setShowAddPasskey] = useState(false);
   const [registeredUsername, setRegisteredUsername] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(isMobileDevice());
+  }, []);
 
   const showRegisterMessage = (msg: string, type: 'success' | 'error') => {
     setRegisterMessage(msg);
@@ -97,8 +102,6 @@ export default function RegisterPage() {
     setPasskeyMessageType('');
 
     try {
-      const isMobile = isMobileDevice();
-      
       if (isMobile) {
         if (!navigator.credentials || !navigator.credentials.create) {
           showPasskeyMessage('이 브라우저는 생체 인증을 지원하지 않습니다. 최신 브라우저를 사용해주세요.', 'error');
@@ -253,7 +256,7 @@ export default function RegisterPage() {
 
               {showAddPasskey && (
                 <>
-                  {isMobileDevice() && (
+                  {isMobile && (
                     <div style={{ 
                       padding: '12px', 
                       marginTop: '1rem',
@@ -272,7 +275,7 @@ export default function RegisterPage() {
                     style={{ width: '100%', marginTop: '1rem' }}
                     onClick={handleAddPasskey}
                   >
-                    {isMobileDevice() ? '생체 인증 등록' : '패스키 추가'}
+                    {isMobile ? '생체 인증 등록' : '패스키 추가'}
                   </button>
                 </>
               )}

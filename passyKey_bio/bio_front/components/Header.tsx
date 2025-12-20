@@ -2,36 +2,62 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   showLogout?: boolean;
   onLogout?: () => void;
   showAddPasskey?: boolean;
   onAddPasskey?: () => void;
+  showLoginHistory?: boolean;
+  onShowLoginHistory?: () => void;
 }
 
 export default function Header({ 
   showLogout = false, 
   onLogout,
   showAddPasskey = false,
-  onAddPasskey 
+  onAddPasskey,
+  showLoginHistory = false,
+  onShowLoginHistory
 }: HeaderProps) {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (showLogout) {
+      e.preventDefault();
+      router.push('/dashboard');
+    }
+  };
+
   return (
     <header className="header" role="banner">
       <div className="header__container">
         <div className="header__logo">
-          <Link href="/" aria-label="홈으로 이동">
+          <Link 
+            href={showLogout ? "/dashboard" : "/"} 
+            aria-label={showLogout ? "대시보드로 이동" : "홈으로 이동"}
+            onClick={handleLogoClick}
+          >
             PassyKey
           </Link>
         </div>
         {showLogout && (
           <div className="header__utils">
+            {showLoginHistory && onShowLoginHistory && (
+              <button 
+                onClick={onShowLoginHistory} 
+                className="btn btn--secondary"
+                style={{ marginRight: '0.5rem' }}
+              >
+                로그인 이력
+              </button>
+            )}
             <button onClick={onLogout} className="btn btn-secondary">
               로그아웃
             </button>
@@ -48,18 +74,18 @@ export default function Header({
           <span></span>
         </button>
       </div>
-      {(showLogout || showAddPasskey) && (
+      {(showLogout || showAddPasskey || showLoginHistory) && (
         <nav 
           className="header__mobile-menu" 
           aria-hidden={!mobileMenuOpen}
         >
           <div className="mobile-menu__content">
-            {showLogout && (
+            {showLoginHistory && onShowLoginHistory && (
               <button 
-                onClick={onLogout} 
-                className="btn btn-secondary mobile-menu__btn"
+                onClick={onShowLoginHistory} 
+                className="btn btn--secondary mobile-menu__btn"
               >
-                로그아웃
+                로그인 이력
               </button>
             )}
             {showAddPasskey && (
@@ -68,6 +94,14 @@ export default function Header({
                 className="btn btn--primary mobile-menu__btn mobile-add-passkey"
               >
                 새 패스키 추가
+              </button>
+            )}
+            {showLogout && (
+              <button 
+                onClick={onLogout} 
+                className="btn btn-secondary mobile-menu__btn"
+              >
+                로그아웃
               </button>
             )}
           </div>

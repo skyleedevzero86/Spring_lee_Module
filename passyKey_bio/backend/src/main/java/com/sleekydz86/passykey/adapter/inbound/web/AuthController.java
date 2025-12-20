@@ -35,22 +35,41 @@ public class AuthController extends BaseController {
             @Valid @RequestBody PasskeyAuthenticationRequest request,
             HttpServletRequest httpRequest) {
         try {
+            jakarta.servlet.http.HttpSession session = httpRequest.getSession(false);
+            if (session == null) {
+                logger.warn("인증 시도 - 세션이 없습니다. 인증 옵션을 먼저 요청해주세요.");
+                return errorResponse(HttpStatus.BAD_REQUEST, "세션이 없습니다. 인증 옵션을 먼저 요청해주세요.");
+            }
+            
+            logger.debug("인증 시도 - 세션 ID: {}", session.getId());
+            
             User user = authenticationUseCase.authenticate(
                     request.getId(),
                     request.getResponse().getAuthenticatorData(),
                     request.getResponse().getClientDataJSON(),
                     request.getResponse().getSignature(),
                     request.getResponse().getUserHandle(),
-                    httpRequest.getSession()
+                    session
             );
 
-            authenticationService.setAuthentication(user, httpRequest);
+            try {
+                authenticationService.checkAndPreventDuplicateLogin(user, httpRequest);
+            } catch (IllegalStateException e) {
+                logger.warn("중복 로그인 시도 차단: {}", e.getMessage());
+                return errorResponse(HttpStatus.FORBIDDEN, e.getMessage());
+            }
+
+            authenticationService.setAuthentication(user, httpRequest, "PASSKEY");
 
             AuthenticationResponse response = new AuthenticationResponse(
                     AuthConstants.REDIRECT_DASHBOARD,
+                    true,
                     true
             );
             return successResponse("인증 성공", response);
+        } catch (IllegalStateException e) {
+            logger.warn("중복 로그인 시도 차단: {}", e.getMessage());
+            return errorResponse(HttpStatus.FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             logger.error("인증 실패", e);
             return errorResponse(HttpStatus.UNAUTHORIZED, "인증 실패: " + e.getMessage());
@@ -58,8 +77,8 @@ public class AuthController extends BaseController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout() {
-        authenticationService.clearAuthentication();
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+        authenticationService.clearAuthentication(request);
         return successResponse("로그아웃 성공", null);
     }
 }

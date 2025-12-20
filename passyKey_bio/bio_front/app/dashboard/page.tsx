@@ -7,13 +7,16 @@ import Footer from '@/components/Footer';
 import Message from '@/components/Message';
 import { api } from '@/lib/api';
 import { prepareRegistrationOptions, arrayBufferToBase64Url, isMobileDevice } from '@/lib/webauthn';
-import type { WebAuthnCredential } from '@/types';
+import type { WebAuthnCredential, LoginHistory } from '@/types';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [credentials, setCredentials] = useState<WebAuthnCredential[]>([]);
+  const [loginHistory, setLoginHistory] = useState<LoginHistory[]>([]);
+  const [showHistory, setShowHistory] = useState(true);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+  const [isMobile, setIsMobile] = useState(false);
 
   const showMessage = (msg: string, type: 'success' | 'error') => {
     setMessage(msg);
@@ -28,8 +31,12 @@ export default function DashboardPage() {
       } else {
         setCredentials([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('인증서 로드 오류:', error);
+      if (error.message && error.message.includes('인증이 필요합니다')) {
+        router.push('/login');
+        return;
+      }
       setCredentials([]);
     }
   };
@@ -45,7 +52,7 @@ export default function DashboardPage() {
     try {
       await api.logout();
       router.push('/login');
-    } catch (error) {
+    } catch (error: any) {
       console.error('로그아웃 오류:', error);
       router.push('/login');
     }
@@ -56,8 +63,6 @@ export default function DashboardPage() {
     setMessageType('');
 
     try {
-      const isMobile = isMobileDevice();
-      
       if (isMobile) {
         if (!navigator.credentials || !navigator.credentials.create) {
           showMessage('이 브라우저는 생체 인증을 지원하지 않습니다. 최신 브라우저를 사용해주세요.', 'error');
@@ -139,17 +144,55 @@ export default function DashboardPage() {
     }
   };
 
+  const loadLoginHistory = async () => {
+    try {
+      const result = await api.getLoginHistory(20);
+      if (result.success && result.data) {
+        setLoginHistory(result.data);
+      } else {
+        setLoginHistory([]);
+      }
+    } catch (error: any) {
+      console.error('로그인 이력 로드 오류:', error);
+      setLoginHistory([]);
+      if (error.message && (error.message.includes('인증이 필요합니다') || 
+          error.message.includes('세션이 만료') || 
+          error.message.includes('Unauthorized'))) {
+        router.push('/login');
+        return;
+      }
+      setLoginHistory([]);
+    }
+  };
+
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '정보 없음';
     try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return '정보 없음';
+      let date: Date;
+      const trimmed = dateStr.trim();
+      
+      if (trimmed.includes('T')) {
+        date = new Date(trimmed);
+      } else if (trimmed.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/)) {
+        date = new Date(trimmed.replace(' ', 'T'));
+      } else if (trimmed.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)) {
+        date = new Date(trimmed.replace(' ', 'T') + ':00');
+      } else {
+        date = new Date(trimmed);
+      }
+      
+      if (isNaN(date.getTime())) {
+        console.error('유효하지 않은 날짜:', dateStr);
+        return '정보 없음';
+      }
+      
       return date.toLocaleString('ko-KR', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+        second: '2-digit',
       });
     } catch (e) {
       console.error('날짜 포맷팅 오류:', e, dateStr);
@@ -158,8 +201,19 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    setIsMobile(isMobileDevice());
     loadCredentials();
+    loadLoginHistory();
   }, []);
+
+  const handleShowHistory = () => {
+    setShowHistory(true);
+    loadLoginHistory();
+    const historySection = document.getElementById('login-history-section');
+    if (historySection) {
+      historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <>
@@ -168,6 +222,8 @@ export default function DashboardPage() {
         onLogout={handleLogout}
         showAddPasskey={true}
         onAddPasskey={handleAddPasskey}
+        showLoginHistory={true}
+        onShowLoginHistory={handleShowHistory}
       />
 
       <main id="main-content" role="main">
@@ -185,10 +241,10 @@ export default function DashboardPage() {
                   className="btn btn--primary dashboard-add-btn"
                   onClick={handleAddPasskey}
                 >
-                  {isMobileDevice() ? '생체 인증 추가' : '새 패스키 추가'}
+                  {isMobile ? '생체 인증 추가' : '새 패스키 추가'}
                 </button>
               </div>
-              {isMobileDevice() && (
+              {isMobile && (
                 <div style={{ 
                   padding: '12px', 
                   marginBottom: '1rem', 
@@ -236,6 +292,63 @@ export default function DashboardPage() {
                   })
                 )}
               </div>
+            </div>
+
+            <div id="login-history-section" className="dashboard-card" style={{ marginTop: '2rem' }}>
+              <div className="dashboard-header">
+                <h2>로그인 이력</h2>
+                <button
+                  className="btn btn--secondary"
+                  onClick={() => {
+                    setShowHistory(!showHistory);
+                    if (!showHistory) {
+                      loadLoginHistory();
+                    }
+                  }}
+                >
+                  {showHistory ? '숨기기' : '보기'}
+                </button>
+              </div>
+              {showHistory && (
+                <div className="login-history-list" style={{ marginTop: '1rem' }}>
+                  {loginHistory.length === 0 ? (
+                    <p>로그인 이력이 없습니다.</p>
+                  ) : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid #ddd' }}>
+                          <th style={{ padding: '12px', textAlign: 'left' }}>로그인 방식</th>
+                          <th style={{ padding: '12px', textAlign: 'left' }}>로그인 시간</th>
+                          <th style={{ padding: '12px', textAlign: 'left' }}>IP 주소</th>
+                          <th style={{ padding: '12px', textAlign: 'left' }}>상태</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loginHistory.map((history) => (
+                          <tr key={history.id} style={{ borderBottom: '1px solid #eee' }}>
+                            <td style={{ padding: '12px' }}>
+                              {history.loginType === 'PASSKEY' ? (
+                                <span style={{ color: '#1976d2', fontWeight: 'bold' }}>패스키</span>
+                              ) : (
+                                <span>비밀번호</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '12px' }}>{formatDate(history.loginAt)}</td>
+                            <td style={{ padding: '12px' }}>{history.ipAddress || '정보 없음'}</td>
+                            <td style={{ padding: '12px' }}>
+                              {history.logoutAt ? (
+                                <span style={{ color: '#666' }}>로그아웃</span>
+                              ) : (
+                                <span style={{ color: '#4caf50', fontWeight: 'bold' }}>로그인 중</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </section>
