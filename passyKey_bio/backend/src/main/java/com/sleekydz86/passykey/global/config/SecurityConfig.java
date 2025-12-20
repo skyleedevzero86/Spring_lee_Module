@@ -32,7 +32,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/public/**", "/api/auth/webauthn/authenticate", "/api/auth/login", "/api/webauthn/**")
+                        .ignoringRequestMatchers("/api/public/**", "/api/auth/webauthn/authenticate", "/api/auth/login", "/api/auth/logout", "/api/webauthn/**")
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session

@@ -34,6 +34,13 @@ export default function DashboardPage() {
     }
   };
 
+  const getDisplayName = () => {
+    if (credentials.length > 0 && credentials[0].user?.displayName) {
+      return credentials[0].user.displayName;
+    }
+    return null;
+  };
+
   const handleLogout = async () => {
     try {
       await api.logout();
@@ -156,10 +163,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      <a href="#main-content" className="skip-link">
-        본문으로 바로가기
-      </a>
-
       <Header
         showLogout={true}
         onLogout={handleLogout}
@@ -209,10 +212,11 @@ export default function DashboardPage() {
                 {credentials.length === 0 ? (
                   <p>등록된 패스키가 없습니다.</p>
                 ) : (
-                  credentials.map((cred, index) => {
+                  credentials.map((cred) => {
+                    const displayName = getDisplayName();
                     const displayLabel = cred.label && cred.label.trim() 
                       ? cred.label.trim() 
-                      : `패스키 ${index + 1}`;
+                      : (displayName || '패스키');
                     
                     return (
                       <div key={cred.credentialId} className="credential-item">

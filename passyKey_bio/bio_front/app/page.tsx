@@ -26,11 +26,6 @@ export default function Home() {
                 로그인
               </Link>
             </div>
-            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <a href="#main-content" className="btn btn--green btn--skip">
-                본문으로 바로가기
-              </a>
-            </div>
           </div>
         </section>
       </main>

@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class WebAuthnRegistrationUseCaseImpl implements WebAuthnRegistrationUseCase {
 
@@ -75,6 +77,21 @@ public class WebAuthnRegistrationUseCaseImpl implements WebAuthnRegistrationUseC
     public void registerCredential(User user, String credentialId, String attestationObjectBase64,
                                    String clientDataJSONBase64, String[] transports, String label, HttpSession session) {
         try {
+            List<WebAuthnCredential> existingCredentials = credentialRepository.findByUser(user);
+            
+            if (existingCredentials.size() >= 3) {
+                throw new WebAuthnException("패스키는 총 3개만 만들 수 있습니다. 새로 추가하려면 기존 패스키를 삭제해주세요.");
+            }
+            
+            if (label != null && !label.trim().isEmpty()) {
+                String trimmedLabel = label.trim();
+                boolean labelExists = existingCredentials.stream()
+                        .anyMatch(cred -> cred.getLabel() != null && cred.getLabel().trim().equals(trimmedLabel));
+                if (labelExists) {
+                    throw new WebAuthnException("이미 사용 중인 패스키 이름입니다. 다른 이름을 사용해주세요.");
+                }
+            }
+
             byte[] attestationObjectBytes = Base64UrlConverter.decode(attestationObjectBase64);
             byte[] clientDataJSONBytes = Base64UrlConverter.decode(clientDataJSONBase64);
 

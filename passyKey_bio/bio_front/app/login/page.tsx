@@ -135,10 +135,6 @@ export default function LoginPage() {
 
   return (
     <>
-      <a href="#main-content" className="skip-link">
-        본문으로 바로가기
-      </a>
-
       <Header />
 
       <main id="main-content" role="main">
