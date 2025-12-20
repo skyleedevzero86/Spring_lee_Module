@@ -14,26 +14,33 @@ async function fetchApi<T>(
     defaultHeaders['Content-Type'] = 'application/json';
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-    credentials: 'include',
-  });
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...defaultHeaders,
+        ...options.headers,
+      },
+      credentials: 'include',
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    try {
-      const errorJson = JSON.parse(errorText);
-      throw new Error(errorJson.message || 'API 요청 실패');
-    } catch {
-      throw new Error(errorText || 'API 요청 실패');
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const errorJson = JSON.parse(errorText);
+        throw new Error(errorJson.message || `API 요청 실패 (${response.status})`);
+      } catch {
+        throw new Error(errorText || `API 요청 실패 (${response.status})`);
+      }
     }
-  }
 
-  return response.json();
+    return response.json();
+  } catch (error: any) {
+    if (error.message && error.message.includes('Failed to fetch')) {
+      throw new Error('서버에 연결할 수 없습니다. 백엔드 서버가 실행 중인지 확인해주세요.');
+    }
+    throw error;
+  }
 }
 
 export const api = {
