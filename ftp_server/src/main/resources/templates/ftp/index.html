@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FTP 전송 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .statistics { background-color: #f4f4f4; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .error { color: red; margin-top: 10px; }
+        .success { color: green; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FTP 전송 테스트</h1>
+        
+        <div class="statistics" th:if="${statistics}">
+            <h3>전송 통계</h3>
+            <p>전체: <span th:text="${statistics.total}">0</span></p>
+            <p>성공: <span th:text="${statistics.success}">0</span></p>
+            <p>실패: <span th:text="${statistics.failed}">0</span></p>
+            <p>대기중: <span th:text="${statistics.pending}">0</span></p>
+            <p>진행중: <span th:text="${statistics.inProgress}">0</span></p>
+            <p>재시도중: <span th:text="${statistics.retrying}">0</span></p>
+            <p>성공률: <span th:text="${#numbers.formatDecimal(statistics.successRate, 1, 2)}">0</span>%</p>
+        </div>
+
+        <form th:action="@{/ftp/transfer}" th:object="${command}" method="post">
+            <div class="form-group">
+                <label for="paymentRequestNo">지출결의번호:</label>
+                <input type="text" id="paymentRequestNo" th:field="*{paymentRequestNo}" required/>
+            </div>
+            
+            <div class="form-group">
+                <label for="remotePath">원격 경로:</label>
+                <input type="text" id="remotePath" th:field="*{remotePath}" placeholder="project/2024"/>
+            </div>
+            
+            <div class="form-group">
+                <label for="fileName">파일명:</label>
+                <input type="text" id="fileName" th:field="*{fileName}" required/>
+            </div>
+            
+            <div class="form-group">
+                <label for="fileContent">파일 내용 (Base64 또는 텍스트):</label>
+                <textarea id="fileContent" th:field="*{fileContent}" rows="5" required></textarea>
+            </div>
+            
+            <button type="submit">전송 요청</button>
+        </form>
+
+        <div th:if="${message}" class="success" th:text="${message}"></div>
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+        <div th:if="${transferId}">
+            <p><a th:href="@{/ftp/transfer/{id}(id=${transferId})}">전송 상태 확인: <span th:text="${transferId}"></span></a></p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h3>기능 테스트</h3>
+            <button onclick="testConnection()">FTP 연결 테스트</button>
+            <div id="connectionResult" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <script>
+        function testConnection() {
+            fetch('/ftp/test-connection')
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('connectionResult');
+                    resultDiv.innerHTML = '<p style="color: ' + (data.connected ? 'green' : 'red') + '">' + data.message + '</p>';
+                })
+                .catch(error => {
+                    document.getElementById('connectionResult').innerHTML = '<p style="color: red">연결 테스트 실패</p>';
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FTP 전송 목록</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .status { font-weight: bold; }
+        .status.PENDING { color: orange; }
+        .status.IN_PROGRESS { color: blue; }
+        .status.SUCCESS { color: green; }
+        .status.FAILED { color: red; }
+        .status.RETRYING { color: purple; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FTP 전송 목록 - <span th:text="${paymentRequestNo}"></span></h1>
+        
+        <table th:if="${transfers and !transfers.empty}">
+            <thead>
+                <tr>
+                    <th>전송 ID</th>
+                    <th>상태</th>
+                    <th>파일명</th>
+                    <th>재시도 횟수</th>
+                    <th>생성일시</th>
+                    <th>작업</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="transfer : ${transfers}">
+                    <td><a th:href="@{/ftp/transfer/{id}(id=${transfer.transferId.value})}" th:text="${transfer.transferId.value}"></a></td>
+                    <td class="status" th:classappend="${'status.' + transfer.transferStatus}" th:text="${transfer.transferStatus.description}"></td>
+                    <td th:text="${transfer.fileName}"></td>
+                    <td th:text="${transfer.retryCount + '/' + transfer.maxRetries}"></td>
+                    <td th:text="${transfer.createdAt}"></td>
+                    <td>
+                        <a th:if="${transfer.canRetry()}" th:href="@{/ftp/transfer/{id}/retry(id=${transfer.transferId.value})}">재시도</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p th:if="${transfers.empty}">전송 이력이 없습니다.</p>
+        
+        <p><a href="/ftp">목록으로</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FTP 전송 상세</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .detail { background-color: #f4f4f4; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .status { font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+        .status.PENDING { color: orange; }
+        .status.IN_PROGRESS { color: blue; }
+        .status.SUCCESS { color: green; }
+        .status.FAILED { color: red; }
+        .status.RETRYING { color: purple; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; margin-right: 10px; }
+        button:hover { background-color: #45a049; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FTP 전송 상세</h1>
+        
+        <div th:if="${transfer}" class="detail">
+            <div class="status" th:classappend="${'status.' + transfer.transferStatus}" th:text="${transfer.transferStatus.description}"></div>
+            <p><strong>전송 ID:</strong> <span th:text="${transfer.transferId.value}"></span></p>
+            <p><strong>지출결의번호:</strong> <span th:text="${transfer.paymentRequestNo}"></span></p>
+            <p><strong>원격 경로:</strong> <span th:text="${transfer.remotePath}"></span></p>
+            <p><strong>파일명:</strong> <span th:text="${transfer.fileName}"></span></p>
+            <p><strong>재시도 횟수:</strong> <span th:text="${transfer.retryCount}"></span> / <span th:text="${transfer.maxRetries}"></span></p>
+            <p><strong>생성일시:</strong> <span th:text="${transfer.createdAt}"></span></p>
+            <p th:if="${transfer.startedAt}"><strong>시작일시:</strong> <span th:text="${transfer.startedAt}"></span></p>
+            <p th:if="${transfer.completedAt}"><strong>완료일시:</strong> <span th:text="${transfer.completedAt}"></span></p>
+            <p th:if="${transfer.errorMessage}" class="error"><strong>에러 메시지:</strong> <span th:text="${transfer.errorMessage}"></span></p>
+            
+            <div th:if="${transfer.canRetry()}">
+                <form th:action="@{/ftp/transfer/{id}/retry(id=${transfer.transferId.value})}" method="post">
+                    <button type="submit">재시도</button>
+                </form>
+            </div>
+        </div>
+        
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+        
+        <p><a href="/ftp">목록으로</a></p>
+    </div>
+</body>
+</html>
