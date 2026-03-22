@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.oidstudy.oidc.mapper.AdminNotificationMapper">
+
+    <resultMap id="AdminNotificationMap" type="com.example.oidc.domain.notification.AdminNotification">
+        <id property="id" column="notification_id"/>
+        <result property="category" column="category"/>
+        <result property="title" column="title"/>
+        <result property="message" column="message"/>
+        <result property="targetUserId" column="target_user_id"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="readAt" column="read_at"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="notification_id">
+        insert into admin_notification (
+        category,
+        title,
+        message,
+        target_user_id,
+        created_at
+        ) values (
+        #{category},
+        #{title},
+        #{message},
+        #{targetUserId},
+        current_timestamp
+        )
+    </insert>
+
+    <select id="findRecent" resultMap="AdminNotificationMap">
+        select notification_id,
+        category,
+        title,
+        message,
+        target_user_id,
+        created_at,
+        read_at
+        from admin_notification
+        order by created_at desc, notification_id desc
+        fetch first #{limit} rows only
+    </select>
+</mapper>
