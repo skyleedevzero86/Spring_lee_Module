@@ -1,4 +1,4 @@
-package com.sleekydz86.oidstudy.oidc.application.auth;
+package com.sleekydz86.oidstudy.global.auth;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
