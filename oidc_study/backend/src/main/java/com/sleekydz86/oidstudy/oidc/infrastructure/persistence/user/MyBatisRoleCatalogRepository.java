@@ -5,15 +5,15 @@ import java.util.Map;
 
 import com.sleekydz86.oidstudy.oidc.domain.RoleCatalog;
 import com.sleekydz86.oidstudy.oidc.domain.repository.RoleCatalogRepository;
-import com.sleekydz86.oidstudy.oidc.mapper.RoleMapper;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class MyBatisRoleCatalogRepository implements RoleCatalogRepository {
 
-    private final RoleMapper roleMapper;
+    private final com.sleekydz86.oidstudy.oidc.mapper.RoleMapper roleMapper;
 
-    public MyBatisRoleCatalogRepository(RoleMapper roleMapper) {
+    public MyBatisRoleCatalogRepository(
+            com.sleekydz86.oidstudy.oidc.mapper.RoleMapper roleMapper) {
         this.roleMapper = roleMapper;
     }
 

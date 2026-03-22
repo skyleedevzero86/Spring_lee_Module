@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.oidc.mapper.UserAccountMapper">
+
+    <resultMap id="UserAccountMap" type="com.example.oidc.domain.user.UserAccount">
+        <id property="id" column="user_id"/>
+        <result property="provider" column="provider"/>
+        <result property="providerUserId" column="provider_user_id"/>
+        <result property="loginId" column="login_id"/>
+        <result property="email" column="email"/>
+        <result property="displayName" column="display_name"/>
+        <result property="nickname" column="nickname"/>
+        <result property="contactNumber" column="contact_number"/>
+        <result property="profileImageUrl" column="profile_image_url"/>
+        <result property="status" column="status"/>
+        <result property="termsAgreedAt" column="terms_agreed_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="lastLoginAt" column="last_login_at"/>
+        <result property="approvedAt" column="approved_at"/>
+        <result property="approvedBy" column="approved_by"/>
+        <result property="withdrawnAt" column="withdrawn_at"/>
+        <result property="withdrawalReason" column="withdrawal_reason"/>
+    </resultMap>
+
+    <sql id="UserColumns">
+        user_id,
+        provider,
+        provider_user_id,
+        login_id,
+        email,
+        display_name,
+        nickname,
+        contact_number,
+        profile_image_url,
+        status,
+        terms_agreed_at,
+        created_at,
+        updated_at,
+        last_login_at,
+        approved_at,
+        approved_by,
+        withdrawn_at,
+        withdrawal_reason
+    </sql>
+
+    <select id="findByProviderAndProviderUserId" resultMap="UserAccountMap">
+        select <include refid="UserColumns"/>
+        from app_user
+        where provider = #{provider}
+        and provider_user_id = #{providerUserId}
+    </select>
+
+    <select id="findById" resultMap="UserAccountMap">
+        select <include refid="UserColumns"/>
+        from app_user
+        where user_id = #{id}
+    </select>
+
+    <select id="findByLoginId" resultMap="UserAccountMap">
+        select <include refid="UserColumns"/>
+        from app_user
+        where login_id = #{loginId}
+    </select>
+
+    <select id="findAll" resultMap="UserAccountMap">
+        select <include refid="UserColumns"/>
+        from app_user
+        <where>
+            <if test="status != null">
+                status = #{status}
+            </if>
+        </where>
+        order by created_at desc, user_id desc
+    </select>
+
+    <select id="countAll" resultType="long">
+        select count(*) from app_user
+    </select>
+
+    <select id="countByStatus" resultType="long">
+        select count(*) from app_user where status = #{status}
+    </select>
+
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id" keyColumn="user_id">
+        insert into app_user (
+        provider,
+        provider_user_id,
+        login_id,
+        email,
+        display_name,
+        nickname,
+        contact_number,
+        profile_image_url,
+        status,
+        terms_agreed_at,
+        created_at,
+        updated_at,
+        last_login_at,
+        approved_at,
+        approved_by,
+        withdrawn_at,
+        withdrawal_reason
+        ) values (
+        #{provider},
+        #{providerUserId},
+        #{loginId},
+        #{email},
+        #{displayName},
+        #{nickname},
+        #{contactNumber},
+        #{profileImageUrl},
+        #{status},
+        #{termsAgreedAt},
+        current_timestamp,
+        current_timestamp,
+        current_timestamp,
+        #{approvedAt},
+        #{approvedBy},
+        #{withdrawnAt},
+        #{withdrawalReason}
+        )
+    </insert>
+
+    <update id="updateOnLogin">
+        update app_user
+        set email = #{email},
+        display_name = #{displayName},
+        nickname = #{nickname},
+        profile_image_url = #{profileImageUrl},
+        updated_at = current_timestamp,
+        last_login_at = current_timestamp
+        where user_id = #{id}
+    </update>
+
+    <update id="updateOnRegistration">
+        update app_user
+        set login_id = #{loginId},
+        display_name = #{displayName},
+        contact_number = #{contactNumber},
+        terms_agreed_at = #{termsAgreedAt},
+        status = #{status},
+        updated_at = current_timestamp
+        where user_id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        update app_user
+        set status = #{status},
+        approved_by = #{approvedBy},
+        approved_at = case when #{status} = 'ACTIVE' then current_timestamp else null end,
+        withdrawn_at = case when #{status} = 'WITHDRAWN' then current_timestamp else null end,
+        withdrawal_reason = #{withdrawalReason},
+        updated_at = current_timestamp
+        where user_id = #{id}
+    </update>
+</mapper>
