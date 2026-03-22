@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.oidstudy.oidc.mapper.RoleMapper">
+
+    <select id="countByRoleCode" resultType="int">
+        select count(*) from app_role where role_code = #{roleCode}
+    </select>
+
+    <insert id="insertRole">
+        insert into app_role (
+        role_code,
+        role_name,
+        created_at
+        ) values (
+        #{roleCode},
+        #{roleName},
+        current_timestamp
+        )
+    </insert>
+
+    <select id="findRoleCodesByUserId" resultType="string">
+        select ar.role_code
+        from app_user_role aur
+        join app_role ar on ar.role_id = aur.role_id
+        where aur.user_id = #{userId}
+        order by ar.role_code
+    </select>
+
+    <delete id="deleteUserRoles">
+        delete from app_user_role where user_id = #{userId}
+    </delete>
+
+    <insert id="insertUserRoleByCode">
+        insert into app_user_role (
+        user_id,
+        role_id,
+        created_at
+        )
+        select #{userId}, ar.role_id, current_timestamp
+        from app_role ar
+        where ar.role_code = #{roleCode}
+    </insert>
+</mapper>
