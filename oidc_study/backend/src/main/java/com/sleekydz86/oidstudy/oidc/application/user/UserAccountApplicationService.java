@@ -4,12 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
-import com.sleekydz86.oidstudy.oidc.domain.*;
-import com.sleekydz86.oidstudy.oidc.domain.policy.BootstrapAdministratorPolicy;
-import com.sleekydz86.oidstudy.oidc.domain.policy.RoleAssignmentPolicy;
-import com.sleekydz86.oidstudy.oidc.domain.repository.RoleCatalogRepository;
-import com.sleekydz86.oidstudy.oidc.domain.repository.UserAccountRepository;
+import com.sleekydz86.oidstudy.oidc.domain.notification.AdminNotification;
+import com.sleekydz86.oidstudy.oidc.domain.notification.repository.AdminNotificationRepository;
+import com.sleekydz86.oidstudy.oidc.domain.user.*;
+import com.sleekydz86.oidstudy.oidc.domain.user.policy.BootstrapAdministratorPolicy;
+import com.sleekydz86.oidstudy.oidc.domain.user.policy.RoleAssignmentPolicy;
+import com.sleekydz86.oidstudy.oidc.domain.user.repository.RoleCatalogRepository;
+import com.sleekydz86.oidstudy.oidc.domain.user.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

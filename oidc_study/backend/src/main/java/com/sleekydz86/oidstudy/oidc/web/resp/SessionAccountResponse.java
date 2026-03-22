@@ -1,6 +1,6 @@
 package com.sleekydz86.oidstudy.oidc.web.resp;
 
-import com.sleekydz86.oidstudy.oidc.domain.AccountStatus;
+import com.sleekydz86.oidstudy.oidc.domain.user.AccountStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 

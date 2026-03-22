@@ -1,4 +1,4 @@
-package com.sleekydz86.oidstudy.oidc.domain.policy;
+package com.sleekydz86.oidstudy.oidc.domain.user.policy;
 
 import java.util.List;
 

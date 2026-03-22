@@ -3,7 +3,7 @@ package com.sleekydz86.oidstudy.global.auth;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.sleekydz86.oidstudy.oidc.domain.UserProvisioningCommand;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserProvisioningCommand;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.core.oidc.StandardClaimNames;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;

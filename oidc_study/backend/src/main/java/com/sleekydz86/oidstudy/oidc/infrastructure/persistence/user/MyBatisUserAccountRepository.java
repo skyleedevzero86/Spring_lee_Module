@@ -2,10 +2,10 @@ package com.sleekydz86.oidstudy.oidc.infrastructure.persistence.user;
 
 import java.util.List;
 import java.util.Optional;
-import com.sleekydz86.oidstudy.oidc.domain.AccountStatus;
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
-import com.sleekydz86.oidstudy.oidc.domain.UserIdentity;
-import com.sleekydz86.oidstudy.oidc.domain.repository.UserAccountRepository;
+import com.sleekydz86.oidstudy.oidc.domain.user.AccountStatus;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserIdentity;
+import com.sleekydz86.oidstudy.oidc.domain.user.repository.UserAccountRepository;
 import com.sleekydz86.oidstudy.oidc.mapper.UserAccountMapper;
 import org.springframework.stereotype.Repository;
 

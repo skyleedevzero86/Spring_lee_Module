@@ -1,7 +1,7 @@
 package com.sleekydz86.oidstudy.global.security;
 
 import java.util.Collection;
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;

@@ -1,5 +1,6 @@
 package com.sleekydz86.oidstudy.global.config;
 
+import com.sleekydz86.oidstudy.oidc.service.NaverOidcUserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;

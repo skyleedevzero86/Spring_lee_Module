@@ -3,8 +3,8 @@ package com.sleekydz86.oidstudy.oidc.infrastructure.persistence.user;
 import java.util.List;
 import java.util.Map;
 
-import com.sleekydz86.oidstudy.oidc.domain.RoleCatalog;
-import com.sleekydz86.oidstudy.oidc.domain.repository.RoleCatalogRepository;
+import com.sleekydz86.oidstudy.oidc.domain.user.RoleCatalog;
+import com.sleekydz86.oidstudy.oidc.domain.user.repository.RoleCatalogRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository

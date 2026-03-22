@@ -1,4 +1,4 @@
-package com.sleekydz86.oidstudy.oidc.domain;
+package com.sleekydz86.oidstudy.oidc.domain.user;
 
 public enum AccountStatus {
     SIGNUP_REQUIRED,

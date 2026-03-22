@@ -4,7 +4,7 @@ import com.sleekydz86.oidstudy.global.security.AppOidcUser;
 import com.sleekydz86.oidstudy.oidc.application.user.CompleteRegistrationCommand;
 import com.sleekydz86.oidstudy.oidc.application.user.LoginIdCheckResult;
 import com.sleekydz86.oidstudy.oidc.application.user.UserAccountApplicationService;
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
 import com.sleekydz86.oidstudy.oidc.web.factory.SessionResponseFactory;
 import com.sleekydz86.oidstudy.oidc.web.req.RegistrationRequest;
 import com.sleekydz86.oidstudy.oidc.web.resp.LoginIdAvailabilityResponse;

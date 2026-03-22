@@ -1,8 +1,8 @@
-package com.sleekydz86.oidstudy.oidc.domain.policy;
+package com.sleekydz86.oidstudy.oidc.domain.user.policy;
 
 import java.util.Locale;
 import com.sleekydz86.oidstudy.global.config.AppSecurityProperties;
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
 import org.springframework.stereotype.Component;
 
 @Component

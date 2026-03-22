@@ -1,5 +1,6 @@
 package com.sleekydz86.oidstudy.oidc.web.factory;
 
+import com.sleekydz86.oidstudy.oidc.domain.notification.AdminNotification;
 import com.sleekydz86.oidstudy.oidc.web.resp.AdminNotificationResponse;
 import org.springframework.stereotype.Component;
 

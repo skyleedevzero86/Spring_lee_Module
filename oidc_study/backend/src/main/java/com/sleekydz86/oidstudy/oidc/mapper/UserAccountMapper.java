@@ -2,8 +2,8 @@ package com.sleekydz86.oidstudy.oidc.mapper;
 
 import java.util.List;
 
-import com.sleekydz86.oidstudy.oidc.domain.AccountStatus;
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.AccountStatus;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

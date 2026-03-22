@@ -1,6 +1,6 @@
 package com.sleekydz86.oidstudy.oidc.application.user;
 
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
 
 public record DashboardSnapshot(
         long totalUsers,

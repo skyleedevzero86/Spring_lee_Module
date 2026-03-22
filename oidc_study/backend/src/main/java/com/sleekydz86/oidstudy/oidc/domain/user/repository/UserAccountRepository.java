@@ -1,8 +1,8 @@
-package com.sleekydz86.oidstudy.oidc.domain.repository;
+package com.sleekydz86.oidstudy.oidc.domain.user.repository;
 
-import com.sleekydz86.oidstudy.oidc.domain.AccountStatus;
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
-import com.sleekydz86.oidstudy.oidc.domain.UserIdentity;
+import com.sleekydz86.oidstudy.oidc.domain.user.AccountStatus;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserIdentity;
 import java.util.List;
 import java.util.Optional;
 

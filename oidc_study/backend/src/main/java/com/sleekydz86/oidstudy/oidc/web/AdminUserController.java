@@ -3,7 +3,7 @@ package com.sleekydz86.oidstudy.oidc.web;
 import java.util.List;
 import com.sleekydz86.oidstudy.global.security.AppOidcUser;
 import com.sleekydz86.oidstudy.oidc.application.user.UserAccountApplicationService;
-import com.sleekydz86.oidstudy.oidc.domain.AccountStatus;
+import com.sleekydz86.oidstudy.oidc.domain.user.AccountStatus;
 import com.sleekydz86.oidstudy.oidc.web.factory.AdminUserResponseFactory;
 import com.sleekydz86.oidstudy.oidc.web.req.AdminApprovalRequest;
 import com.sleekydz86.oidstudy.oidc.web.resp.AdminUserResponse;

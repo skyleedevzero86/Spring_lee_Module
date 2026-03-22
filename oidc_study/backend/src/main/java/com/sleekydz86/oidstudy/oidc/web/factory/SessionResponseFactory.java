@@ -2,7 +2,7 @@ package com.sleekydz86.oidstudy.oidc.web.factory;
 
 import java.util.LinkedHashMap;
 import com.sleekydz86.oidstudy.global.security.AppOidcUser;
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
 import com.sleekydz86.oidstudy.oidc.web.resp.SessionAccountResponse;
 import com.sleekydz86.oidstudy.oidc.web.resp.SessionResponse;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;

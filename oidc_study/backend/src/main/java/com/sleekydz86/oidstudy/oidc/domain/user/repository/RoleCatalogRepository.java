@@ -1,4 +1,4 @@
-package com.sleekydz86.oidstudy.oidc.domain.repository;
+package com.sleekydz86.oidstudy.oidc.domain.user.repository;
 
 import java.util.List;
 

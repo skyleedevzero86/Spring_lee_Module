@@ -1,11 +1,11 @@
-package com.sleekydz86.oidstudy.oidc.domain.policy;
+package com.sleekydz86.oidstudy.oidc.domain.user.policy;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.sleekydz86.oidstudy.oidc.domain.RoleCatalog;
+import com.sleekydz86.oidstudy.oidc.domain.user.RoleCatalog;
 import org.springframework.stereotype.Component;
 
 @Component

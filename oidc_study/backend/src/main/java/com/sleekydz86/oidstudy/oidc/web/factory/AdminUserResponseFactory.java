@@ -1,6 +1,6 @@
 package com.sleekydz86.oidstudy.oidc.web.factory;
 
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
 import com.sleekydz86.oidstudy.oidc.web.resp.AdminUserResponse;
 import org.springframework.stereotype.Component;
 

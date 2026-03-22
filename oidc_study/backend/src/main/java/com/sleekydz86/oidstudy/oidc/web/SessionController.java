@@ -2,7 +2,7 @@ package com.sleekydz86.oidstudy.oidc.web;
 
 import com.sleekydz86.oidstudy.global.security.AppOidcUser;
 import com.sleekydz86.oidstudy.oidc.application.user.UserAccountApplicationService;
-import com.sleekydz86.oidstudy.oidc.domain.UserAccount;
+import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
 import com.sleekydz86.oidstudy.oidc.web.factory.DashboardResponseFactory;
 import com.sleekydz86.oidstudy.oidc.web.factory.SessionResponseFactory;
 import com.sleekydz86.oidstudy.oidc.web.resp.DashboardResponse;
