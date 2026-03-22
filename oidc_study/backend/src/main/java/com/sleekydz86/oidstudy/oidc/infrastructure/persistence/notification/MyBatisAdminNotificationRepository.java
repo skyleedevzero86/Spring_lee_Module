@@ -1,6 +1,8 @@
 package com.sleekydz86.oidstudy.oidc.infrastructure.persistence.notification;
 
 import java.util.List;
+
+import com.sleekydz86.oidstudy.oidc.mapper.AdminNotificationMapper;
 import org.springframework.stereotype.Repository;
 
 @Repository
