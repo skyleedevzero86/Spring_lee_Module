@@ -133,7 +133,11 @@ export function createApprovalConsoleStore(repository = createApprovalConsoleRep
 				users,
 				notifications,
 				roleSelections: hydrateRoleSelections(users, current.roleSelections),
-				registrationForm: hydrateRegistrationForm(session.account, current.registrationForm),
+				registrationForm: hydrateRegistrationForm(
+					session.account,
+					session.oidcClaims ?? {},
+					current.registrationForm
+				),
 				selectedStatus: selectedStatus ?? current.selectedStatus,
 				flash: clearMessages ? '' : flash,
 				error: ''

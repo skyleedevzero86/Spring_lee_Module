@@ -8,6 +8,21 @@
   export let onWithdraw;
 
   $: account = session?.account;
+  const deriveLoginId = (value, claims) => {
+    if (value) {
+      return value;
+    }
+    const email = String(claims?.email ?? "").trim().toLowerCase();
+    if (!email.includes("@")) {
+      return "-";
+    }
+    const localPart = email.split("@")[0].replace(/[^a-z0-9_-]/g, "");
+    return localPart || "-";
+  };
+  const deriveContactNumber = (value, claims) => {
+    return value || claims?.mobile || claims?.mobile_e164 || "-";
+  };
+  $: claims = session?.oidcClaims ?? {};
 </script>
 
 <section class="panel">
@@ -23,10 +38,14 @@
       <div><span>이름</span><strong>{account.displayName ?? "-"}</strong></div>
       <div><span>이메일</span><strong>{account.email ?? "-"}</strong></div>
       <div>
-        <span>로그인 아이디</span><strong>{account.loginId ?? "-"}</strong>
+        <span>로그인 아이디</span><strong
+          >{deriveLoginId(account.loginId, claims)}</strong
+        >
       </div>
       <div>
-        <span>연락처</span><strong>{account.contactNumber ?? "-"}</strong>
+        <span>연락처</span><strong
+          >{deriveContactNumber(account.contactNumber, claims)}</strong
+        >
       </div>
       <div>
         <span>Provider Sub</span><strong>{account.providerUserId}</strong>

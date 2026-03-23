@@ -28,14 +28,33 @@ export function createRegistrationForm(seed = {}) {
 	};
 }
 
-export function hydrateRegistrationForm(account, existingForm = createRegistrationForm()) {
+function suggestLoginIdFromClaims(claims = {}) {
+	const email = String(claims.email ?? '').trim().toLowerCase();
+	const localPart = email.includes('@') ? email.split('@')[0] : '';
+	const normalized = localPart.replace(/[^a-z0-9_-]/g, '');
+	if (normalized.length >= 4) {
+		return normalized.slice(0, 20);
+	}
+	return '';
+}
+
+function suggestContactFromClaims(claims = {}) {
+	return String(claims.mobile ?? claims.mobile_e164 ?? '').trim();
+}
+
+export function hydrateRegistrationForm(account, claims = {}, existingForm = createRegistrationForm()) {
 	if (!account) {
-		return existingForm;
+		return {
+			loginId: existingForm.loginId || suggestLoginIdFromClaims(claims),
+			displayName: existingForm.displayName || String(claims.name ?? ''),
+			contactNumber: existingForm.contactNumber || suggestContactFromClaims(claims),
+			agreedToTerms: existingForm.agreedToTerms
+		};
 	}
 	return {
-		loginId: existingForm.loginId || account.loginId || '',
+		loginId: existingForm.loginId || account.loginId || suggestLoginIdFromClaims(claims),
 		displayName: existingForm.displayName || account.displayName || '',
-		contactNumber: existingForm.contactNumber || account.contactNumber || '',
+		contactNumber: existingForm.contactNumber || account.contactNumber || suggestContactFromClaims(claims),
 		agreedToTerms: existingForm.agreedToTerms || Boolean(account.termsAgreedAt)
 	};
 }

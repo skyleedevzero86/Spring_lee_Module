@@ -6,6 +6,17 @@
   export let onChange;
   export let onCheckLoginId;
   export let onSubmit;
+
+  const maskContactNumber = (value) => {
+    const digits = String(value ?? "").replace(/\D/g, "");
+    if (digits.length < 7) {
+      return "";
+    }
+    if (digits.length === 11) {
+      return `${digits.slice(0, 3)}-****-${digits.slice(7)}`;
+    }
+    return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`;
+  };
 </script>
 
 <section class="panel registration">
@@ -49,11 +60,17 @@
     <label>
       <span>연락처</span>
       <input
+        type="password"
         value={form.contactNumber}
         on:input={(event) =>
           onChange("contactNumber", event.currentTarget.value)}
         placeholder="010-1234-5678"
       />
+      {#if form.contactNumber}
+        <small class="masked-preview"
+          >표시: {maskContactNumber(form.contactNumber)}</small
+        >
+      {/if}
     </label>
     <label class="terms">
       <input
@@ -164,6 +181,12 @@
   .check-message.neutral {
     background: rgba(23, 33, 27, 0.06);
     color: #445046;
+  }
+  .masked-preview {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #667567;
   }
   @media (max-width: 980px) {
     .inline-row {
