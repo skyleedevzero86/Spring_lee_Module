@@ -8,7 +8,7 @@ import com.sleekydz86.oidstudy.oidc.web.factory.SessionResponseFactory;
 import com.sleekydz86.oidstudy.oidc.web.resp.DashboardResponse;
 import com.sleekydz86.oidstudy.oidc.web.resp.SessionResponse;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,8 +42,8 @@ public class SessionController {
             UserAccount refreshed = userAccountApplicationService.getRequired(appOidcUser.getAccount().getId());
             return sessionResponseFactory.create(appOidcUser, refreshed);
         }
-        if (principal instanceof OidcUser oidcUser) {
-            return sessionResponseFactory.create(oidcUser);
+        if (principal instanceof OAuth2User oauth2User) {
+            return sessionResponseFactory.create(oauth2User);
         }
         return sessionResponseFactory.anonymous();
     }

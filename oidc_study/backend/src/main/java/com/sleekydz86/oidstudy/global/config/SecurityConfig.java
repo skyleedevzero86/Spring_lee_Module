@@ -1,6 +1,9 @@
 package com.sleekydz86.oidstudy.global.config;
 
 import com.sleekydz86.oidstudy.oidc.service.NaverOidcUserService;
+import com.sleekydz86.oidstudy.oidc.service.NaverOAuth2UserService;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -10,16 +13,24 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final NaverOidcUserService naverOidcUserService;
+    private final NaverOAuth2UserService naverOAuth2UserService;
 
-    public SecurityConfig(NaverOidcUserService naverOidcUserService) {
+    public SecurityConfig(
+            NaverOidcUserService naverOidcUserService,
+            NaverOAuth2UserService naverOAuth2UserService
+    ) {
         this.naverOidcUserService = naverOidcUserService;
+        this.naverOAuth2UserService = naverOAuth2UserService;
     }
 
     @Bean
@@ -35,6 +46,7 @@ public class SecurityConfig {
                                 "/assets/**",
                                 "/favicon.ico",
                                 "/api/session",
+                                "/api/logout",
                                 "/oauth2/**",
                                 "/login/**",
                                 "/error"
@@ -45,10 +57,26 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .defaultSuccessUrl("/", true)
-                        .failureUrl("/?login=error")
-                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(naverOidcUserService))
+                        .failureHandler((request, response, exception) -> {
+                            String reason = exception.getMessage() == null ? "알 수 없는 오류" : exception.getMessage();
+                            log.warn("OAuth2 로그인에 실패했습니다. 원인={}", reason);
+                            String encoded = URLEncoder.encode(reason, StandardCharsets.UTF_8);
+                            response.sendRedirect("/?login=error&reason=" + encoded);
+                        })
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(naverOAuth2UserService)
+                                .oidcUserService(naverOidcUserService)
+                        )
                 )
-                .logout(logout -> logout.logoutSuccessUrl("/"))
+                .logout(logout -> logout
+                        .logoutUrl("/api/logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpStatus.OK.value());
+                        })
+                )
                 .exceptionHandling(exceptions -> exceptions
                         .defaultAuthenticationEntryPointFor(
                                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),

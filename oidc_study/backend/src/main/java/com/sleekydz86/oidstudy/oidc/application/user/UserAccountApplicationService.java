@@ -60,7 +60,7 @@ public class UserAccountApplicationService {
     @Transactional(readOnly = true)
     public UserAccount getRequired(Long userId) {
         UserAccount account = userAccountRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
         account.setRoles(roleCatalogRepository.findRolesByUserId(userId));
         return account;
     }

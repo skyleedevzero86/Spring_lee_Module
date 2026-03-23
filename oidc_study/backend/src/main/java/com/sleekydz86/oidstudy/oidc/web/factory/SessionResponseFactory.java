@@ -5,7 +5,7 @@ import com.sleekydz86.oidstudy.global.security.AppOidcUser;
 import com.sleekydz86.oidstudy.oidc.domain.user.UserAccount;
 import com.sleekydz86.oidstudy.oidc.web.resp.SessionAccountResponse;
 import com.sleekydz86.oidstudy.oidc.web.resp.SessionResponse;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,7 +19,7 @@ public class SessionResponseFactory {
         return new SessionResponse(
                 true,
                 "/oauth2/authorization/naver",
-                "/logout",
+                "/api/logout",
                 new SessionAccountResponse(
                         account.getId(),
                         account.getProvider(),
@@ -47,13 +47,13 @@ public class SessionResponseFactory {
         );
     }
 
-    public SessionResponse create(OidcUser principal) {
+    public SessionResponse create(OAuth2User principal) {
         return new SessionResponse(
                 true,
                 "/oauth2/authorization/naver",
-                "/logout",
+                "/api/logout",
                 null,
-                new LinkedHashMap<>(principal.getClaims())
+                new LinkedHashMap<>(principal.getAttributes())
         );
     }
 }

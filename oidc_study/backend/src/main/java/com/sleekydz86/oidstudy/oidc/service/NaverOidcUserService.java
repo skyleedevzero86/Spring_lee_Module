@@ -1,6 +1,8 @@
 package com.sleekydz86.oidstudy.oidc.service;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import com.sleekydz86.oidstudy.global.auth.OidcProvisioningCommandFactory;
 import com.sleekydz86.oidstudy.global.security.AppOidcUser;
@@ -24,8 +26,7 @@ public class NaverOidcUserService extends OidcUserService {
 
     public NaverOidcUserService(
             UserAccountApplicationService userAccountApplicationService,
-            OidcProvisioningCommandFactory commandFactory
-    ) {
+            OidcProvisioningCommandFactory commandFactory) {
         this.userAccountApplicationService = userAccountApplicationService;
         this.commandFactory = commandFactory;
     }
@@ -33,6 +34,7 @@ public class NaverOidcUserService extends OidcUserService {
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         OidcUser oidcUser = super.loadUser(userRequest);
+        Map<String, Object> normalized = normalizeNaverClaims(oidcUser.getClaims());
         UserAccount account = userAccountApplicationService.provision(commandFactory.create(userRequest, oidcUser));
         Set<SimpleGrantedAuthority> authorities = resolveAuthorities(account, oidcUser);
 
@@ -42,10 +44,9 @@ public class NaverOidcUserService extends OidcUserService {
                 account.getId(),
                 account.getProviderUserId(),
                 account.getStatus(),
-                account.roleSnapshot()
-        );
-
-        return new AppOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo(), account);
+                account.roleSnapshot());
+        log.debug("OIDC id_token claims={}", oidcUser.getIdToken().getClaims().keySet());
+        return new AppOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo(), normalized, account);
     }
 
     private Set<SimpleGrantedAuthority> resolveAuthorities(UserAccount account, OidcUser oidcUser) {
@@ -61,5 +62,26 @@ public class NaverOidcUserService extends OidcUserService {
                 .map(authority -> new SimpleGrantedAuthority(authority.getAuthority()))
                 .forEach(authorities::add);
         return authorities;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> normalizeNaverClaims(Map<String, Object> attributes) {
+        Object response = attributes.get("response");
+        Map<String, Object> source = response instanceof Map<?, ?> map
+                ? (Map<String, Object>) map
+                : attributes;
+
+        Map<String, Object> normalized = new LinkedHashMap<>(source);
+        Object id = source.get("id");
+        if (id != null) {
+            normalized.put("sub", String.valueOf(id));
+        }
+        if (source.get("name") == null && source.get("nickname") != null) {
+            normalized.put("name", source.get("nickname"));
+        }
+        if (source.get("picture") == null && source.get("profile_image") != null) {
+            normalized.put("picture", source.get("profile_image"));
+        }
+        return normalized;
     }
 }
