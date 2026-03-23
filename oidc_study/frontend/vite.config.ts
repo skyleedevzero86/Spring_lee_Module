@@ -1,6 +1,11 @@
-import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import path from 'node:path';
 
 export default defineConfig({
-	plugins: [sveltekit()]
+	plugins: [svelte()],
+	build: {
+		outDir: path.resolve(__dirname, '../src/main/resources/static'),
+		emptyOutDir: true
+	}
 });
