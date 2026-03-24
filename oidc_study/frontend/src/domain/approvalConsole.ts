@@ -1,5 +1,6 @@
 export const ASSIGNABLE_ROLES = ['ROLE_USER', 'ROLE_MANAGER', 'ROLE_ADMIN'];
 export const STATUS_TABS = ['PENDING', 'ACTIVE', 'REJECTED', 'WITHDRAWN'];
+export const DEFAULT_APPROVAL_ROLE = 'ROLE_USER';
 
 export function createInitialState() {
 	return {
@@ -104,7 +105,7 @@ export function normalizeRoles(roles) {
 export function hydrateRoleSelections(users, existingSelections = {}) {
 	return users.reduce((nextSelections, user) => ({
 		...nextSelections,
-		[user.id]: normalizeRoles(user.roles ?? [])
+		[user.id]: resolveInitialRoles(user)
 	}), { ...existingSelections });
 }
 
@@ -118,6 +119,14 @@ export function toggleRoleSelection(roleSelections, userId, roleCode) {
 		...roleSelections,
 		[userId]: normalizeRoles(nextRoles)
 	};
+}
+
+function resolveInitialRoles(user) {
+	const normalized = normalizeRoles(user.roles ?? []);
+	if (normalized.length > 0) {
+		return normalized;
+	}
+	return user.status === 'PENDING' ? [DEFAULT_APPROVAL_ROLE] : normalized;
 }
 
 export function statusTone(status) {

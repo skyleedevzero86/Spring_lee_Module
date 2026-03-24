@@ -81,8 +81,17 @@ export function createApprovalConsoleStore(repository = createApprovalConsoleRep
 	}
 
 	async function approveUser(userId) {
+		const roles = snapshot.roleSelections[userId] ?? [];
+		if (roles.length === 0) {
+			setState((current) => ({
+				...current,
+				error: '권한은 최소 1개 이상 선택해야 승인할 수 있습니다.',
+				flash: ''
+			}));
+			return;
+		}
+
 		await executeMutation(async () => {
-			const roles = snapshot.roleSelections[userId] ?? [];
 			await repository.approveUser(userId, roles);
 			return '사용자 승인과 권한 부여가 완료되었습니다.';
 		});

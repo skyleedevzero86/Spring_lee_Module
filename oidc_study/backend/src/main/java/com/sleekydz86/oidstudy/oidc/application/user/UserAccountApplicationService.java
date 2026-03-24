@@ -58,7 +58,7 @@ public class UserAccountApplicationService {
 
         UserAccount hydrated = getRequired(account.getId());
         if (hydrated.getStatus() == AccountStatus.PENDING && bootstrapAdministratorPolicy.shouldBootstrap(hydrated)) {
-            return approve(hydrated.getId(), hydrated.getId(), List.of(RoleCatalog.ADMIN));
+            return approve(hydrated.getId(), hydrated.getId(), List.of(RoleCatalog.USER, RoleCatalog.ADMIN));
         }
         return hydrated;
     }
@@ -127,7 +127,7 @@ public class UserAccountApplicationService {
         userAccountRepository.updateRegistration(account);
         UserAccount hydrated = getRequired(userId);
         if (bootstrapAdministratorPolicy.shouldBootstrap(hydrated)) {
-            return approve(hydrated.getId(), hydrated.getId(), List.of(RoleCatalog.ADMIN));
+            return approve(hydrated.getId(), hydrated.getId(), List.of(RoleCatalog.USER, RoleCatalog.ADMIN));
         }
         return hydrated;
     }
@@ -137,6 +137,9 @@ public class UserAccountApplicationService {
         roleCatalogRepository.ensureDefaultCatalog();
         UserAccount account = getRequired(targetUserId);
         List<String> normalizedRoles = roleAssignmentPolicy.normalize(requestedRoles);
+        if (normalizedRoles.isEmpty()) {
+            throw new IllegalArgumentException("권한은 최소 1개 이상 선택해야 합니다.");
+        }
         roleCatalogRepository.replaceUserRoles(targetUserId, normalizedRoles);
         account.approve(approverUserId, normalizedRoles);
         userAccountRepository.updateStatus(account);

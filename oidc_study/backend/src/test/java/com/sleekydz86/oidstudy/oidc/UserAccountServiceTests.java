@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 @SpringBootTest
@@ -101,6 +102,28 @@ class UserAccountApplicationServiceTests {
         UserAccount approved = userAccountApplicationService.approve(registeredMember.getId(), approvedAdmin.getId(), List.of(RoleCatalog.MANAGER));
 
         assertThat(approved.getStatus()).isEqualTo(AccountStatus.ACTIVE);
-        assertThat(approved.roleSnapshot()).contains(RoleCatalog.USER, RoleCatalog.MANAGER);
+        assertThat(approved.roleSnapshot()).containsExactly(RoleCatalog.MANAGER);
+    }
+
+    @Test
+    void approvalShouldRequireAtLeastOneRole() {
+        UserAccount admin = userAccountApplicationService.provision(
+                new UserProvisioningCommand("naver", "admin-subject-3", "admin3@example.com", "Admin User", "admin3", null)
+        );
+        UserAccount approvedAdmin = userAccountApplicationService.completeRegistration(
+                admin.getId(),
+                new CompleteRegistrationCommand("admin003", "관리자3", "010-5555-6666", true)
+        );
+        UserAccount member = userAccountApplicationService.provision(
+                new UserProvisioningCommand("naver", "member-subject-3", "user3@example.com", "Normal User", "user3", null)
+        );
+        UserAccount registeredMember = userAccountApplicationService.completeRegistration(
+                member.getId(),
+                new CompleteRegistrationCommand("member003", "일반회원3", "010-7777-8888", true)
+        );
+
+        assertThatThrownBy(() -> userAccountApplicationService.approve(registeredMember.getId(), approvedAdmin.getId(), List.of()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("권한은 최소 1개 이상 선택해야 합니다.");
     }
 }

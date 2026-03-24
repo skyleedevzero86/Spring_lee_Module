@@ -11,13 +11,7 @@
 
 <header class="hero">
   <div class="hero-copy">
-    <p class="eyebrow">Svelte 5.54.0 + Spring Boot 4.0.3</p>
     <h1>OIDC 회원가입, 승인, 탈퇴 콘솔</h1>
-    <p class="hero-text">
-      네이버 OIDC로 로그인한 사용자는 추가 가입정보를 입력한 뒤 승인 대기로
-      전환됩니다. 관리자는 승인과 반려를 처리하고, 탈퇴 회원 알림도 한 화면에서
-      확인할 수 있습니다.
-    </p>
     <div class="hero-actions">
       {#if session?.authenticated}
         <button class="secondary" on:click={onLogout}>로그아웃</button>
@@ -59,25 +53,11 @@
     box-shadow: 0 24px 60px rgba(42, 52, 33, 0.14);
     backdrop-filter: blur(10px);
   }
-  .eyebrow {
-    margin: 0 0 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.86rem;
-    font-weight: 800;
-    color: #028742;
-  }
   h1 {
     margin: 0;
     font-size: clamp(2.4rem, 4vw, 4.8rem);
     line-height: 0.96;
     letter-spacing: -0.05em;
-  }
-  .hero-text {
-    margin: 18px 0 0;
-    max-width: 720px;
-    line-height: 1.75;
-    color: #526253;
   }
   .hero-actions {
     display: flex;
