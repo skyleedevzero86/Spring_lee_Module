@@ -23,13 +23,16 @@
   import SessionPanel from "./ui/components/SessionPanel.svelte";
   import WithdrawnPanel from "./ui/components/WithdrawnPanel.svelte";
 
-  const backendBaseUrl = (import.meta.env.VITE_BACKEND_BASE_URL ?? "http://localhost:9090").replace(/\/$/, "");
+  const backendBaseUrl = (import.meta.env.VITE_BACKEND_BASE_URL ?? "").replace(/\/$/, "");
   const approvalConsole = createApprovalConsoleStore();
   let loginErrorMessage = "";
   let currentPage = "my";
 
   const resolveLoginErrorMessage = () => {
-    const params = new URLSearchParams(window.location.search);
+    const hashQuery = window.location.hash.includes("?")
+      ? window.location.hash.slice(window.location.hash.indexOf("?"))
+      : "";
+    const params = new URLSearchParams(window.location.search || hashQuery);
     if (params.get("login") !== "error") {
       return "";
     }

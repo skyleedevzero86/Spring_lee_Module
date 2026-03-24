@@ -16,7 +16,7 @@ export default defineConfig({
 		}
 	},
 	build: {
-		outDir: path.resolve(__dirname, '../backend/src/main/resources/static'),
+		outDir: path.resolve(__dirname, 'dist'),
 		emptyOutDir: true
 	}
 });
