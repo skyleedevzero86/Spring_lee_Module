@@ -46,6 +46,9 @@ public class UserAccount {
         if (this.displayName == null || this.displayName.isBlank() || needsRegistration()) {
             this.displayName = profile.displayName();
         }
+        if (this.contactNumber == null || this.contactNumber.isBlank() || needsRegistration()) {
+            this.contactNumber = profile.contactNumber();
+        }
         this.nickname = profile.nickname();
         this.profileImageUrl = profile.profileImageUrl();
     }
@@ -90,7 +93,7 @@ public class UserAccount {
     }
 
     public UserProfile profile() {
-        return new UserProfile(email, displayName, nickname, profileImageUrl);
+        return new UserProfile(email, displayName, nickname, profileImageUrl, contactNumber);
     }
 
     public List<String> roleSnapshot() {

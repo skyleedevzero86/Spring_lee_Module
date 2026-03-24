@@ -129,6 +129,7 @@
         set email = #{email},
         display_name = #{displayName},
         nickname = #{nickname},
+        contact_number = #{contactNumber},
         profile_image_url = #{profileImageUrl},
         updated_at = current_timestamp,
         last_login_at = current_timestamp

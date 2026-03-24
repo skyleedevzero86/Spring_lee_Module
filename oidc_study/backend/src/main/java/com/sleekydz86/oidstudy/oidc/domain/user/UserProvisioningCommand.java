@@ -6,6 +6,7 @@ public record UserProvisioningCommand(
         String email,
         String displayName,
         String nickname,
-        String profileImageUrl
+        String profileImageUrl,
+        String contactNumber
 ) {
 }

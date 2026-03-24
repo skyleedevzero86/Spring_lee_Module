@@ -44,7 +44,13 @@ public class UserAccountApplicationService {
     public UserAccount provision(UserProvisioningCommand command) {
         roleCatalogRepository.ensureDefaultCatalog();
         UserIdentity identity = new UserIdentity(command.provider(), command.providerUserId());
-        UserProfile profile = new UserProfile(command.email(), command.displayName(), command.nickname(), command.profileImageUrl());
+        UserProfile profile = new UserProfile(
+                command.email(),
+                command.displayName(),
+                command.nickname(),
+                command.profileImageUrl(),
+                command.contactNumber()
+        );
 
         UserAccount account = userAccountRepository.findByIdentity(identity)
                 .map(existing -> refreshExistingAccount(existing, profile))

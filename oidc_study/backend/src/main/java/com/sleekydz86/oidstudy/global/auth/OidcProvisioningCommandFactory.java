@@ -34,7 +34,8 @@ public class OidcProvisioningCommandFactory {
                         stringClaim(claims, "nickname"),
                         fallbackName),
                 firstNonBlank(stringClaim(claims, "nickname"), stringClaim(claims, StandardClaimNames.GIVEN_NAME)),
-                firstNonBlank(stringClaim(claims, "profile_image"), stringClaim(claims, "picture")));
+                firstNonBlank(stringClaim(claims, "profile_image"), stringClaim(claims, "picture")),
+                firstNonBlank(stringClaim(claims, "mobile"), stringClaim(claims, "mobile_e164")));
     }
 
     private String stringClaim(Map<String, Object> claims, String key) {

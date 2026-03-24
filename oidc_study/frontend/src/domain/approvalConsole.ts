@@ -96,7 +96,7 @@ export function updateRegistrationField(form, field, value) {
 
 export function normalizeRoles(roles) {
 	const requested = Array.isArray(roles) ? roles : [];
-	return Array.from(new Set(['ROLE_USER', ...requested]))
+	return Array.from(new Set(requested))
 		.map((role) => String(role).trim().toUpperCase())
 		.filter((role) => ASSIGNABLE_ROLES.includes(role));
 }
@@ -104,12 +104,12 @@ export function normalizeRoles(roles) {
 export function hydrateRoleSelections(users, existingSelections = {}) {
 	return users.reduce((nextSelections, user) => ({
 		...nextSelections,
-		[user.id]: normalizeRoles(user.roles?.length ? user.roles : ['ROLE_USER'])
+		[user.id]: normalizeRoles(user.roles ?? [])
 	}), { ...existingSelections });
 }
 
 export function toggleRoleSelection(roleSelections, userId, roleCode) {
-	const currentRoles = roleSelections[userId] ?? ['ROLE_USER'];
+	const currentRoles = roleSelections[userId] ?? [];
 	const nextRoles = currentRoles.includes(roleCode)
 		? currentRoles.filter((value) => value !== roleCode)
 		: [...currentRoles, roleCode];

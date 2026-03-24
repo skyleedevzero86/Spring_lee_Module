@@ -4,7 +4,8 @@ public record UserProfile(
         String email,
         String displayName,
         String nickname,
-        String profileImageUrl
+        String profileImageUrl,
+        String contactNumber
 ) {
 
     public UserProfile {
@@ -12,6 +13,7 @@ public record UserProfile(
         displayName = normalize(displayName);
         nickname = normalize(nickname);
         profileImageUrl = normalize(profileImageUrl);
+        contactNumber = normalize(contactNumber);
     }
 
     private static String normalize(String value) {

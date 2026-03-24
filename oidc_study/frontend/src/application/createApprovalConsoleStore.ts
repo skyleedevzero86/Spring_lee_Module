@@ -82,7 +82,7 @@ export function createApprovalConsoleStore(repository = createApprovalConsoleRep
 
 	async function approveUser(userId) {
 		await executeMutation(async () => {
-			const roles = snapshot.roleSelections[userId] ?? ['ROLE_USER'];
+			const roles = snapshot.roleSelections[userId] ?? [];
 			await repository.approveUser(userId, roles);
 			return '사용자 승인과 권한 부여가 완료되었습니다.';
 		});
