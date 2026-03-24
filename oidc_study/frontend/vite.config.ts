@@ -9,6 +9,8 @@ export default defineConfig({
 	root: path.resolve(__dirname, 'src'),
 	plugins: [svelte({ configFile: path.resolve(__dirname, 'svelte.config.js') })],
 	server: {
+		port: 5173,
+		strictPort: true,
 		proxy: {
 			'/api': 'http://localhost:9090',
 			'/oauth2': 'http://localhost:9090',
