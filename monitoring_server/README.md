@@ -1,4 +1,10 @@
-# Spring Monitoring (IdolGlow)
+
+
+<img width="1004" height="539" alt="image" src="https://github.com/user-attachments/assets/de8ac15a-fbe2-45af-bc3f-9ffe2124efcc" />
+
+<br/>
+
+# Spring Monitoring 
 
 Spring Boot **Actuator**, **Micrometer**, **Spring Boot Admin**을 한 애플리케이션에 묶고, **Next.js** 관리자 UI로 요약·통계·엔드포인트를 보여 주는 학습·데모용 모노레포입니다.
 
@@ -15,13 +21,12 @@ Spring Boot **Actuator**, **Micrometer**, **Spring Boot Admin**을 한 애플리
 ## 저장소 구성
 
 ```
-스프링모니터링/
-├── pom.xml                 # 부모 POM (모듈·BOM)
-├── monitoring-server/      # Spring Boot 실행 모듈
+monitoring_server/
+├── backend/      # Spring Boot 실행 모듈
 └── frontend/               # Next.js (App Router)
 ```
 
-## 백엔드 (`monitoring-server`)
+## 백엔드 
 
 ### 의존성 요약
 
@@ -94,40 +99,6 @@ SPRING_BOOT_ADMIN_BASE_URL=http://localhost:8080
 
 ---
 
-## 실행 방법
-
-### 1. 백엔드
-
-저장소 루트 `스프링모니터링`에서:
-
-```bash
-cd monitoring-server
-mvn spring-boot:run
-```
-
-또는 부모에서 모듈만 지정:
-
-```bash
-mvn -pl monitoring-server spring-boot:run
-```
-
-### 2. 프론트엔드
-
-```bash
-cd frontend
-npm install
-# 또는: pnpm install
-cp .env.example .env.local   # Windows: copy .env.example .env.local
-npm run dev
-# 또는: pnpm dev
-```
-
-- UI: **http://localhost:3000**
-
-패키지 매니저는 **npm** 또는 **pnpm** 등 본인 환경에 맞게 사용하면 됩니다.
-
----
-
 ## 바로 확인할 주소
 
 | 설명              | URL                                              |
@@ -138,35 +109,3 @@ npm run dev
 | Actuator Info     | http://localhost:8081/actuator/info              |
 | Prometheus        | http://localhost:8081/actuator/prometheus        |
 | 커스텀 엔드포인트 | http://localhost:8081/actuator/course-monitoring |
-
----
-
-## 이 프로젝트에서 다루는 주제
-
-- Actuator 의존성·노출 엔드포인트·`management.server.port` 분리
-- Health / Info / Metrics / Prometheus
-- 커스텀 `HealthIndicator`, 커스텀 `@Endpoint`(Read/Write)
-- Counter, Gauge, Timer, `@Timed`, 공통 태그·percentile·histogram
-- Spring Boot Admin: 동일 프로세스에 Server + Client 등록
-- Next.js 서버 컴포넌트에서 백엔드 API 소비
-
----
-
-## 참고·문서
-
-- 백엔드 상세: `monitoring-server/BACKEND_PORTFOLIO.md`
-- 프론트엔드 상세: `frontend/FRONTEND_PORTFOLIO.md`
-
----
-
-## 제한 사항 (로컬 데모 기준)
-
-- **인증 없음** — 관리 UI·Actuator는 신뢰 네트워크에서만 사용하세요.
-- **`CourseCatalogPort` 구현 빈**: 도메인 포트는 정의되어 있으나, 저장소에 **인메모리/DB 등 구현 클래스가 없으면** Spring 기동 시 빈 주입에 실패할 수 있습니다. 필요 시 `infrastructure` 또는 `adapter.out`에 어댑터를 추가하세요.
-- **프론트 `lib`**: HTTP 클라이언트·`load*` 유스케이스·mock 샘플 데이터 모듈이 `create-monitoring-client.ts` 등에서 import되는 경우, 해당 파일이 저장소에 포함되어 있는지 빌드(`npm run build` / `pnpm run typecheck`)로 확인하세요.
-
----
-
-## Java 버전
-
-- **25** (`pom.xml`의 `java.version`) 기준입니다. JDK를 맞춰 설치해 주세요.
