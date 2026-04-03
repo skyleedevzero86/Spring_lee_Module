@@ -30,9 +30,9 @@ monitoring_server/
 
 ### 의존성 요약
 
-- Web, Actuator, AOP(`@Timed`), JDBC + PostgreSQL, Redis, **Spring Boot Admin Server + Client**, Micrometer Prometheus registry.
+- Web, Actuator, AOP, JDBC + PostgreSQL, Redis, **Spring Boot Admin Server + Client**, Micrometer Prometheus registry.
 
-### 포트·URL (`application.yml` 기준)
+### 포트·URL 
 
 | 용도                                               | 포트 / URL                 |
 | -------------------------------------------------- | -------------------------- |
@@ -69,7 +69,7 @@ monitoring_server/
 
 ---
 
-## 프론트엔드 (`frontend`)
+## 프론트엔드
 
 - **App Router** (`app/`): `/`, `/statistics`, `/actuator` — 서버 컴포넌트에서 데이터 조회 후 대시보드 컴포넌트 렌더.
 - **`lib/`**: 도메인 read-model, `Result` 타입, `MonitoringReadPort`, live HTTP + mock 어댑터, 실패 시 샘플 폴백(`resolveWithFallback`) 정책.
