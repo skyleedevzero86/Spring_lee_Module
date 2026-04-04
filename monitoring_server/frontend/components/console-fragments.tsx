@@ -27,6 +27,40 @@ export interface DashboardChip {
   onClick?: () => void;
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  UP: "정상",
+  DOWN: "장애",
+  OUT_OF_SERVICE: "서비스 중지",
+  UNKNOWN: "알 수 없음",
+};
+
+const SOURCE_LABELS: Record<string, string> = {
+  live: "실시간",
+  sample: "샘플",
+};
+
+const OS_FAMILY_LABELS: Record<string, string> = {
+  WINDOWS: "윈도우",
+  LINUX: "리눅스",
+  MAC: "맥",
+  OTHER: "기타",
+};
+
+const LINK_KIND_LABELS: Record<string, string> = {
+  admin: "관리자",
+  actuator: "액추에이터",
+  prometheus: "프로메테우스",
+  grafana: "그라파나",
+};
+
+const METRIC_STATISTIC_LABELS: Record<string, string> = {
+  VALUE: "값",
+  COUNT: "개수",
+  TOTAL: "총합",
+  MAX: "최대",
+  SUM: "합계",
+};
+
 function compact(value: number) {
   return new Intl.NumberFormat("ko-KR", {
     notation: "compact",
@@ -34,8 +68,56 @@ function compact(value: number) {
   }).format(value);
 }
 
+function normalizeKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
 function statusClass(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+}
+
+export function localizeStatus(value: string) {
+  return STATUS_LABELS[value.toUpperCase()] ?? value;
+}
+
+export function localizeSource(value: string) {
+  return SOURCE_LABELS[value.toLowerCase()] ?? value;
+}
+
+export function localizeOsFamily(value: string) {
+  return OS_FAMILY_LABELS[value.toUpperCase()] ?? value;
+}
+
+export function localizeLinkKind(value: string) {
+  return LINK_KIND_LABELS[value.toLowerCase()] ?? value;
+}
+
+export function localizeMetricStatistic(value: string) {
+  return METRIC_STATISTIC_LABELS[value.toUpperCase()] ?? value;
+}
+
+export function localizeComponentName(value: string) {
+  switch (normalizeKey(value)) {
+    case "db":
+    case "database":
+      return "데이터베이스";
+    case "redis":
+      return "Redis";
+    case "postgresql":
+      return "PostgreSQL";
+    case "diskspace":
+      return "디스크 공간";
+    case "ping":
+      return "핑";
+    case "coursecoverage":
+      return "학습 진행률";
+    case "livenessstate":
+      return "라이브니스 상태";
+    case "readinessstate":
+      return "레디니스 상태";
+    default:
+      return value;
+  }
 }
 
 export function formatDate(value: string) {
@@ -56,7 +138,7 @@ export function formatTime(value: string) {
 }
 
 export function formatBytes(value: number | null) {
-  if (value == null) return "N/A";
+  if (value == null) return "없음";
   if (value === 0) return "0 B";
 
   const units = ["B", "KB", "MB", "GB", "TB"];
@@ -81,7 +163,7 @@ export function formatMetricValue(value: number, unit: string) {
   }
 
   if (value === 1 || value === 0) {
-    return value === 1 ? "UP" : "DOWN";
+    return value === 1 ? "정상" : "장애";
   }
 
   if (value >= 1000) {
@@ -116,17 +198,17 @@ export function DashboardTopbar({
 
       <div className="board-toolbar">
         <div className="toolbar-group">
-          <span className="toolbar-label">Source</span>
-          <span className={`toolbar-chip is-live ${statusClass(source)}`}>{source}</span>
+          <span className="toolbar-label">데이터</span>
+          <span className={`toolbar-chip is-live ${statusClass(source)}`}>{localizeSource(source)}</span>
         </div>
 
         <div className="toolbar-group">
-          <span className="toolbar-label">Updated</span>
+          <span className="toolbar-label">업데이트</span>
           <span className="toolbar-chip">{formatDate(updatedAt)}</span>
         </div>
 
         <div className="toolbar-group">
-          <span className="toolbar-label">Window</span>
+          <span className="toolbar-label">기간</span>
           {chips.map((chip) => (
             chip.onClick ? (
               <button
@@ -188,7 +270,7 @@ export function StatPanel({
     <article className={`console-panel stat-panel ${className ?? ""} tone-${tone}`.trim()}>
       <div className="console-panel-head">
         <div>
-          <p className="panel-kicker">Metric</p>
+          <p className="panel-kicker">지표</p>
           <h2>{label}</h2>
         </div>
       </div>
@@ -205,7 +287,7 @@ export function MonitoringLinksGrid({ links }: { links: MonitoringLink[] }) {
     <div className="dense-card-grid">
       {links.map((link) => (
         <a key={link.title} className="dense-link-card" href={link.url} target="_blank" rel="noreferrer">
-          <span className={`status-chip ${statusClass(link.kind)}`}>{link.kind}</span>
+          <span className={`status-chip ${statusClass(link.kind)}`}>{localizeLinkKind(link.kind)}</span>
           <strong>{link.title}</strong>
           <p>{link.description}</p>
           <code>{link.url}</code>
@@ -234,18 +316,18 @@ export function EndpointRows({ endpoints }: { endpoints: EndpointSummary[] }) {
 export function ServerSnapshot({ server }: { server: ServerStatus }) {
   return (
     <div className="server-grid">
-      <div className="server-row"><span>Host</span><strong>{server.hostName}</strong></div>
-      <div className="server-row"><span>OS</span><strong>{server.operatingSystem}</strong></div>
-      <div className="server-row"><span>Family</span><strong>{server.operatingSystemFamily}</strong></div>
-      <div className="server-row"><span>Arch</span><strong>{server.architecture}</strong></div>
-      <div className="server-row"><span>CPU</span><strong>{server.availableProcessors} cores</strong></div>
+      <div className="server-row"><span>호스트</span><strong>{server.hostName}</strong></div>
+      <div className="server-row"><span>운영체제</span><strong>{server.operatingSystem}</strong></div>
+      <div className="server-row"><span>계열</span><strong>{localizeOsFamily(server.operatingSystemFamily)}</strong></div>
+      <div className="server-row"><span>아키텍처</span><strong>{server.architecture}</strong></div>
+      <div className="server-row"><span>CPU</span><strong>{server.availableProcessors}코어</strong></div>
       <div className="server-row"><span>Java</span><strong>{server.javaRuntime}</strong></div>
-      <div className="server-row"><span>Memory</span><strong>{formatBytes(server.usedMemoryBytes)} / {formatBytes(server.totalMemoryBytes)}</strong></div>
-      <div className="server-row"><span>Disk</span><strong>{formatBytes(server.usedDiskBytes)} / {formatBytes(server.totalDiskBytes)}</strong></div>
-      <div className="server-row"><span>Memory %</span><strong>{server.memoryUsagePercent.toFixed(1)}%</strong></div>
-      <div className="server-row"><span>Disk %</span><strong>{server.diskUsagePercent.toFixed(1)}%</strong></div>
-      <div className="server-row"><span>Disk Path</span><strong>{server.diskPath}</strong></div>
-      <div className="server-row"><span>Captured</span><strong>{formatTime(server.capturedAt)}</strong></div>
+      <div className="server-row"><span>메모리</span><strong>{formatBytes(server.usedMemoryBytes)} / {formatBytes(server.totalMemoryBytes)}</strong></div>
+      <div className="server-row"><span>디스크</span><strong>{formatBytes(server.usedDiskBytes)} / {formatBytes(server.totalDiskBytes)}</strong></div>
+      <div className="server-row"><span>메모리 사용률</span><strong>{server.memoryUsagePercent.toFixed(1)}%</strong></div>
+      <div className="server-row"><span>디스크 사용률</span><strong>{server.diskUsagePercent.toFixed(1)}%</strong></div>
+      <div className="server-row"><span>디스크 경로</span><strong>{server.diskPath}</strong></div>
+      <div className="server-row"><span>수집 시각</span><strong>{formatTime(server.capturedAt)}</strong></div>
     </div>
   );
 }
@@ -257,30 +339,30 @@ export function StorageCards({ storage }: { storage: StoreUsage[] }) {
         <article key={item.component} className="storage-card">
           <div className="storage-card-head">
             <strong>{item.component}</strong>
-            <span className={`status-chip ${statusClass(item.status)}`}>{item.status}</span>
+            <span className={`status-chip ${statusClass(item.status)}`}>{localizeStatus(item.status)}</span>
           </div>
           <div className="storage-metrics">
             <div>
-              <span>Used</span>
+              <span>사용량</span>
               <strong>{formatBytes(item.usedBytes)}</strong>
             </div>
             <div>
-              <span>24h Delta</span>
+              <span>{item.growthLabel} 증감</span>
               <strong>{`${item.dailyGrowthBytes >= 0 ? "+" : "-"}${formatBytes(Math.abs(item.dailyGrowthBytes))}`}</strong>
             </div>
           </div>
           <div className="storage-metrics">
             <div>
-              <span>Limit</span>
+              <span>한도</span>
               <strong>{formatBytes(item.limitBytes)}</strong>
             </div>
             <div>
-              <span>Usage</span>
-              <strong>{item.usagePercent == null ? "N/A" : `${item.usagePercent.toFixed(1)}%`}</strong>
+              <span>사용률</span>
+              <strong>{item.usagePercent == null ? "없음" : `${item.usagePercent.toFixed(1)}%`}</strong>
             </div>
           </div>
           <p className="storage-detail">{item.detail}</p>
-          <small>Version {item.version} · Updated {formatTime(item.capturedAt)}</small>
+          <small>버전 {item.version} · 갱신 {formatTime(item.capturedAt)}</small>
         </article>
       ))}
     </div>
@@ -294,20 +376,20 @@ export function InfrastructureCards({ items }: { items: InfrastructureStatus[] }
         <article key={item.component} className="infra-card">
           <div className="infra-card-head">
             <strong>{item.component}</strong>
-            <span className={`status-chip ${statusClass(item.status)}`}>{item.status}</span>
+            <span className={`status-chip ${statusClass(item.status)}`}>{localizeStatus(item.status)}</span>
           </div>
           <div className="infra-stats">
             <div>
-              <span>Availability</span>
-              <strong>{item.availability === 1 ? "100%" : "0%"}</strong>
+              <span>가용성</span>
+              <strong>{`${(item.availability * 100).toFixed(0)}%`}</strong>
             </div>
             <div>
-              <span>Latency</span>
+              <span>지연 시간</span>
               <strong>{item.latencyMs.toFixed(0)} ms</strong>
             </div>
           </div>
           <p>{item.detail}</p>
-          <small>Updated {formatTime(item.lastCheckedAt)}</small>
+          <small>갱신 {formatTime(item.lastCheckedAt)}</small>
         </article>
       ))}
     </div>
@@ -353,7 +435,7 @@ export function MetricRows({ metrics }: { metrics: MetricStat[] }) {
             <strong>{metric.name}</strong>
             <p>{metric.description}</p>
           </div>
-          <span>{metric.statistic}</span>
+          <span>{localizeMetricStatistic(metric.statistic)}</span>
           <strong>{formatMetricValue(metric.value, metric.unit)}</strong>
         </div>
       ))}
@@ -386,10 +468,10 @@ export function StatusRows({ items }: { items: ComponentStatus[] }) {
       {items.map((item) => (
         <div key={item.name} className="status-row">
           <div>
-            <strong>{item.name}</strong>
+            <strong>{localizeComponentName(item.name)}</strong>
             <p>{item.detail}</p>
           </div>
-          <span className={`status-chip ${statusClass(item.status)}`}>{item.status}</span>
+          <span className={`status-chip ${statusClass(item.status)}`}>{localizeStatus(item.status)}</span>
         </div>
       ))}
     </div>

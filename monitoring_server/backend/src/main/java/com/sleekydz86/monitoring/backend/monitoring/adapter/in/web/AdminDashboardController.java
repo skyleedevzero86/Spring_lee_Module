@@ -4,6 +4,7 @@ import com.sleekydz86.monitoring.backend.monitoring.application.dto.DashboardPay
 import com.sleekydz86.monitoring.backend.monitoring.application.port.in.DashboardQueryUseCase;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -17,13 +18,13 @@ public class AdminDashboardController {
     }
 
     @GetMapping("/overview")
-    public DashboardPayloads.OverviewResponse overview() {
-        return this.dashboardQuery.overview();
+    public DashboardPayloads.OverviewResponse overview(@RequestParam(defaultValue = "15s") String window) {
+        return this.dashboardQuery.overview(window);
     }
 
     @GetMapping("/statistics")
-    public DashboardPayloads.StatisticsResponse statistics() {
-        return this.dashboardQuery.statistics();
+    public DashboardPayloads.StatisticsResponse statistics(@RequestParam(defaultValue = "15s") String window) {
+        return this.dashboardQuery.statistics(window);
     }
 
     @GetMapping("/actuator-summary")

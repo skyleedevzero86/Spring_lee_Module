@@ -39,8 +39,8 @@ public class InfrastructureProbeService {
     private final AtomicInteger redisLatencyMs = new AtomicInteger();
     private final AtomicReference<Instant> databaseCheckedAt = new AtomicReference<>(Instant.EPOCH);
     private final AtomicReference<Instant> redisCheckedAt = new AtomicReference<>(Instant.EPOCH);
-    private final AtomicReference<String> databaseDetail = new AtomicReference<>("Waiting for the first probe.");
-    private final AtomicReference<String> redisDetail = new AtomicReference<>("Waiting for the first probe.");
+    private final AtomicReference<String> databaseDetail = new AtomicReference<>("첫 프로브를 기다리는 중입니다.");
+    private final AtomicReference<String> redisDetail = new AtomicReference<>("첫 프로브를 기다리는 중입니다.");
 
     private final Counter databaseFailures;
     private final Counter redisFailures;
@@ -129,12 +129,12 @@ public class InfrastructureProbeService {
 
         try {
             if (this.jdbcTemplate == null) {
-                this.databaseDetail.set("JdbcTemplate bean is not available.");
+                this.databaseDetail.set("JdbcTemplate 빈을 찾을 수 없습니다.");
             }
             else {
                 Integer result = this.jdbcTemplate.queryForObject("SELECT 1", Integer.class);
                 available = Integer.valueOf(1).equals(result);
-                this.databaseDetail.set("SELECT 1 probe succeeded.");
+                this.databaseDetail.set("SELECT 1 프로브에 성공했습니다.");
             }
         }
         catch (Exception exception) {
@@ -155,14 +155,14 @@ public class InfrastructureProbeService {
 
         try {
             if (this.redisConnectionFactory == null) {
-                this.redisDetail.set("RedisConnectionFactory bean is not available.");
+                this.redisDetail.set("RedisConnectionFactory 빈을 찾을 수 없습니다.");
             }
             else {
                 RedisConnection connection = this.redisConnectionFactory.getConnection();
                 try {
                     String pong = connection.ping();
                     available = "PONG".equalsIgnoreCase(pong);
-                    this.redisDetail.set("PING probe returned PONG.");
+                    this.redisDetail.set("PING 프로브가 PONG 응답을 반환했습니다.");
                 }
                 finally {
                     connection.close();

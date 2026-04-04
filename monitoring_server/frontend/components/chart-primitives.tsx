@@ -23,7 +23,7 @@ function average(points: TrendPoint[]) {
 function formatLegendValue(value: number, unit: string) {
   if (unit === "%") return `${value.toFixed(1)}%`;
   if (unit === "ms") return `${value.toFixed(0)} ms`;
-  if (unit === "req/min") return `${compact(value)} req/min`;
+  if (unit === "건/분") return `${compact(value)}건/분`;
   return unit ? `${compact(value)} ${unit}` : compact(value);
 }
 
@@ -37,7 +37,7 @@ export function LineChart({
   unit: string;
 }) {
   if (points.length === 0) {
-    return <div className="empty-state">No time-series data is available.</div>;
+    return <div className="empty-state">시계열 데이터가 없습니다.</div>;
   }
 
   const width = 720;
@@ -67,12 +67,12 @@ export function LineChart({
   return (
     <div className="chart-block">
       <div className="chart-legend">
-        <span><i style={{ background: accent }} />Latest {formatLegendValue(latest, unit)}</span>
-        <span><i style={{ background: "#6dd6ff" }} />Average {formatLegendValue(avg, unit)}</span>
-        <span><i style={{ background: "#5a6376" }} />Peak {formatLegendValue(max, unit)}</span>
+        <span><i style={{ background: accent }} />최신 {formatLegendValue(latest, unit)}</span>
+        <span><i style={{ background: "#6dd6ff" }} />평균 {formatLegendValue(avg, unit)}</span>
+        <span><i style={{ background: "#5a6376" }} />최대 {formatLegendValue(max, unit)}</span>
       </div>
 
-      <svg viewBox={`0 0 ${width} ${height}`} className="chart-canvas" role="img" aria-label={`${unit} trend`}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="chart-canvas" role="img" aria-label={`${unit} 추이 차트`}>
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={accent} stopOpacity="0.24" />
@@ -109,8 +109,8 @@ export function LineChart({
           ))}
         </div>
         <div className="chart-stats">
-          <span>min {compact(min)}</span>
-          <span>max {compact(max)}</span>
+          <span>최소 {compact(min)}</span>
+          <span>최대 {compact(max)}</span>
         </div>
       </div>
     </div>
@@ -119,7 +119,7 @@ export function LineChart({
 
 export function BarList({ items }: { items: BarItem[] }) {
   if (items.length === 0) {
-    return <div className="empty-state">No items are available.</div>;
+    return <div className="empty-state">표시할 항목이 없습니다.</div>;
   }
 
   const max = Math.max(...items.map((item) => item.value), 1);
@@ -155,7 +155,7 @@ export function BarList({ items }: { items: BarItem[] }) {
 
 export function DonutBreakdown({ items }: { items: DistributionItem[] }) {
   if (items.length === 0) {
-    return <div className="empty-state">No breakdown data is available.</div>;
+    return <div className="empty-state">분포 데이터가 없습니다.</div>;
   }
 
   const total = items.reduce((sum, item) => sum + item.value, 0);
@@ -176,7 +176,7 @@ export function DonutBreakdown({ items }: { items: DistributionItem[] }) {
     <div className="donut-layout">
       <div className="donut-ring" style={{ background: `conic-gradient(${segments.join(", ")})` }}>
         <div className="donut-hole">
-          <span>Status</span>
+          <span>상태</span>
           <strong>{total}</strong>
         </div>
       </div>

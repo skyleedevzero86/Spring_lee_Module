@@ -43,15 +43,15 @@ public class ConnectedStoreObservationService {
     private final RedisConnectionFactory redisConnectionFactory;
 
     private final AtomicReference<String> postgresStatus = new AtomicReference<>("UNKNOWN");
-    private final AtomicReference<String> postgresVersion = new AtomicReference<>("unknown");
-    private final AtomicReference<String> postgresDetail = new AtomicReference<>("Waiting for the first measurement.");
+    private final AtomicReference<String> postgresVersion = new AtomicReference<>("알 수 없음");
+    private final AtomicReference<String> postgresDetail = new AtomicReference<>("첫 측정을 기다리는 중입니다.");
     private final AtomicReference<Instant> postgresCapturedAt = new AtomicReference<>(Instant.EPOCH);
     private final AtomicLong postgresUsedBytes = new AtomicLong();
     private final AtomicLong postgresDailyGrowthBytes = new AtomicLong();
 
     private final AtomicReference<String> redisStatus = new AtomicReference<>("UNKNOWN");
-    private final AtomicReference<String> redisVersion = new AtomicReference<>("unknown");
-    private final AtomicReference<String> redisDetail = new AtomicReference<>("Waiting for the first measurement.");
+    private final AtomicReference<String> redisVersion = new AtomicReference<>("알 수 없음");
+    private final AtomicReference<String> redisDetail = new AtomicReference<>("첫 측정을 기다리는 중입니다.");
     private final AtomicReference<Instant> redisCapturedAt = new AtomicReference<>(Instant.EPOCH);
     private final AtomicLong redisUsedBytes = new AtomicLong();
     private final AtomicLong redisLimitBytes = new AtomicLong(-1L);
@@ -137,7 +137,7 @@ public class ConnectedStoreObservationService {
         try {
             if (this.jdbcTemplate == null) {
                 this.postgresStatus.set("UNKNOWN");
-                this.postgresDetail.set("JdbcTemplate bean is not available.");
+                this.postgresDetail.set("JdbcTemplate 빈을 찾을 수 없습니다.");
                 this.postgresCapturedAt.set(now);
                 return;
             }
@@ -148,8 +148,8 @@ public class ConnectedStoreObservationService {
                            pg_database_size(current_database()) AS used_bytes
                     """);
 
-            String databaseName = stringValue(row.get("database_name"), "unknown");
-            String serverVersion = stringValue(row.get("server_version"), "unknown");
+            String databaseName = stringValue(row.get("database_name"), "알 수 없음");
+            String serverVersion = stringValue(row.get("server_version"), "알 수 없음");
             long usedBytes = longValue(row.get("used_bytes"));
 
             this.postgresStatus.set("UP");
@@ -159,7 +159,7 @@ public class ConnectedStoreObservationService {
 
             recordUsagePoint(this.postgresHistory, now, usedBytes);
             this.postgresDailyGrowthBytes.set(calculateDailyGrowth(this.postgresHistory, now, usedBytes));
-            this.postgresDetail.set("database=" + databaseName + ", recent 24h delta is calculated from in-app snapshots.");
+            this.postgresDetail.set("데이터베이스=" + databaseName + ", 증감 값은 대시보드 스냅샷 기준으로 계산됩니다.");
         }
         catch (Exception exception) {
             this.postgresStatus.set("DOWN");
@@ -173,7 +173,7 @@ public class ConnectedStoreObservationService {
         try {
             if (this.redisConnectionFactory == null) {
                 this.redisStatus.set("UNKNOWN");
-                this.redisDetail.set("RedisConnectionFactory bean is not available.");
+                this.redisDetail.set("RedisConnectionFactory 빈을 찾을 수 없습니다.");
                 this.redisCapturedAt.set(now);
                 return;
             }
@@ -186,8 +186,8 @@ public class ConnectedStoreObservationService {
 
                 long usedBytes = longValue(memory.getProperty("used_memory"));
                 long limitBytes = longValue(memory.getProperty("maxmemory"));
-                String version = stringValue(server.getProperty("redis_version"), "unknown");
-                String os = stringValue(server.getProperty("os"), "unknown");
+                String version = stringValue(server.getProperty("redis_version"), "알 수 없음");
+                String os = stringValue(server.getProperty("os"), "알 수 없음");
                 String hits = stringValue(stats.getProperty("keyspace_hits"), "0");
                 String misses = stringValue(stats.getProperty("keyspace_misses"), "0");
 
@@ -201,9 +201,9 @@ public class ConnectedStoreObservationService {
                 this.redisDailyGrowthBytes.set(calculateDailyGrowth(this.redisHistory, now, usedBytes));
 
                 String limitMessage = limitBytes > 0L
-                        ? "maxmemory is configured."
-                        : "No maxmemory limit is configured.";
-                this.redisDetail.set("os=" + os + ", hits=" + hits + ", misses=" + misses + ", " + limitMessage);
+                        ? "maxmemory가 설정되어 있습니다."
+                        : "maxmemory 제한이 설정되어 있지 않습니다.";
+                this.redisDetail.set("운영체제=" + os + ", hits=" + hits + ", misses=" + misses + ", " + limitMessage);
             }
             finally {
                 connection.close();

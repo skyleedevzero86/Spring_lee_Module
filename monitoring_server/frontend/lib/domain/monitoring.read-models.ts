@@ -116,6 +116,7 @@ export interface StoreUsage {
   freeBytes: number | null;
   usagePercent: number | null;
   dailyGrowthBytes: number;
+  growthLabel: string;
   capturedAt: string;
   detail: string;
 }

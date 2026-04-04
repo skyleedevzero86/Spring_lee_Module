@@ -18,9 +18,9 @@ export interface DashboardWindowOption {
 export const DASHBOARD_WINDOW_OPTIONS: readonly DashboardWindowOption[] = [
   {
     key: "15s",
-    label: "Last 15s",
-    rangeLabel: "Last 15 seconds to 5 minutes",
-    timeWindowLabel: "Real-time",
+    label: "최근 15초",
+    rangeLabel: "최근 15초 ~ 5분",
+    timeWindowLabel: "실시간",
     stepMs: 15_000,
     format: { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false },
     scaleRange: [0.98, 1.02],
@@ -29,9 +29,9 @@ export const DASHBOARD_WINDOW_OPTIONS: readonly DashboardWindowOption[] = [
   },
   {
     key: "1h",
-    label: "1h",
-    rangeLabel: "Last 1 hour",
-    timeWindowLabel: "Hourly",
+    label: "1시간",
+    rangeLabel: "최근 1시간",
+    timeWindowLabel: "시간별",
     stepMs: 5 * 60_000,
     format: { hour: "2-digit", minute: "2-digit", hour12: false },
     scaleRange: [0.94, 1.06],
@@ -40,9 +40,9 @@ export const DASHBOARD_WINDOW_OPTIONS: readonly DashboardWindowOption[] = [
   },
   {
     key: "24h",
-    label: "24h",
-    rangeLabel: "Last 24 hours",
-    timeWindowLabel: "Daily",
+    label: "24시간",
+    rangeLabel: "최근 24시간",
+    timeWindowLabel: "일간",
     stepMs: 2 * 60 * 60_000,
     format: { month: "2-digit", day: "2-digit", hour: "2-digit", hour12: false },
     scaleRange: [0.88, 1.12],
@@ -51,9 +51,9 @@ export const DASHBOARD_WINDOW_OPTIONS: readonly DashboardWindowOption[] = [
   },
   {
     key: "7d",
-    label: "7d",
-    rangeLabel: "Last 7 days",
-    timeWindowLabel: "Weekly",
+    label: "7일",
+    rangeLabel: "최근 7일",
+    timeWindowLabel: "주간",
     stepMs: 14 * 60 * 60_000,
     format: { month: "2-digit", day: "2-digit" },
     scaleRange: [0.82, 1.16],
@@ -62,9 +62,9 @@ export const DASHBOARD_WINDOW_OPTIONS: readonly DashboardWindowOption[] = [
   },
   {
     key: "30d",
-    label: "30d",
-    rangeLabel: "Last 30 days",
-    timeWindowLabel: "Monthly",
+    label: "30일",
+    rangeLabel: "최근 30일",
+    timeWindowLabel: "월간",
     stepMs: 5 * 24 * 60 * 60_000,
     format: { month: "2-digit", day: "2-digit" },
     scaleRange: [0.78, 1.22],
@@ -75,6 +75,10 @@ export const DASHBOARD_WINDOW_OPTIONS: readonly DashboardWindowOption[] = [
 
 function getWindowOption(key: DashboardWindowKey) {
   return DASHBOARD_WINDOW_OPTIONS.find((option) => option.key === key) ?? DASHBOARD_WINDOW_OPTIONS[0];
+}
+
+export function isDashboardWindowKey(value: string): value is DashboardWindowKey {
+  return DASHBOARD_WINDOW_OPTIONS.some((option) => option.key === value);
 }
 
 function clamp(value: number, min: number, max: number) {

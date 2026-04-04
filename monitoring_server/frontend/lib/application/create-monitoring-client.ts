@@ -2,6 +2,7 @@ import { loadActuatorSummary, loadOverview, loadStatistics } from "@/lib/applica
 import { createMonitoringHttpAdapter } from "@/lib/infrastructure/http/monitoring-http.adapter";
 import { createMonitoringMockAdapter } from "@/lib/infrastructure/mock/monitoring-mock.adapter";
 import { getMonitoringApiBaseUrl } from "@/lib/infrastructure/config/monitoring-env";
+import type { DashboardWindowKey } from "@/lib/windowing";
 
 export function createDefaultMonitoringClient() {
   const baseUrl = getMonitoringApiBaseUrl();
@@ -9,8 +10,8 @@ export function createDefaultMonitoringClient() {
   const sample = createMonitoringMockAdapter();
 
   return {
-    getOverview: () => loadOverview(live, sample),
-    getStatistics: () => loadStatistics(live, sample),
+    getOverview: (window?: DashboardWindowKey) => loadOverview(live, sample, window),
+    getStatistics: (window?: DashboardWindowKey) => loadStatistics(live, sample, window),
     getActuatorSummary: () => loadActuatorSummary(live, sample),
   };
 }

@@ -138,6 +138,7 @@ public final class DashboardPayloads {
             Long freeBytes,
             Double usagePercent,
             long dailyGrowthBytes,
+            String growthLabel,
             String capturedAt,
             String detail
     ) {

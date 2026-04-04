@@ -40,7 +40,7 @@ public class MonitoringInfoContributor implements InfoContributor {
 
         Map<String, Object> stack = new LinkedHashMap<>();
         stack.put("backend", "Spring Boot 4.0.3 / Java 25");
-        stack.put("admin", "Spring Boot Admin 4.0.2 (embedded)");
+        stack.put("admin", "Spring Boot Admin 4.0.2 (내장)");
         stack.put("frontend", "Next.js 15 + TypeScript");
         stack.put("database", "PostgreSQL @ 5433");
         stack.put("redis", "Redis @ 9379");
@@ -72,7 +72,7 @@ public class MonitoringInfoContributor implements InfoContributor {
         observability.put("healthGroup", actuatorBaseUrl + "/health/infrastructure");
         observability.put("prometheus", this.environment.getProperty("idolglow.monitoring.prometheus-url", "http://localhost:9091"));
         observability.put("grafana", this.environment.getProperty("idolglow.monitoring.grafana-url", "http://localhost:3001"));
-        observability.put("historyGuide", "Actuator shows the current moment, Prometheus stores history, Grafana visualizes hourly, daily, weekly, and monthly trends.");
+        observability.put("historyGuide", "Actuator는 현재 시점을 보여주고, Prometheus는 이력을 저장하며, Grafana는 시간별, 일간, 주간, 월간 추세를 시각화합니다.");
 
         builder.withDetail("courseRoadmap", roadmap);
         builder.withDetail("monitoringStack", stack);

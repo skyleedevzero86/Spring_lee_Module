@@ -5,19 +5,28 @@ import type {
   StatisticsResponse,
 } from "@/lib/domain/monitoring.read-models";
 import { resolveWithFallback } from "@/lib/application/use-cases/resolve-with-fallback";
+import type { DashboardWindowKey } from "@/lib/windowing";
 
-export function loadOverview(live: MonitoringReadPort, sample: MonitoringReadPort): Promise<OverviewResponse> {
+export function loadOverview(
+  live: MonitoringReadPort,
+  sample: MonitoringReadPort,
+  window?: DashboardWindowKey,
+): Promise<OverviewResponse> {
   return resolveWithFallback(
-    () => live.getOverview(),
-    () => sample.getOverview(),
+    () => live.getOverview(window),
+    () => sample.getOverview(window),
     (source, payload) => ({ ...payload, dataSource: source }),
   );
 }
 
-export function loadStatistics(live: MonitoringReadPort, sample: MonitoringReadPort): Promise<StatisticsResponse> {
+export function loadStatistics(
+  live: MonitoringReadPort,
+  sample: MonitoringReadPort,
+  window?: DashboardWindowKey,
+): Promise<StatisticsResponse> {
   return resolveWithFallback(
-    () => live.getStatistics(),
-    () => sample.getStatistics(),
+    () => live.getStatistics(window),
+    () => sample.getStatistics(window),
     (source, payload) => ({ ...payload, dataSource: source }),
   );
 }

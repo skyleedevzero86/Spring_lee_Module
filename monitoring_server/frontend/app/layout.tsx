@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import "@/app/globals.css";
 
 export const metadata: Metadata = {
-  title: "Spring Monitoring Admin",
-  description: "Admin dashboard for Actuator, Spring Boot Admin, Prometheus, Grafana, PostgreSQL, and Redis.",
+  title: "스프링 모니터링 관리자",
+  description: "Actuator, Spring Boot Admin, Prometheus, Grafana, PostgreSQL, Redis를 위한 관리자 대시보드입니다.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -18,14 +18,14 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             <div className="brand-block">
               <p className="brand-kicker">IdolGlow Lab</p>
               <Link href="/" className="brand-name">
-                Spring Monitoring
+                스프링 모니터링
               </Link>
             </div>
 
             <nav className="site-nav">
-              <Link href="/">Overview</Link>
-              <Link href="/statistics">Statistics</Link>
-              <Link href="/actuator">Actuator</Link>
+              <Link href="/">개요</Link>
+              <Link href="/statistics">통계</Link>
+              <Link href="/actuator">액추에이터</Link>
             </nav>
 
             <div className="header-pills">

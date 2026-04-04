@@ -7,6 +7,7 @@ import type {
 import { err, ok, type Result } from "@/lib/domain/result";
 import type { TransportError } from "@/lib/domain/errors";
 import { transportError } from "@/lib/domain/errors";
+import type { DashboardWindowKey } from "@/lib/windowing";
 
 async function fetchJson<T>(url: string): Promise<Result<T, TransportError>> {
   try {
@@ -30,15 +31,22 @@ async function fetchJson<T>(url: string): Promise<Result<T, TransportError>> {
   }
 }
 
+function withWindow(url: string, window?: DashboardWindowKey) {
+  if (!window) return url;
+  const next = new URL(url);
+  next.searchParams.set("window", window);
+  return next.toString();
+}
+
 export function createMonitoringHttpAdapter(baseUrl: string): MonitoringReadPort {
   const root = baseUrl.replace(/\/$/, "");
 
   return {
-    getOverview: (): Promise<Result<OverviewPayload, TransportError>> =>
-      fetchJson<OverviewPayload>(`${root}/api/admin/overview`),
+    getOverview: (window?: DashboardWindowKey): Promise<Result<OverviewPayload, TransportError>> =>
+      fetchJson<OverviewPayload>(withWindow(`${root}/api/admin/overview`, window)),
 
-    getStatistics: (): Promise<Result<StatisticsPayload, TransportError>> =>
-      fetchJson<StatisticsPayload>(`${root}/api/admin/statistics`),
+    getStatistics: (window?: DashboardWindowKey): Promise<Result<StatisticsPayload, TransportError>> =>
+      fetchJson<StatisticsPayload>(withWindow(`${root}/api/admin/statistics`, window)),
 
     getActuatorSummary: (): Promise<Result<ActuatorSummaryPayload, TransportError>> =>
       fetchJson<ActuatorSummaryPayload>(`${root}/api/admin/actuator-summary`),
