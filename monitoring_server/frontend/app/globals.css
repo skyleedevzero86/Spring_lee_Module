@@ -195,6 +195,19 @@ pre {
   color: var(--text);
 }
 
+.toolbar-chip-button {
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+
+.toolbar-chip-button:hover,
+.toolbar-chip.is-active {
+  color: var(--text);
+  border-color: rgba(87, 199, 255, 0.45);
+  background: rgba(87, 199, 255, 0.12);
+}
+
 .toolbar-chip.sample {
   border-color: rgba(87, 199, 255, 0.35);
   color: #c9edff;
@@ -494,6 +507,11 @@ pre {
 .dense-link-card:hover {
   border-color: rgba(87, 199, 255, 0.28);
   background: rgba(27, 29, 34, 0.98);
+}
+
+.time-window-card.is-active {
+  border-color: rgba(87, 199, 255, 0.32);
+  background: rgba(87, 199, 255, 0.08);
 }
 
 .endpoint-row span,

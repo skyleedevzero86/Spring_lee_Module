@@ -159,13 +159,18 @@ export function DonutBreakdown({ items }: { items: DistributionItem[] }) {
   }
 
   const total = items.reduce((sum, item) => sum + item.value, 0);
-  let cursor = 0;
-  const segments = items.map((item) => {
-    const start = cursor;
-    const end = cursor + (item.value / total) * 100;
-    cursor = end;
-    return `${item.accent} ${start}% ${end}%`;
-  });
+  const segments = items.reduce<{ cursor: number; segments: string[] }>(
+    (state, item) => {
+      const start = state.cursor;
+      const end = state.cursor + (item.value / total) * 100;
+
+      return {
+        cursor: end,
+        segments: [...state.segments, `${item.accent} ${start}% ${end}%`],
+      };
+    },
+    { cursor: 0, segments: [] },
+  ).segments;
 
   return (
     <div className="donut-layout">

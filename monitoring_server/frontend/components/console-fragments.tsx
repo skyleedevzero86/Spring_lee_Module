@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import type {
   ComponentStatus,
@@ -16,6 +18,13 @@ export interface ConsoleStat {
   value: string;
   caption: string;
   tone: string;
+}
+
+export interface DashboardChip {
+  key: string;
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
 }
 
 function compact(value: number) {
@@ -95,7 +104,7 @@ export function DashboardTopbar({
   subtitle: string;
   source: string;
   updatedAt: string;
-  chips: string[];
+  chips: DashboardChip[];
 }) {
   return (
     <section className="board-topbar">
@@ -119,9 +128,21 @@ export function DashboardTopbar({
         <div className="toolbar-group">
           <span className="toolbar-label">Window</span>
           {chips.map((chip) => (
-            <span key={chip} className="toolbar-chip">
-              {chip}
-            </span>
+            chip.onClick ? (
+              <button
+                key={chip.key}
+                type="button"
+                className={`toolbar-chip toolbar-chip-button ${chip.active ? "is-active" : ""}`.trim()}
+                onClick={chip.onClick}
+                aria-pressed={chip.active}
+              >
+                {chip.label}
+              </button>
+            ) : (
+              <span key={chip.key} className={`toolbar-chip ${chip.active ? "is-active" : ""}`.trim()}>
+                {chip.label}
+              </span>
+            )
           ))}
         </div>
       </div>
@@ -293,11 +314,11 @@ export function InfrastructureCards({ items }: { items: InfrastructureStatus[] }
   );
 }
 
-export function TimeWindowCards({ windows }: { windows: TimeWindow[] }) {
+export function TimeWindowCards({ windows, activeLabel }: { windows: TimeWindow[]; activeLabel?: string }) {
   return (
     <div className="time-window-grid">
       {windows.map((window) => (
-        <article key={window.label} className="time-window-card">
+        <article key={window.label} className={`time-window-card ${window.label === activeLabel ? "is-active" : ""}`.trim()}>
           <div className="time-window-head">
             <strong>{window.label}</strong>
             <span>{window.range}</span>

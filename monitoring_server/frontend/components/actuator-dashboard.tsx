@@ -34,7 +34,13 @@ export function ActuatorDashboard({ data }: { data: ActuatorSummaryResponse }) {
         subtitle="A compact operations layout for endpoint links, payload inspection, host snapshots, store usage, and query presets."
         source={data.dataSource ?? "sample"}
         updatedAt={data.generatedAt}
-        chips={["health", "info", "metrics", "prometheus", "custom"]}
+        chips={[
+          { key: "health", label: "health" },
+          { key: "info", label: "info" },
+          { key: "metrics", label: "metrics" },
+          { key: "prometheus", label: "prometheus" },
+          { key: "custom", label: "custom" },
+        ]}
       />
 
       <section className="dashboard-grid">
