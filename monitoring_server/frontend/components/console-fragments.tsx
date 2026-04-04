@@ -343,12 +343,12 @@ export function MetricRows({ metrics }: { metrics: MetricStat[] }) {
 export function TagCards({ tags }: { tags: TagSummary[] }) {
   return (
     <div className="tag-grid">
-      {tags.map((tag) => (
-        <div key={tag.key} className="tag-card">
+      {tags.map((tag, tagIndex) => (
+        <div key={`${tag.key}-${tagIndex}`} className="tag-card">
           <strong>{tag.key}</strong>
           <div className="tag-list">
-            {tag.values.map((value) => (
-              <span key={value} className="tag-pill">
+            {tag.values.map((value: string, valueIndex: number) => (
+              <span key={`${value}-${valueIndex}`} className="tag-pill">
                 {value}
               </span>
             ))}

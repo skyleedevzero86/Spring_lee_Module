@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 public class DashboardApplicationService implements DashboardQueryUseCase {
     private static final int MAX_POINTS = 12;
     private static final DateTimeFormatter LABEL_FORMATTER = DateTimeFormatter.ofPattern("HH:mm", Locale.KOREAN).withZone(ZoneId.of("Asia/Seoul"));
-    private final MeterRegistry meterRegistry;
     private final InfoEndpoint infoEndpoint;
     private final MetricsEndpoint metricsEndpoint;
     private final HealthEndpoint healthEndpoint;
@@ -60,7 +59,6 @@ public class DashboardApplicationService implements DashboardQueryUseCase {
     private final Counter statisticsViews;
     private final Counter actuatorViews;
     private final Counter syntheticRequests;
-    private final Timer renderTimer;
     private final Timer syntheticLatencyTimer;
     private final AtomicInteger activeSessions = new AtomicInteger(46);
     private final AtomicInteger alertQueue = new AtomicInteger(3);
@@ -72,7 +70,6 @@ public class DashboardApplicationService implements DashboardQueryUseCase {
     private final ConcurrentLinkedDeque<DashboardPayloads.TrendPoint> cacheTrend = new ConcurrentLinkedDeque<>();
 
     public DashboardApplicationService(MeterRegistry meterRegistry, InfoEndpoint infoEndpoint, MetricsEndpoint metricsEndpoint, HealthEndpoint healthEndpoint, CourseCatalogPort courseCatalog, InfrastructureProbeService infrastructureProbeService, HostSystemObservationService hostSystemObservationService, ConnectedStoreObservationService connectedStoreObservationService, Environment environment, ObjectProvider<BuildProperties> buildProperties) {
-        this.meterRegistry = meterRegistry;
         this.infoEndpoint = infoEndpoint;
         this.metricsEndpoint = metricsEndpoint;
         this.healthEndpoint = healthEndpoint;
@@ -86,7 +83,6 @@ public class DashboardApplicationService implements DashboardQueryUseCase {
         this.statisticsViews = Counter.builder("monitoring.admin.page.views").tag("page", "statistics").description("Statistics page visits").register(meterRegistry);
         this.actuatorViews = Counter.builder("monitoring.admin.page.views").tag("page", "actuator").description("Actuator page visits").register(meterRegistry);
         this.syntheticRequests = Counter.builder("monitoring.synthetic.requests").description("Synthetic request volume for the dashboard demo").register(meterRegistry);
-        this.renderTimer = Timer.builder("monitoring.dashboard.render").description("Dashboard response assembly time").publishPercentiles(0.5, 0.9, 0.95).register(meterRegistry);
         this.syntheticLatencyTimer = Timer.builder("monitoring.synthetic.latency").description("Synthetic latency timer used for percentile demos").publishPercentiles(0.5, 0.9, 0.95).register(meterRegistry);
         Gauge.builder("monitoring.active.sessions", this.activeSessions, AtomicInteger::get).description("Current active admin sessions").register(meterRegistry);
         Gauge.builder("monitoring.alert.queue", this.alertQueue, AtomicInteger::get).description("Current queued alerts").register(meterRegistry);
@@ -102,33 +98,24 @@ public class DashboardApplicationService implements DashboardQueryUseCase {
     @Override
     @Timed(value = "monitoring.dashboard.render", extraTags = {"page", "overview"}, percentiles = {0.5, 0.9, 0.95}, histogram = true)
     public DashboardPayloads.OverviewResponse overview() {
-        Timer.Sample sample = Timer.start(this.meterRegistry);
         this.overviewViews.increment();
-        try {
-            DashboardPayloads.HealthSnapshot health = createHealthSnapshot();
-            return new DashboardPayloads.OverviewResponse(Instant.now().toString(), applicationSummary(), health, buildOverviewCards(health), snapshot(this.requestTrend), snapshot(this.latencyTrend), snapshot(this.cacheTrend), sectionProgress(), actuatorEndpoints(), monitoringLinks(), infrastructureStatuses(), serverStatus(), storageStatuses(), List.of("See Windows/Linux host details, memory, disk, PostgreSQL size, and Redis memory in one place.", "Store usage shows current size plus net 24 hour delta from in-app snapshots.", "Prometheus and Grafana keep the same metrics for longer history and charts.", "PostgreSQL total disk capacity is not exposed by standard SQL, so the dashboard focuses on current database size."));
-        } finally { sample.stop(this.renderTimer); }
+        DashboardPayloads.HealthSnapshot health = createHealthSnapshot();
+        return new DashboardPayloads.OverviewResponse(Instant.now().toString(), applicationSummary(), health, buildOverviewCards(health), snapshot(this.requestTrend), snapshot(this.latencyTrend), snapshot(this.cacheTrend), sectionProgress(), actuatorEndpoints(), monitoringLinks(), infrastructureStatuses(), serverStatus(), storageStatuses(), List.of("See Windows/Linux host details, memory, disk, PostgreSQL size, and Redis memory in one place.", "Store usage shows current size plus net 24 hour delta from in-app snapshots.", "Prometheus and Grafana keep the same metrics for longer history and charts.", "PostgreSQL total disk capacity is not exposed by standard SQL, so the dashboard focuses on current database size."));
     }
 
     @Override
     @Timed(value = "monitoring.dashboard.render", extraTags = {"page", "statistics"}, percentiles = {0.5, 0.9, 0.95}, histogram = true)
     public DashboardPayloads.StatisticsResponse statistics() {
-        Timer.Sample sample = Timer.start(this.meterRegistry);
         this.statisticsViews.increment();
-        try {
-            DashboardPayloads.HealthSnapshot health = createHealthSnapshot();
-            return new DashboardPayloads.StatisticsResponse(Instant.now().toString(), applicationSummary(), highlightedMetrics(), healthBreakdown(health), timerPercentiles(), availableTags(), snapshot(this.requestTrend), snapshot(this.latencyTrend), sectionProgress(), infrastructureStatuses(), serverStatus(), storageStatuses(), timeWindows(), List.of("monitoring.host.* tracks the current host resources.", "monitoring.storage.used and monitoring.storage.daily.growth track PostgreSQL and Redis usage.", "Prometheus is the right place for day, week, and month storage trend analysis."));
-        } finally { sample.stop(this.renderTimer); }
+        DashboardPayloads.HealthSnapshot health = createHealthSnapshot();
+        return new DashboardPayloads.StatisticsResponse(Instant.now().toString(), applicationSummary(), highlightedMetrics(), healthBreakdown(health), timerPercentiles(), availableTags(), snapshot(this.requestTrend), snapshot(this.latencyTrend), sectionProgress(), infrastructureStatuses(), serverStatus(), storageStatuses(), timeWindows(), List.of("monitoring.host.* tracks the current host resources.", "monitoring.storage.used and monitoring.storage.daily.growth track PostgreSQL and Redis usage.", "Prometheus is the right place for day, week, and month storage trend analysis."));
     }
 
     @Override
     @Timed(value = "monitoring.dashboard.render", extraTags = {"page", "actuator"}, percentiles = {0.5, 0.9, 0.95}, histogram = true)
     public DashboardPayloads.ActuatorSummaryResponse actuatorSummary() {
-        Timer.Sample sample = Timer.start(this.meterRegistry);
         this.actuatorViews.increment();
-        try {
-            return new DashboardPayloads.ActuatorSummaryResponse(Instant.now().toString(), applicationSummary(), createHealthSnapshot(), this.infoEndpoint.info(), customEndpointPayload(), this.metricsEndpoint.listNames().getNames().stream().sorted().filter((name) -> name.startsWith("monitoring") || name.startsWith("jvm") || name.startsWith("system") || name.startsWith("process")).limit(40).toList(), actuatorEndpoints(), monitoringLinks(), infrastructureStatuses(), serverStatus(), storageStatuses(), timeWindows());
-        } finally { sample.stop(this.renderTimer); }
+        return new DashboardPayloads.ActuatorSummaryResponse(Instant.now().toString(), applicationSummary(), createHealthSnapshot(), this.infoEndpoint.info(), customEndpointPayload(), this.metricsEndpoint.listNames().getNames().stream().sorted().filter((name) -> name.startsWith("monitoring") || name.startsWith("jvm") || name.startsWith("system") || name.startsWith("process")).limit(40).toList(), actuatorEndpoints(), monitoringLinks(), infrastructureStatuses(), serverStatus(), storageStatuses(), timeWindows());
     }
 
     @Override
