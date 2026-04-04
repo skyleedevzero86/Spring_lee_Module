@@ -4,6 +4,15 @@
 
 <br/>
 
+<img width="1883" height="936" alt="image" src="https://github.com/user-attachments/assets/49047948-9abd-40c4-b32d-cdbb7c814f65" />
+
+<br/>
+<img width="1882" height="741" alt="image" src="https://github.com/user-attachments/assets/6747dd22-8667-42a2-b722-89826c99da02" />
+<br/>
+<img width="1887" height="933" alt="image" src="https://github.com/user-attachments/assets/45a4994a-83b4-4fdb-b5e3-b7fde0f6c817" />
+<br/>
+
+
 # Spring Monitoring 
 
 Spring Boot **Actuator**, **Micrometer**, **Spring Boot Admin**을 한 애플리케이션에 묶고, **Next.js** 관리자 UI로 요약·통계·엔드포인트를 보여 주는 학습·데모용 모노레포입니다.
