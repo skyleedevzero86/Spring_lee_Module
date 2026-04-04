@@ -305,7 +305,9 @@ public class DashboardApplicationService implements DashboardQueryUseCase {
         for (String metric : metrics) {
             MetricsEndpoint.MetricDescriptor descriptor = metricDescriptor(metric);
             if (descriptor == null) continue;
-            descriptor.getAvailableTags().stream().map((tag) -> new DashboardPayloads.TagSummary(tag.getTag(), tag.getValues())).forEach(tags::add);
+            descriptor.getAvailableTags().stream()
+                    .map(tag -> new DashboardPayloads.TagSummary(tag.getTag(), List.copyOf(tag.getValues())))
+                    .forEach(tags::add);
         }
         tags.add(new DashboardPayloads.TagSummary("component", List.of("db", "redis", "postgresql")));
         return List.copyOf(tags);
