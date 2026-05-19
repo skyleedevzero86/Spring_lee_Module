@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.sleekydz86.monitoring.logstack_s3.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
 import com.sleekydz86.monitoring.logstack_s3.application.query.SearchFilesQuery;
 import com.sleekydz86.monitoring.logstack_s3.application.query.UploadFileCommand;
 import com.sleekydz86.monitoring.logstack_s3.application.usecase.GetFileDetailUseCase;

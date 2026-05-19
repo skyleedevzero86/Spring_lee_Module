@@ -12,7 +12,7 @@ import com.sleekydz86.monitoring.logstack_s3.application.port.ObjectStoragePort;
 import com.sleekydz86.monitoring.logstack_s3.application.port.ThumbnailPort;
 import com.sleekydz86.monitoring.logstack_s3.application.query.UploadFileCommand;
 import com.sleekydz86.monitoring.logstack_s3.application.view.FileDetailView;
-import com.sleekydz86.monitoring.logstack_s3.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.FileStorageException;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.StoredFile;
 import com.sleekydz86.monitoring.logstack_s3.domain.repository.FileRepository;

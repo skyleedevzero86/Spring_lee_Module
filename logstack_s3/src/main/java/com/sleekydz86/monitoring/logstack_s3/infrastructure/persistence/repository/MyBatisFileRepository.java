@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sleekydz86.monitoring.logstack_s3.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.InvalidRequestException;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.PageResult;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.StoredFile;

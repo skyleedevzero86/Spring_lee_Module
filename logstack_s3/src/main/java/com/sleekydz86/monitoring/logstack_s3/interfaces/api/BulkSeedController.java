@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sleekydz86.monitoring.logstack_s3.application.usecase.SeedFilesUseCase;
-import com.sleekydz86.monitoring.logstack_s3.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -3,7 +3,7 @@ package com.sleekydz86.monitoring.logstack_s3.application.usecase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sleekydz86.monitoring.logstack_s3.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.InvalidRequestException;
 import com.sleekydz86.monitoring.logstack_s3.domain.repository.FileRepository;
 

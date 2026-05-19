@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-import com.sleekydz86.monitoring.logstack_s3.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.FileNotFoundException;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.FileStorageException;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.InvalidRequestException;

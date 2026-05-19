@@ -1,4 +1,4 @@
-package com.sleekydz86.monitoring.logstack_s3.common.message;
+package com.sleekydz86.monitoring.logstack_s3.global.common.message;
 
 public final class KoreanMessages {
 

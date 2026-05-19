@@ -1,4 +1,4 @@
-package com.sleekydz86.monitoring.logstack_s3.config;
+package com.sleekydz86.monitoring.logstack_s3.global.config;
 
 import java.net.URI;
 
