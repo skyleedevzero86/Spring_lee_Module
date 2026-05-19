@@ -1,0 +1,14 @@
+package com.sleekydz86.monitoring.logstack_s3.application.port;
+
+import java.io.InputStream;
+
+public interface ObjectStoragePort {
+
+    void put(String key, String contentType, long size, InputStream body);
+
+    void putBytes(String key, String contentType, byte[] body);
+
+    String presignPreview(String key);
+
+    String presignDownload(String key, String filename);
+}

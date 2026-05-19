@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.monitoring.logstack_s3.infrastructure.persistence.mapper.StoredFileMapper">
+
+    <resultMap id="storedFileMap" type="StoredFileRow">
+        <id property="id" column="id"/>
+        <result property="bucketId" column="bucket_id"/>
+        <result property="originalFilename" column="original_filename"/>
+        <result property="objectKey" column="object_key"/>
+        <result property="thumbnailKey" column="thumbnail_key"/>
+        <result property="contentType" column="content_type"/>
+        <result property="size" column="size"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <resultMap id="storedFileListMap" type="StoredFileListRow">
+        <id property="id" column="id"/>
+        <result property="bucketId" column="bucket_id"/>
+        <result property="originalFilename" column="original_filename"/>
+        <result property="objectKey" column="object_key"/>
+        <result property="thumbnailKey" column="thumbnail_key"/>
+        <result property="contentType" column="content_type"/>
+        <result property="size" column="size"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="bucketCode" column="bucket_code"/>
+        <result property="region" column="region"/>
+        <result property="bucketDisplayName" column="bucket_display_name"/>
+        <result property="sizeLabel" column="size_label"/>
+        <result property="mediaType" column="media_type"/>
+    </resultMap>
+
+    <update id="callManage" statementType="CALLABLE">
+        {call sp_stored_file_manage(
+            #{operation, mode=IN, jdbcType=CHAR},
+            #{id, mode=IN, jdbcType=VARCHAR},
+            #{originalFilename, mode=IN, jdbcType=VARCHAR},
+            #{objectKey, mode=IN, jdbcType=VARCHAR},
+            #{thumbnailKey, mode=IN, jdbcType=VARCHAR},
+            #{contentType, mode=IN, jdbcType=VARCHAR},
+            #{size, mode=IN, jdbcType=BIGINT},
+            #{bucketId, mode=IN, jdbcType=BIGINT},
+            #{createdAt, mode=IN, jdbcType=TIMESTAMP}
+        )}
+    </update>
+
+    <select id="selectMaxSequence" resultType="long">
+        SELECT COALESCE(MAX(CAST(SPLIT_PART(id, '_', 4) AS BIGINT)), 0)
+        FROM stored_files
+        WHERE id LIKE CONCAT(#{dateTimePrefix}, '_%')
+          AND SPLIT_PART(id, '_', 4) ~ '^[0-9]+$'
+    </select>
+
+    <select id="selectById" resultMap="storedFileMap">
+        SELECT
+            id,
+            bucket_id,
+            original_filename,
+            object_key,
+            thumbnail_key,
+            content_type,
+            size,
+            created_at
+        FROM stored_files
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectPageFromView" resultMap="storedFileListMap">
+        SELECT
+            id,
+            bucket_id,
+            original_filename,
+            object_key,
+            thumbnail_key,
+            content_type,
+            size,
+            created_at,
+            bucket_code,
+            region,
+            bucket_display_name,
+            size_label,
+            media_type
+        FROM v_stored_file_list
+        <where>
+            <if test="keyword != null and keyword != ''">
+                LOWER(original_filename) LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countFromView" resultType="long">
+        SELECT COUNT(*)
+        FROM v_stored_file_list
+        <where>
+            <if test="keyword != null and keyword != ''">
+                LOWER(original_filename) LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+</mapper>
