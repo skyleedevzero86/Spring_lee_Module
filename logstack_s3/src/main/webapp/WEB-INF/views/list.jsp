@@ -54,7 +54,7 @@
     <nav class="pager">
         <c:url var="listUrl" value="/"/>
         <c:choose>
-            <c:when test="${page.first}">
+            <c:when test="${currentPage == 0}">
                 <span class="disabled">이전</span>
             </c:when>
             <c:otherwise>
@@ -74,7 +74,7 @@
         </c:forEach>
 
         <c:choose>
-            <c:when test="${page.last}">
+            <c:when test="${currentPage >= page.totalPages - 1}">
                 <span class="disabled">다음</span>
             </c:when>
             <c:otherwise>

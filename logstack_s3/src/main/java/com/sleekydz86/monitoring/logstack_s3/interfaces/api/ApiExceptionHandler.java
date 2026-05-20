@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.FileNotFoundException;
@@ -51,6 +52,12 @@ public class ApiExceptionHandler {
         log.warn("업로드 용량 초과: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
                 .body(new ApiErrorResponse(KoreanMessages.FILE_TOO_LARGE));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Void> handleNoResource(NoResourceFoundException ex) {
+        log.debug("리소스 없음: {}", ex.getResourcePath());
+        return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(Exception.class)
