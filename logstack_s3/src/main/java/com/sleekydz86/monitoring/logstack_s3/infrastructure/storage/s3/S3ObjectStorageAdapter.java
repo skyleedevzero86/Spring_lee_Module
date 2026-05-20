@@ -2,11 +2,14 @@ package com.sleekydz86.monitoring.logstack_s3.infrastructure.storage.s3;
 
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.sleekydz86.monitoring.logstack_s3.application.port.ObjectStoragePort;
+import com.sleekydz86.monitoring.logstack_s3.domain.model.ListedStorageObject;
 
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -16,7 +19,10 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -103,6 +109,35 @@ public class S3ObjectStorageAdapter implements ObjectStoragePort {
                 .bucket(bucket)
                 .key(key)
                 .build());
+    }
+
+    @Override
+    public String bucketName() {
+        return bucket;
+    }
+
+    @Override
+    public List<ListedStorageObject> listObjects() {
+        ensureBucket();
+        List<ListedStorageObject> objects = new ArrayList<>();
+        String continuationToken = null;
+        do {
+            ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
+                    .bucket(bucket)
+                    .maxKeys(1000);
+            if (continuationToken != null) {
+                requestBuilder.continuationToken(continuationToken);
+            }
+            ListObjectsV2Response response = s3Client.listObjectsV2(requestBuilder.build());
+            for (S3Object object : response.contents()) {
+                objects.add(new ListedStorageObject(
+                        object.key(),
+                        object.size(),
+                        object.lastModified()));
+            }
+            continuationToken = response.isTruncated() ? response.nextContinuationToken() : null;
+        } while (continuationToken != null);
+        return objects;
     }
 
     @Override

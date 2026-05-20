@@ -1,6 +1,9 @@
 package com.sleekydz86.monitoring.logstack_s3.application.port;
 
 import java.io.InputStream;
+import java.util.List;
+
+import com.sleekydz86.monitoring.logstack_s3.domain.model.ListedStorageObject;
 
 public interface ObjectStoragePort {
 
@@ -15,4 +18,8 @@ public interface ObjectStoragePort {
     void delete(String key);
 
     boolean exists(String key);
+
+    String bucketName();
+
+    List<ListedStorageObject> listObjects();
 }

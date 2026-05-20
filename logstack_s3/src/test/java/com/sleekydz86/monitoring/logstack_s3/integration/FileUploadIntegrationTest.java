@@ -46,5 +46,19 @@ class FileUploadIntegrationTest extends IntegrationTestBase {
         assertThat(objectStorage.exists(saved.objectKey())).isTrue();
         assertThat(saved.thumbnailKey()).isNotBlank();
         assertThat(objectStorage.exists(saved.thumbnailKey())).isTrue();
+
+        String previewUrl = objectStorage.presignPreview(saved.objectKey());
+        assertThat(previewUrl).doesNotContain(".localhost:");
+        assertThat(previewUrl).contains("/erp-bucket/");
+
+        ResponseEntity<byte[]> preview = restTemplate.getForEntity(previewUrl, byte[].class);
+        assertThat(preview.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(preview.getBody()).isNotEmpty();
+
+        String thumbUrl = objectStorage.presignPreview(saved.thumbnailKey());
+        assertThat(thumbUrl).contains("/erp-bucket/thumbnails/");
+        ResponseEntity<byte[]> thumb = restTemplate.getForEntity(thumbUrl, byte[].class);
+        assertThat(thumb.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(thumb.getBody()).isNotEmpty();
     }
 }

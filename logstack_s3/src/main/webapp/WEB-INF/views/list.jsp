@@ -2,6 +2,8 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="pageTitle" value="파일 목록"/>
+<c:set var="headerSecondaryActionUrl" value="/storage"/>
+<c:set var="headerSecondaryActionLabel" value="스토리지 보기"/>
 <c:set var="headerActionUrl" value="/upload"/>
 <c:set var="headerActionLabel" value="업로드"/>
 <%@ include file="/WEB-INF/views/includes/layout-top.jsp" %>

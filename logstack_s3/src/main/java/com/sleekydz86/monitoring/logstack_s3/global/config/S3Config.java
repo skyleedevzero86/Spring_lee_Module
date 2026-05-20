@@ -10,6 +10,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
@@ -27,6 +28,9 @@ public class S3Config {
     @Value("${aws.s3.secret-key}")
     private String secretKey;
 
+    @Value("${aws.s3.path-style-access:false}")
+    private boolean pathStyleAccess;
+
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
@@ -34,7 +38,7 @@ public class S3Config {
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(accessKey, secretKey)))
-                .forcePathStyle(true)
+                .serviceConfiguration(s3ServiceConfiguration())
                 .build();
     }
 
@@ -45,6 +49,13 @@ public class S3Config {
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(accessKey, secretKey)))
+                .serviceConfiguration(s3ServiceConfiguration())
+                .build();
+    }
+
+    private S3Configuration s3ServiceConfiguration() {
+        return S3Configuration.builder()
+                .pathStyleAccessEnabled(pathStyleAccess)
                 .build();
     }
 }
