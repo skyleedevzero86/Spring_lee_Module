@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,38 +27,41 @@ class StorageViewAssemblerTest {
     private StorageViewAssembler assembler;
 
     @Test
-    @DisplayName("성공 - 이미지 객체는 presigned URL 포함")
-    void toView_image_success() {
+    @DisplayName("성공 - uploads 이미지는 동일 URL")
+    void toView_uploadImage_success() {
         // given
         var object = new ListedStorageObject(
                 "uploads/uuid_photo.png",
                 2048L,
                 Instant.parse("2026-05-20T12:00:00Z"));
-        given(objectStorage.presignPreview(object.key())).willReturn("https://signed");
+        given(objectStorage.presignPreview("erp-bucket", object.key())).willReturn("https://signed");
 
         // when
-        var view = assembler.toView(object);
+        var view = assembler.toView("erp-bucket", object);
 
         // then
         assertThat(view.displayName()).isEqualTo("photo.png");
-        assertThat(view.kindLabel()).isEqualTo("원본");
-        assertThat(view.sizeLabel()).isEqualTo("2 kB");
         assertThat(view.previewUrl()).isEqualTo("https://signed");
-        assertThat(view.image()).isTrue();
+        assertThat(view.originalPreviewUrl()).isEqualTo("https://signed");
+        assertThat(view.thumbnail()).isFalse();
     }
 
     @Test
-    @DisplayName("성공 - 비이미지 객체는 미리보기 URL 없음")
-    void toView_nonImage_success() {
+    @DisplayName("성공 - 썸네일은 원본 presigned URL 연결")
+    void toView_thumbnail_success() {
         // given
-        var object = new ListedStorageObject("test.txt", 40L, Instant.now());
+        var object = new ListedStorageObject("thumbnails/uuid.jpg", 50L, Instant.now());
+        given(objectStorage.presignPreview("erp-bucket", object.key())).willReturn("https://thumb");
+        given(objectStorage.findFirstObjectKey("erp-bucket", "uploads/uuid_"))
+                .willReturn(Optional.of("uploads/uuid_file.png"));
+        given(objectStorage.presignPreview("erp-bucket", "uploads/uuid_file.png")).willReturn("https://original");
 
         // when
-        var view = assembler.toView(object);
+        var view = assembler.toView("erp-bucket", object);
 
         // then
-        assertThat(view.previewUrl()).isNull();
-        assertThat(view.image()).isFalse();
-        assertThat(view.kindLabel()).isEqualTo("기타");
+        assertThat(view.thumbnail()).isTrue();
+        assertThat(view.previewUrl()).isEqualTo("https://thumb");
+        assertThat(view.originalPreviewUrl()).isEqualTo("https://original");
     }
 }

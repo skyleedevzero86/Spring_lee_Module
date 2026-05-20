@@ -13,6 +13,8 @@ public interface ObjectStoragePort {
 
     String presignPreview(String key);
 
+    String presignPreview(String bucketName, String key);
+
     String presignDownload(String key, String filename);
 
     void delete(String key);
@@ -22,4 +24,8 @@ public interface ObjectStoragePort {
     String bucketName();
 
     List<ListedStorageObject> listObjects();
+
+    List<ListedStorageObject> listObjects(String bucketName);
+
+    java.util.Optional<String> findFirstObjectKey(String bucketName, String keyPrefix);
 }

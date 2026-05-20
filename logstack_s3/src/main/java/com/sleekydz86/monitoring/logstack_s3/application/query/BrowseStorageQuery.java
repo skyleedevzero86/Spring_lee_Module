@@ -4,11 +4,23 @@ import java.util.Optional;
 
 import com.sleekydz86.monitoring.logstack_s3.domain.service.StorageObjectPaths;
 
-public record BrowseStorageQuery(String keyword, String prefixFilter) {
+public record BrowseStorageQuery(
+        String bucketCode,
+        String keyword,
+        String prefixFilter,
+        int page,
+        int size
+) {
 
     public BrowseStorageQuery {
         if (prefixFilter == null || prefixFilter.isBlank()) {
             prefixFilter = StorageObjectPaths.PREFIX_ALL;
+        }
+        if (page < 0) {
+            page = 0;
+        }
+        if (size <= 0) {
+            size = 12;
         }
     }
 

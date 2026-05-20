@@ -9,6 +9,8 @@ public record StorageObjectView(
         String sizeLabel,
         Instant lastModified,
         String previewUrl,
-        boolean image
+        String originalPreviewUrl,
+        boolean image,
+        boolean thumbnail
 ) {
 }

@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -68,11 +69,16 @@ public class S3ObjectStorageAdapter implements ObjectStoragePort {
 
     @Override
     public String presignPreview(String key) {
+        return presignPreview(bucket, key);
+    }
+
+    @Override
+    public String presignPreview(String bucketName, String key) {
         if (key == null || key.isBlank()) {
             return null;
         }
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucket)
+                .bucket(bucketName)
                 .key(key)
                 .build();
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
@@ -118,12 +124,17 @@ public class S3ObjectStorageAdapter implements ObjectStoragePort {
 
     @Override
     public List<ListedStorageObject> listObjects() {
-        ensureBucket();
+        return listObjects(bucket);
+    }
+
+    @Override
+    public List<ListedStorageObject> listObjects(String bucketName) {
+        ensureBucket(bucketName);
         List<ListedStorageObject> objects = new ArrayList<>();
         String continuationToken = null;
         do {
             ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
-                    .bucket(bucket)
+                    .bucket(bucketName)
                     .maxKeys(1000);
             if (continuationToken != null) {
                 requestBuilder.continuationToken(continuationToken);
@@ -138,6 +149,22 @@ public class S3ObjectStorageAdapter implements ObjectStoragePort {
             continuationToken = response.isTruncated() ? response.nextContinuationToken() : null;
         } while (continuationToken != null);
         return objects;
+    }
+
+    @Override
+    public Optional<String> findFirstObjectKey(String bucketName, String keyPrefix) {
+        if (keyPrefix == null || keyPrefix.isBlank()) {
+            return Optional.empty();
+        }
+        ensureBucket(bucketName);
+        ListObjectsV2Response response = s3Client.listObjectsV2(ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .prefix(keyPrefix)
+                .maxKeys(1)
+                .build());
+        return response.contents().stream()
+                .map(S3Object::key)
+                .findFirst();
     }
 
     @Override
@@ -163,10 +190,14 @@ public class S3ObjectStorageAdapter implements ObjectStoragePort {
     }
 
     private void ensureBucket() {
+        ensureBucket(bucket);
+    }
+
+    private void ensureBucket(String bucketName) {
         try {
-            s3Client.headBucket(HeadBucketRequest.builder().bucket(bucket).build());
+            s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
         } catch (NoSuchBucketException e) {
-            s3Client.createBucket(CreateBucketRequest.builder().bucket(bucket).build());
+            s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
         }
     }
 }

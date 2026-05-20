@@ -77,6 +77,39 @@ body {
     color: #64748b;
 }
 
+.board-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.board-item {
+    display: block;
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px 20px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.board-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.board-item-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.board-item-sub {
+    font-size: 13px;
+    color: #64748b;
+}
+
 .site-footer {
     margin-top: 32px;
     padding-top: 16px;

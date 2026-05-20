@@ -1,10 +1,11 @@
 package com.sleekydz86.monitoring.logstack_s3.application.view;
 
-import java.util.List;
+import com.sleekydz86.monitoring.logstack_s3.domain.model.PageResult;
 
 public record StorageBrowseView(
-        String bucketName,
-        int objectCount,
-        List<StorageObjectView> objects
+        String bucketCode,
+        String bucketDisplayName,
+        String region,
+        PageResult<StorageObjectView> page
 ) {
 }

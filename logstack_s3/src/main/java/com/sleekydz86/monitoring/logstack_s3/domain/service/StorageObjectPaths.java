@@ -49,4 +49,26 @@ public final class StorageObjectPaths {
                 || lower.endsWith(".gif")
                 || lower.endsWith(".webp");
     }
+
+    public static boolean isThumbnailKey(String key) {
+        return key != null && key.startsWith("thumbnails/");
+    }
+
+    public static java.util.Optional<String> thumbnailUuid(String thumbnailKey) {
+        if (!isThumbnailKey(thumbnailKey)) {
+            return java.util.Optional.empty();
+        }
+        String name = thumbnailKey.substring("thumbnails/".length());
+        int dot = name.lastIndexOf('.');
+        if (dot <= 0) {
+            return java.util.Optional.empty();
+        }
+        return java.util.Optional.of(name.substring(0, dot));
+    }
+
+    public static String uploadsPrefixForThumbnail(String thumbnailKey) {
+        return thumbnailUuid(thumbnailKey)
+                .map(uuid -> "uploads/" + uuid + "_")
+                .orElse(null);
+    }
 }

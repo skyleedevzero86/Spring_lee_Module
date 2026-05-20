@@ -11,7 +11,11 @@ import com.sleekydz86.monitoring.logstack_s3.application.port.ObjectStoragePort;
 import com.sleekydz86.monitoring.logstack_s3.application.query.BrowseStorageQuery;
 import com.sleekydz86.monitoring.logstack_s3.application.view.StorageBrowseView;
 import com.sleekydz86.monitoring.logstack_s3.application.view.StorageObjectView;
+import com.sleekydz86.monitoring.logstack_s3.domain.exception.FileNotFoundException;
+import com.sleekydz86.monitoring.logstack_s3.domain.message.DomainMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.ListedStorageObject;
+import com.sleekydz86.monitoring.logstack_s3.domain.model.PageResult;
+import com.sleekydz86.monitoring.logstack_s3.domain.repository.StorageBucketRepository;
 import com.sleekydz86.monitoring.logstack_s3.domain.service.StorageObjectPaths;
 
 import lombok.RequiredArgsConstructor;
@@ -22,26 +26,47 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class BrowseStorageUseCase implements UseCase<BrowseStorageQuery, StorageBrowseView> {
 
+    private final StorageBucketRepository storageBucketRepository;
     private final ObjectStoragePort objectStorage;
     private final StorageViewAssembler assembler;
 
     @Override
     public StorageBrowseView apply(BrowseStorageQuery query) {
-        log.info("S3 스토리지 조회: bucket={}, prefix={}, keyword={}",
-                objectStorage.bucketName(), query.prefixFilter(), query.keyword());
+        var bucket = storageBucketRepository.findByBucketCode(query.bucketCode())
+                .orElseThrow(() -> new FileNotFoundException(DomainMessages.bucketNotFound(query.bucketCode())));
+
+        log.info("S3 객체 조회: bucket={}, prefix={}, keyword={}, page={}, size={}",
+                query.bucketCode(), query.prefixFilter(), query.keyword(), query.page(), query.size());
+
         String keyPrefix = StorageObjectPaths.keyPrefix(query.prefixFilter());
         String keywordLower = query.keywordOptional()
                 .map(k -> k.toLowerCase(Locale.ROOT))
                 .orElse(null);
 
-        List<StorageObjectView> views = objectStorage.listObjects().stream()
+        List<StorageObjectView> filtered = objectStorage.listObjects(bucket.bucketCode()).stream()
                 .filter(object -> matchesPrefix(object, keyPrefix))
                 .filter(object -> matchesKeyword(object, keywordLower))
                 .sorted(Comparator.comparing(ListedStorageObject::lastModified).reversed())
-                .map(assembler::toView)
+                .map(object -> assembler.toView(bucket.bucketCode(), object))
                 .toList();
 
-        return new StorageBrowseView(objectStorage.bucketName(), views.size(), views);
+        int from = query.page() * query.size();
+        int to = Math.min(from + query.size(), filtered.size());
+        List<StorageObjectView> pageContent = from >= filtered.size()
+                ? List.of()
+                : filtered.subList(from, to);
+
+        PageResult<StorageObjectView> page = PageResult.of(
+                pageContent,
+                query.page(),
+                query.size(),
+                filtered.size());
+
+        return new StorageBrowseView(
+                bucket.bucketCode(),
+                bucket.displayName(),
+                bucket.region(),
+                page);
     }
 
     private boolean matchesPrefix(ListedStorageObject object, String keyPrefix) {

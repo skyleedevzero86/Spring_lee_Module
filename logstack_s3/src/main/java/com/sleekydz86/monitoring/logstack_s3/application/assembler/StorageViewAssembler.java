@@ -16,10 +16,12 @@ public class StorageViewAssembler {
 
     private final ObjectStoragePort objectStorage;
 
-    public StorageObjectView toView(ListedStorageObject object) {
+    public StorageObjectView toView(String bucketCode, ListedStorageObject object) {
         String key = object.key();
         boolean image = StorageObjectPaths.isImageKey(key);
-        String previewUrl = image ? objectStorage.presignPreview(key) : null;
+        boolean thumbnail = StorageObjectPaths.isThumbnailKey(key);
+        String previewUrl = image ? objectStorage.presignPreview(bucketCode, key) : null;
+        String originalPreviewUrl = resolveOriginalPreviewUrl(bucketCode, key, image, thumbnail, previewUrl);
         return new StorageObjectView(
                 key,
                 StorageObjectPaths.displayName(key),
@@ -27,7 +29,30 @@ public class StorageViewAssembler {
                 StorageSizeFormatter.format(object.sizeBytes()),
                 object.lastModified(),
                 previewUrl,
-                image
-        );
+                originalPreviewUrl,
+                image,
+                thumbnail);
+    }
+
+    private String resolveOriginalPreviewUrl(
+            String bucketCode,
+            String key,
+            boolean image,
+            boolean thumbnail,
+            String previewUrl
+    ) {
+        if (!image) {
+            return null;
+        }
+        if (!thumbnail) {
+            return previewUrl;
+        }
+        String uploadsPrefix = StorageObjectPaths.uploadsPrefixForThumbnail(key);
+        if (uploadsPrefix == null) {
+            return previewUrl;
+        }
+        return objectStorage.findFirstObjectKey(bucketCode, uploadsPrefix)
+                .map(originalKey -> objectStorage.presignPreview(bucketCode, originalKey))
+                .orElse(previewUrl);
     }
 }

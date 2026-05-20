@@ -9,9 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.sleekydz86.monitoring.logstack_s3.application.port.ObjectStoragePort;
-import com.sleekydz86.monitoring.logstack_s3.application.usecase.BrowseStorageUseCase;
 import com.sleekydz86.monitoring.logstack_s3.application.query.BrowseStorageQuery;
+import com.sleekydz86.monitoring.logstack_s3.application.query.ListStorageBucketsQuery;
+import com.sleekydz86.monitoring.logstack_s3.application.usecase.BrowseStorageUseCase;
+import com.sleekydz86.monitoring.logstack_s3.application.usecase.ListStorageBucketsUseCase;
 import com.sleekydz86.monitoring.logstack_s3.domain.service.StorageObjectPaths;
 import com.sleekydz86.monitoring.logstack_s3.support.IntegrationTestBase;
 import com.sleekydz86.monitoring.logstack_s3.support.IntegrationTestFixtures;
@@ -21,14 +22,14 @@ import com.sleekydz86.monitoring.logstack_s3.support.IntegrationTestFixtures;
 class BrowseStorageIntegrationTest extends IntegrationTestBase {
 
     @Autowired
-    private BrowseStorageUseCase browseStorageUseCase;
+    private ListStorageBucketsUseCase listStorageBucketsUseCase;
 
     @Autowired
-    private ObjectStoragePort objectStorage;
+    private BrowseStorageUseCase browseStorageUseCase;
 
     @Test
-    @DisplayName("성공 - 업로드 후 스토리지 화면·목록 API")
-    void browseStorage_afterUpload_success() {
+    @DisplayName("성공 - 버킷 목록·객체 목록·화면")
+    void storageFlow_success() {
         // given
         var request = IntegrationTestFixtures.imageUploadEntity();
         ResponseEntity<String> upload = restTemplate.postForEntity(
@@ -38,15 +39,21 @@ class BrowseStorageIntegrationTest extends IntegrationTestBase {
         assertThat(upload.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         // when
-        var browse = browseStorageUseCase.apply(new BrowseStorageQuery(null, StorageObjectPaths.PREFIX_ALL));
-        ResponseEntity<String> page = restTemplate.getForEntity(baseUrl() + "/storage", String.class);
+        var buckets = listStorageBucketsUseCase.apply(new ListStorageBucketsQuery(null, 0, 10));
+        String bucketCode = buckets.content().getFirst().bucketCode();
+        var objects = browseStorageUseCase.apply(
+                new BrowseStorageQuery(bucketCode, null, StorageObjectPaths.PREFIX_ALL, 0, 12));
+        ResponseEntity<String> bucketPage = restTemplate.getForEntity(baseUrl() + "/storage", String.class);
+        ResponseEntity<String> objectPage = restTemplate.getForEntity(
+                baseUrl() + "/storage/buckets/" + bucketCode,
+                String.class);
 
         // then
-        assertThat(browse.objectCount()).isGreaterThanOrEqualTo(2);
-        assertThat(browse.objects()).anyMatch(o -> o.key().startsWith("uploads/"));
-        assertThat(browse.objects()).anyMatch(o -> o.key().startsWith("thumbnails/"));
-        assertThat(page.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(page.getBody()).contains("스토리지");
-        assertThat(page.getBody()).contains(objectStorage.bucketName());
+        assertThat(buckets.totalElements()).isGreaterThanOrEqualTo(1);
+        assertThat(objects.page().totalElements()).isGreaterThanOrEqualTo(2);
+        assertThat(bucketPage.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(bucketPage.getBody()).contains("스토리지 버킷");
+        assertThat(objectPage.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(objectPage.getBody()).contains(bucketCode);
     }
 }
