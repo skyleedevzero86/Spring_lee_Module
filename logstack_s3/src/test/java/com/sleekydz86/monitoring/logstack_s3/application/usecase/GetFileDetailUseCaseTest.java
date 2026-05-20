@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.sleekydz86.monitoring.logstack_s3.application.assembler.FileViewAssembler;
 import com.sleekydz86.monitoring.logstack_s3.application.view.FileDetailView;
-import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.domain.message.DomainMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.FileNotFoundException;
 import com.sleekydz86.monitoring.logstack_s3.domain.repository.FileRepository;
 import com.sleekydz86.monitoring.logstack_s3.support.TestFileFixtures;
@@ -41,8 +41,7 @@ class GetFileDetailUseCaseTest {
         var view = new FileDetailView(
                 file.id(), file.originalFilename(), file.contentType(), file.size(),
                 file.createdAt(), file.objectKey(), "thumb-url", "preview-url", "download-url",
-                true, false
-        );
+                true, false);
         given(fileRepository.findById(file.id())).willReturn(Optional.of(file));
         given(assembler.toDetail(file)).willReturn(view);
 
@@ -64,6 +63,6 @@ class GetFileDetailUseCaseTest {
         // when & then
         assertThatThrownBy(() -> useCase.apply(id))
                 .isInstanceOf(FileNotFoundException.class)
-                .hasMessage(KoreanMessages.fileNotFound(id));
+                .hasMessage(DomainMessages.fileNotFound(id));
     }
 }

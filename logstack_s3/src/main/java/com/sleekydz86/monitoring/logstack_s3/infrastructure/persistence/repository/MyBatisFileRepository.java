@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.InvalidRequestException;
+import com.sleekydz86.monitoring.logstack_s3.domain.message.DomainMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.PageResult;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.StoredFile;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.StoredFileSummary;
@@ -39,8 +39,8 @@ public class MyBatisFileRepository implements FileRepository {
     @Transactional
     public StoredFile save(StoredFile file) {
         String dateTimePrefix = FileIdGenerator.dateTimePrefix(fileIdPrefix, file.createdAt());
-        long maxSequence = mapper.selectMaxSequence(dateTimePrefix);
-        String newId = FileIdGenerator.nextId(dateTimePrefix, maxSequence);
+        long sequence = allocateNextSequence(dateTimePrefix);
+        String newId = FileIdGenerator.formatId(dateTimePrefix, sequence);
         StoredFile toSave = file.withId(newId);
         callProcedure(FileOperation.C, toSave);
         return toSave;
@@ -50,7 +50,7 @@ public class MyBatisFileRepository implements FileRepository {
     @Transactional
     public StoredFile update(StoredFile file) {
         if (file.id() == null || file.id().isBlank()) {
-            throw new InvalidRequestException(KoreanMessages.ID_REQUIRED_FOR_UPDATE);
+            throw new InvalidRequestException(DomainMessages.ID_REQUIRED_FOR_UPDATE);
         }
         callProcedure(FileOperation.U, file);
         return file;
@@ -67,6 +67,7 @@ public class MyBatisFileRepository implements FileRepository {
         param.setContentType("application/octet-stream");
         param.setSize(0L);
         param.setBucketId(defaultBucketId);
+        param.setCreatedAt(java.time.LocalDateTime.of(1970, 1, 1, 0, 0));
         mapper.callManage(param);
     }
 
@@ -93,9 +94,9 @@ public class MyBatisFileRepository implements FileRepository {
     public void seedDemoData(int count) {
         var uploadedAt = java.time.LocalDateTime.now();
         String dateTimePrefix = FileIdGenerator.dateTimePrefix(fileIdPrefix, uploadedAt);
-        long maxSequence = mapper.selectMaxSequence(dateTimePrefix);
         for (int i = 1; i <= count; i++) {
-            String id = FileIdGenerator.formatId(dateTimePrefix, maxSequence + i);
+            long sequence = allocateNextSequence(dateTimePrefix);
+            String id = FileIdGenerator.formatId(dateTimePrefix, sequence);
             StoredFile seed = new StoredFile(
                     id,
                     "demo_" + i + ".dat",
@@ -103,10 +104,20 @@ public class MyBatisFileRepository implements FileRepository {
                     "thumbnails/seed/" + i + ".jpg",
                     i % 3 == 0 ? "image/jpeg" : (i % 3 == 1 ? "application/pdf" : "application/octet-stream"),
                     1000L + i,
-                    uploadedAt
-            );
+                    uploadedAt);
             callProcedure(FileOperation.C, seed);
         }
+    }
+
+    private long allocateNextSequence(String dateTimePrefix) {
+        StoredFileProcedureParam param = new StoredFileProcedureParam();
+        param.setOperation(FileOperation.S.code());
+        param.setDateTimePrefix(dateTimePrefix);
+        Long sequence = mapper.callManage(param);
+        if (sequence == null) {
+            throw new IllegalStateException("function S did not return last_sequence for prefix=" + dateTimePrefix);
+        }
+        return sequence;
     }
 
     private void callProcedure(FileOperation operation, StoredFile file) {
@@ -131,8 +142,7 @@ public class MyBatisFileRepository implements FileRepository {
                 row.getThumbnailKey(),
                 row.getContentType(),
                 row.getSize(),
-                row.getCreatedAt()
-        );
+                row.getCreatedAt());
     }
 
     private StoredFileSummary toSummary(StoredFileListRow row) {
@@ -148,7 +158,6 @@ public class MyBatisFileRepository implements FileRepository {
                 row.getRegion(),
                 row.getBucketDisplayName(),
                 row.getSizeLabel(),
-                row.getMediaType()
-        );
+                row.getMediaType());
     }
 }

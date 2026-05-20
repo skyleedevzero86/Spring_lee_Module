@@ -11,4 +11,8 @@ public interface ObjectStoragePort {
     String presignPreview(String key);
 
     String presignDownload(String key, String filename);
+
+    void delete(String key);
+
+    boolean exists(String key);
 }

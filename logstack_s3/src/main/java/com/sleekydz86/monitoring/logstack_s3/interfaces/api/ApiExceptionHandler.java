@@ -39,7 +39,7 @@ public class ApiExceptionHandler {
                 .body(new ApiErrorResponse(ex.getMessage()));
     }
 
-    @ExceptionHandler({FileStorageException.class, IllegalStateException.class})
+    @ExceptionHandler({ FileStorageException.class, IllegalStateException.class })
     public ResponseEntity<ApiErrorResponse> handleStorage(RuntimeException ex) {
         log.error("파일 저장/처리 오류: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

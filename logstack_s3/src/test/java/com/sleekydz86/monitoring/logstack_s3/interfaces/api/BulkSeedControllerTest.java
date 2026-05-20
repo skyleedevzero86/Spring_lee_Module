@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.sleekydz86.monitoring.logstack_s3.application.usecase.SeedFilesUseCase;
+import com.sleekydz86.monitoring.logstack_s3.domain.message.DomainMessages;
 import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.InvalidRequestException;
 
@@ -52,11 +53,11 @@ class BulkSeedControllerTest {
     @DisplayName("실패 - 시드 건수 오류")
     void seed_invalidCount_fail() throws Exception {
         // given
-        given(seedFilesUseCase.apply(0)).willThrow(new InvalidRequestException(KoreanMessages.SEED_COUNT_MIN));
+        given(seedFilesUseCase.apply(0)).willThrow(new InvalidRequestException(DomainMessages.SEED_COUNT_MIN));
 
         // when & then
         mockMvc.perform(post("/api/admin/seed").param("count", "0"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(KoreanMessages.SEED_COUNT_MIN));
+                .andExpect(jsonPath("$.message").value(DomainMessages.SEED_COUNT_MIN));
     }
 }

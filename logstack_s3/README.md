@@ -26,31 +26,31 @@ Spring Boot 기반 **파일 업로드·관리** 샘플 프로젝트입니다.
 
 ## 기능 요약
 
-| 기능 | 설명 |
-|------|------|
-| 파일 업로드 | Multipart → S3 저장 + DB 메타데이터 등록 |
-| 목록/검색 | 페이징, 파일명 키워드 검색, 썸네일 그리드 |
+| 기능          | 설명                                               |
+| ------------- | -------------------------------------------------- |
+| 파일 업로드   | Multipart → S3 저장 + DB 메타데이터 등록           |
+| 목록/검색     | 페이징, 파일명 키워드 검색, 썸네일 그리드          |
 | 상세/미리보기 | 이미지·PDF 인라인 미리보기, Presigned 다운로드 URL |
-| 파일 삭제 | DB 메타 삭제 (프로시저 D) |
-| 대용량 체험 | 관리 API로 데모 데이터 대량 INSERT |
-| Swagger | REST API 테스트 UI |
+| 파일 삭제     | DB 메타 삭제 (프로시저 D)                          |
+| 대용량 체험   | 관리 API로 데모 데이터 대량 INSERT                 |
+| Swagger       | REST API 테스트 UI                                 |
 
 ---
 
 ## 기술 스택
 
-| 구분 | 기술 |
-|------|------|
-| Language | Java 25 |
-| Framework | Spring Boot 4.0.6 |
-| View | JSP + JSTL, CSS/JS 분리 (`static/`) |
-| DB | PostgreSQL |
-| ORM | MyBatis 3.0.5 |
-| Object Storage | AWS SDK S3  |
-| 썸네일 | ImageIO, Apache PDFBox |
-| API Doc | openapi  |
-| Build | Gradle (Kotlin DSL) |
-| Test | JUnit 5, Mockito, AssertJ |
+| 구분           | 기술                                |
+| -------------- | ----------------------------------- |
+| Language       | Java 25                             |
+| Framework      | Spring Boot 4.0.6                   |
+| View           | JSP + JSTL, CSS/JS 분리 (`static/`) |
+| DB             | PostgreSQL                          |
+| ORM            | MyBatis 3.0.5                       |
+| Object Storage | AWS SDK S3                          |
+| 썸네일         | ImageIO, Apache PDFBox              |
+| API Doc        | openapi                             |
+| Build          | Gradle (Kotlin DSL)                 |
+| Test           | JUnit 5, Mockito, AssertJ           |
 
 ---
 
@@ -95,13 +95,13 @@ Spring Boot 기반 **파일 업로드·관리** 샘플 프로젝트입니다.
 
 ### 레이어별 역할
 
-| 레이어 | 책임 |
-|--------|------|
-| **interfaces** | HTTP 진입점. 비즈니스 로직 없음. |
-| **application** | 유스케이스 오케스트레이션. `UseCase<I,O>` 함수형 인터페이스. |
-| **domain** | 핵심 규칙·모델·저장소 **인터페이스**. 프레임워크 비의존. |
-| **infrastructure** | MyBatis, S3, PDFBox 등 **구현체**. |
-| **common** | 한국어 메시지 등 공통 상수. |
+| 레이어             | 책임                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| **interfaces**     | HTTP 진입점. 비즈니스 로직 없음.                             |
+| **application**    | 유스케이스 오케스트레이션. `UseCase<I,O>` 함수형 인터페이스. |
+| **domain**         | 핵심 규칙·모델·저장소 **인터페이스**. 프레임워크 비의존.     |
+| **infrastructure** | MyBatis, S3, PDFBox 등 **구현체**.                           |
+| **common**         | 한국어 메시지 등 공통 상수.                                  |
 
 ---
 
@@ -115,13 +115,13 @@ Spring Boot 기반 **파일 업로드·관리** 샘플 프로젝트입니다.
 
 ### 2. MyBatis + 프로시저(CUD) + 뷰(목록)
 
-| 작업 | 방식 | 이유 |
-|------|------|------|
-| C / U / D | `sp_stored_file_manage` | DB에서 변경 로직을 한곳에 모음 |
-| 단건 조회 | `stored_files` 테이블 | 단순·빠른 PK 조회 |
+| 작업      | 방식                    | 이유                                                                |
+| --------- | ----------------------- | ------------------------------------------------------------------- |
+| C / U / D / S | `sp_stored_file_manage` | 파일 CUD + ID 순번 할당을 DB 프로시저에서 처리 |
+| 단건 조회 | `stored_files` 테이블   | 단순·빠른 PK 조회                                                   |
 | 목록/검색 | `v_stored_file_list` 뷰 | 버킷 JOIN, `size_label`, `media_type` 등 표시용 컬럼을 SQL에서 처리 |
 
-프로시저는 **CUD만** 담당하고, SELECT·순번 조회는 MyBatis XML에서 처리합니다.
+프로시저는 **C/U/D/S** 를 담당하고, SELECT 목록·단건은 MyBatis XML에서 테이블·뷰로 처리합니다.
 
 ### 3. 커스텀 파일 ID
 
@@ -190,6 +190,22 @@ erDiagram
 - `stored_files` ⟕ `storage_buckets` JOIN.
 - 목록 화면용: `bucket_display_name`, `size_label`, `media_type`(IMAGE/PDF/FILE).
 
+**프로시저**
+
+- `stored_files` **C/U/D** 와 `file_id_sequences` **S** 순번 할당 (SELECT는 MyBatis에서 테이블·뷰 직접 조회).
+- 정의: `src/main/resources/sql/05_procedures.sql`
+
+### SQL 스크립트 (`src/main/resources/sql/`)
+
+| 파일                | 내용                         |
+| ------------------- | ---------------------------- |
+| `00_cleanup.sql`    | 기존 뷰·프로시저·테이블 DROP |
+| `01_tables.sql`     | 테이블 DDL                   |
+| `02_indexes.sql`    | 인덱스                       |
+| `03_seed.sql`       | 기본 버킷 데이터             |
+| `04_views.sql`      | `v_stored_file_list`         |
+| `05_procedures.sql` | `sp_stored_file_manage`      |
+
 ---
 
 ## 파일 ID 규칙
@@ -200,12 +216,12 @@ erDiagram
 
 예시:
 
-| 상황 | ID |
-|------|-----|
-| 2026-05-20 14:30 첫 업로드 | `lky_20260520_1430_0001` |
-| 같은 분 두 번째 | `lky_20260520_1430_0002` |
-| 14:31 첫 업로드 | `lky_20260520_1431_0001` |
-| 9999번 다음 | `lky_20260520_1430_10000` |
+| 상황                       | ID                        |
+| -------------------------- | ------------------------- |
+| 2026-05-20 14:30 첫 업로드 | `lky_20260520_1430_0001`  |
+| 같은 분 두 번째            | `lky_20260520_1430_0002`  |
+| 14:31 첫 업로드            | `lky_20260520_1431_0001`  |
+| 9999번 다음                | `lky_20260520_1430_10000` |
 
 설정: `logstack.file-id.prefix` (기본값 `lky`)
 
@@ -222,11 +238,11 @@ WHERE id LIKE 'lky_20260520_1430_%';
 ## DB 접근 전략
 
 ```text
-┌──────────────┐     selectMaxSequence      ┌─────────────┐
+┌──────────────┐     call sp ... 'S'         ┌─────────────┐
 │  Application │ ─────────────────────────► │  PostgreSQL │
 │  (Java)      │     call sp ... 'C'        │  + MyBatis  │
 └──────────────┘ ◄───────────────────────── └─────────────┘
-       │              ID 부여 후 INSERT
+       │              순번 확보 후 ID 부여·INSERT
        ▼
 ┌──────────────┐
 │  LocalStack  │  putObject / presign
@@ -234,21 +250,21 @@ WHERE id LIKE 'lky_20260520_1430_%';
 └──────────────┘
 ```
 
-| MyBatis 메서드 | 대상 | 용도 |
-|----------------|------|------|
-| `selectMaxSequence` | `stored_files` | 저장 전 순번 조회 |
-| `callManage` | `sp_stored_file_manage` | C / U / D |
-| `selectById` | `stored_files` | 단건 조회 |
-| `selectPageFromView` | `v_stored_file_list` | 목록 + 페이징 |
-| `countFromView` | `v_stored_file_list` | 검색 total count |
+| MyBatis 메서드       | 대상                    | 용도              |
+| -------------------- | ----------------------- | ----------------- |
+| `callManage`         | `sp_stored_file_manage` | C / U / D / S     |
+| `selectById`         | `stored_files`          | 단건 조회         |
+| `selectPageFromView` | `v_stored_file_list`    | 목록 + 페이징     |
+| `countFromView`      | `v_stored_file_list`    | 검색 total count  |
 
 프로시저 연산:
 
-| `p_operation` | 의미 |
-|---------------|------|
-| `C` | INSERT (ID는 Java에서 생성 후 전달) |
-| `U` | UPDATE |
-| `D` | DELETE |
+| `p_operation` | 의미                                |
+| ------------- | ----------------------------------- |
+| `C`           | INSERT (ID는 S 순번으로 Java에서 조합) |
+| `U`           | UPDATE                                 |
+| `D`           | DELETE                                 |
+| `S`           | `file_id_sequences` 다음 순번, `p_last_sequence` INOUT |
 
 ---
 
@@ -311,13 +327,13 @@ sequenceDiagram
 
 Swagger UI: **http://localhost:8080/swagger-ui.html**
 
-| Method | Path | 설명 |
-|--------|------|------|
-| `POST` | `/api/files/upload` | 파일 업로드 (multipart `file`) |
-| `GET` | `/api/files` | 목록 (`page`, `size`, `keyword`) |
-| `GET` | `/api/files/{id}` | 상세 (preview/download URL 포함) |
-| `DELETE` | `/api/files/{id}` | 삭제 |
-| `POST` | `/api/admin/seed?count=10000` | 데모 데이터 대량 생성 |
+| Method   | Path                          | 설명                             |
+| -------- | ----------------------------- | -------------------------------- |
+| `POST`   | `/api/files/upload`           | 파일 업로드 (multipart `file`)   |
+| `GET`    | `/api/files`                  | 목록 (`page`, `size`, `keyword`) |
+| `GET`    | `/api/files/{id}`             | 상세 (preview/download URL 포함) |
+| `DELETE` | `/api/files/{id}`             | 삭제                             |
+| `POST`   | `/api/admin/seed?count=10000` | 데모 데이터 대량 생성            |
 
 에러 응답 예:
 
@@ -331,11 +347,11 @@ Swagger UI: **http://localhost:8080/swagger-ui.html**
 
 ## 화면 URL
 
-| URL | 설명 |
-|-----|------|
-| http://localhost:8080/ | 파일 목록 (검색·페이징·썸네일) |
-| http://localhost:8080/upload | 업로드 폼 |
-| http://localhost:8080/files/{id} | 상세·미리보기 |
+| URL                              | 설명                           |
+| -------------------------------- | ------------------------------ |
+| http://localhost:8080/           | 파일 목록 (검색·페이징·썸네일) |
+| http://localhost:8080/upload     | 업로드 폼                      |
+| http://localhost:8080/files/{id} | 상세·미리보기                  |
 
 ---
 
@@ -353,7 +369,7 @@ Swagger UI: **http://localhost:8080/swagger-ui.html**
 CREATE DATABASE logstack_s3;
 ```
 
-앱 기동 시 `src/main/resources/schema.sql` 이 자동 실행됩니다 (`spring.sql.init.mode=always`).
+앱 기동 시 `src/main/resources/sql/*.sql` 이 번호 순으로 자동 실행됩니다 (`spring.sql.init.mode=always`).
 
 ### LocalStack (예시)
 
@@ -420,7 +436,7 @@ logstack_s3/
     │   ├── resources/
     │   │   ├── application.yml
     │   │   ├── application-local.yml
-    │   │   ├── schema.sql
+    │   │   ├── sql/                # 00~05 DDL·뷰·프로시저
     │   │   ├── mapper/StoredFileMapper.xml
     │   │   └── static/css, js/
     │   └── webapp/WEB-INF/views/
@@ -435,12 +451,12 @@ logstack_s3/
 
 ## 설정 참고
 
-| 키 | 설명 | 기본 |
-|----|------|------|
-| `logstack.file-id.prefix` | 파일 ID 접두어 | `lky` |
-| `logstack.default-bucket-id` | DB `storage_buckets.id` | `1` |
-| `aws.s3.presign-duration-minutes` | Presigned URL 유효 시간(분) | `60` |
-| `spring.servlet.multipart.max-file-size` | 업로드 최대 크기 | `10MB` |
+| 키                                       | 설명                        | 기본   |
+| ---------------------------------------- | --------------------------- | ------ |
+| `logstack.file-id.prefix`                | 파일 ID 접두어              | `lky`  |
+| `logstack.default-bucket-id`             | DB `storage_buckets.id`     | `1`    |
+| `aws.s3.presign-duration-minutes`        | Presigned URL 유효 시간(분) | `60`   |
+| `spring.servlet.multipart.max-file-size` | 업로드 최대 크기            | `10MB` |
 
 ---
 

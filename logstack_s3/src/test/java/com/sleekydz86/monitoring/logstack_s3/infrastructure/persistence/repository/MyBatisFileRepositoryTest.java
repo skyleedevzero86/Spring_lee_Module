@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.inOrder;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.domain.message.DomainMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.InvalidRequestException;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.PageResult;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.StoredFile;
@@ -49,14 +51,18 @@ class MyBatisFileRepositoryTest {
     void save_success() {
         // given
         var draft = StoredFile.draft(
-                "a.png", "uploads/a.png", "thumbnails/a.jpg", "image/png", 100L
-        );
+                "a.png", "uploads/a.png", "thumbnails/a.jpg", "image/png", 100L);
         draft = new StoredFile(
                 draft.id(), draft.originalFilename(), draft.objectKey(),
                 draft.thumbnailKey(), draft.contentType(), draft.size(),
-                TestFileFixtures.FIXED_TIME
-        );
-        given(mapper.selectMaxSequence(any())).willReturn(5L);
+                TestFileFixtures.FIXED_TIME);
+        org.mockito.Mockito.doAnswer(invocation -> {
+            StoredFileProcedureParam param = invocation.getArgument(0);
+            if ("S".equals(param.getOperation())) {
+                return 6L;
+            }
+            return null;
+        }).when(mapper).callManage(any(StoredFileProcedureParam.class));
 
         // when
         StoredFile saved = repository.save(draft);
@@ -64,7 +70,12 @@ class MyBatisFileRepositoryTest {
         // then
         assertThat(saved.id()).endsWith("_0006");
         assertThat(saved.id()).startsWith("lky_20260520_1430_");
-        verify(mapper).callManage(any(StoredFileProcedureParam.class));
+        var inOrder = inOrder(mapper);
+        inOrder.verify(mapper).callManage(org.mockito.ArgumentMatchers.argThat(
+                p -> "S".equals(p.getOperation()) && "lky_20260520_1430".equals(p.getDateTimePrefix())));
+        inOrder.verify(mapper).callManage(org.mockito.ArgumentMatchers.argThat(
+                p -> "C".equals(p.getOperation())));
+        verify(mapper, times(2)).callManage(any(StoredFileProcedureParam.class));
     }
 
     @Test
@@ -76,7 +87,7 @@ class MyBatisFileRepositoryTest {
         // when & then
         assertThatThrownBy(() -> repository.update(file))
                 .isInstanceOf(InvalidRequestException.class)
-                .hasMessage(KoreanMessages.ID_REQUIRED_FOR_UPDATE);
+                .hasMessage(DomainMessages.ID_REQUIRED_FOR_UPDATE);
     }
 
     @Test

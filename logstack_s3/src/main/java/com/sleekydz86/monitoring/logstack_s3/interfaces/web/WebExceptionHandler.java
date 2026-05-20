@@ -22,14 +22,14 @@ public class WebExceptionHandler {
         return "redirect:/";
     }
 
-    @ExceptionHandler({InvalidRequestException.class, IllegalArgumentException.class})
+    @ExceptionHandler({ InvalidRequestException.class, IllegalArgumentException.class })
     public String handleBadRequest(RuntimeException ex, RedirectAttributes redirectAttributes) {
         log.warn("화면 요청 - 잘못된 요청: {}", ex.getMessage());
         redirectAttributes.addFlashAttribute("error", ex.getMessage());
         return "redirect:/";
     }
 
-    @ExceptionHandler({FileStorageException.class, IllegalStateException.class})
+    @ExceptionHandler({ FileStorageException.class, IllegalStateException.class })
     public String handleStorage(RuntimeException ex, RedirectAttributes redirectAttributes) {
         log.error("화면 요청 - 저장 오류: {}", ex.getMessage(), ex);
         redirectAttributes.addFlashAttribute("error", ex.getMessage());

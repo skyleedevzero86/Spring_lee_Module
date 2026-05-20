@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sleekydz86.monitoring.logstack_s3.application.port.ThumbnailPort;
-import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.infrastructure.message.InfrastructureMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.FileStorageException;
 
 @Component
@@ -57,7 +57,7 @@ public class PdfBoxThumbnailAdapter implements ThumbnailPort {
             ImageIO.write(image, "jpg", output);
             return output.toByteArray();
         } catch (IOException e) {
-            throw new FileStorageException(KoreanMessages.THUMBNAIL_CREATE_FAILED, e);
+            throw new FileStorageException(InfrastructureMessages.THUMBNAIL_CREATE_FAILED, e);
         }
     }
 

@@ -12,7 +12,7 @@ import com.sleekydz86.monitoring.logstack_s3.application.port.ObjectStoragePort;
 import com.sleekydz86.monitoring.logstack_s3.application.port.ThumbnailPort;
 import com.sleekydz86.monitoring.logstack_s3.application.query.UploadFileCommand;
 import com.sleekydz86.monitoring.logstack_s3.application.view.FileDetailView;
-import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.infrastructure.message.InfrastructureMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.FileStorageException;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.StoredFile;
 import com.sleekydz86.monitoring.logstack_s3.domain.repository.FileRepository;
@@ -45,8 +45,7 @@ public class UploadFileUseCase implements UseCase<UploadFileCommand, FileDetailV
         String thumbnailKey = resolveThumbnailKey(file, contentType);
 
         StoredFile saved = fileRepository.save(StoredFile.draft(
-                filename, objectKey, thumbnailKey, contentType, file.getSize()
-        ));
+                filename, objectKey, thumbnailKey, contentType, file.getSize()));
         log.info("파일 업로드 완료: id={}, 파일명={}", saved.id(), filename);
         return assembler.toDetail(saved);
     }
@@ -55,7 +54,7 @@ public class UploadFileUseCase implements UseCase<UploadFileCommand, FileDetailV
         try {
             objectStorage.put(objectKey, contentType, file.getSize(), file.getInputStream());
         } catch (IOException e) {
-            throw new FileStorageException(KoreanMessages.FILE_READ_FAILED, e);
+            throw new FileStorageException(InfrastructureMessages.FILE_READ_FAILED, e);
         }
     }
 

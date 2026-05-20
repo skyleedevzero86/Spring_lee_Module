@@ -18,4 +18,5 @@ public class StoredFileProcedureParam {
     private long size;
     private Long bucketId;
     private LocalDateTime createdAt;
+    private String dateTimePrefix;
 }

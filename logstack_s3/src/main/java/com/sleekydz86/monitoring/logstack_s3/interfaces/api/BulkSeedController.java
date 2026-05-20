@@ -27,12 +27,10 @@ public class BulkSeedController {
     @Operation(summary = "데모 데이터 시드", description = "대용량 목록/페이징 테스트용 데이터를 생성합니다.")
     @PostMapping("/seed")
     public ResponseEntity<Map<String, Object>> seed(
-            @Parameter(description = "생성 건수 (1~500000)") @RequestParam(defaultValue = "10000") int count
-    ) {
+            @Parameter(description = "생성 건수 (1~500000)") @RequestParam(defaultValue = "10000") int count) {
         int seeded = seedFilesUseCase.apply(count);
         return ResponseEntity.ok(Map.of(
                 "seeded", seeded,
-                "message", KoreanMessages.seedComplete(seeded)
-        ));
+                "message", KoreanMessages.seedComplete(seeded)));
     }
 }

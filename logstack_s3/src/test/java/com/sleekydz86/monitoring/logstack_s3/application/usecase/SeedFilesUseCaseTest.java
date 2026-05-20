@@ -11,7 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.domain.message.DomainMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.InvalidRequestException;
 import com.sleekydz86.monitoring.logstack_s3.domain.repository.FileRepository;
 
@@ -48,7 +48,7 @@ class SeedFilesUseCaseTest {
         // when & then
         assertThatThrownBy(() -> useCase.apply(count))
                 .isInstanceOf(InvalidRequestException.class)
-                .hasMessage(KoreanMessages.SEED_COUNT_MIN);
+                .hasMessage(DomainMessages.SEED_COUNT_MIN);
     }
 
     @Test
@@ -60,6 +60,6 @@ class SeedFilesUseCaseTest {
         // when & then
         assertThatThrownBy(() -> useCase.apply(count))
                 .isInstanceOf(InvalidRequestException.class)
-                .hasMessage(KoreanMessages.SEED_COUNT_MAX);
+                .hasMessage(DomainMessages.SEED_COUNT_MAX);
     }
 }

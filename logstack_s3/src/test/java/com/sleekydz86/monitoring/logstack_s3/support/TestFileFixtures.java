@@ -24,8 +24,7 @@ public final class TestFileFixtures {
                 "thumbnails/sample.jpg",
                 "image/png",
                 1024L,
-                FIXED_TIME
-        );
+                FIXED_TIME);
     }
 
     public static StoredFileSummary storedFileSummary() {
@@ -41,8 +40,7 @@ public final class TestFileFixtures {
                 "us-east-1",
                 "ERP LocalStack Bucket",
                 "1 kB",
-                "IMAGE"
-        );
+                "IMAGE");
     }
 
     public static StoredFileRow storedFileRow() {
@@ -81,8 +79,7 @@ public final class TestFileFixtures {
                 "file",
                 "sample.png",
                 "image/png",
-                new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47}
-        );
+                new byte[] { (byte) 0x89, 0x50, 0x4E, 0x47 });
     }
 
     public static MockMultipartFile textMultipartFile() {
@@ -90,7 +87,6 @@ public final class TestFileFixtures {
                 "file",
                 "readme.txt",
                 "text/plain",
-                "hello".getBytes()
-        );
+                "hello".getBytes());
     }
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.sleekydz86.monitoring.logstack_s3.infrastructure.persistence.mapper.StoredFileMapper">
 
     <resultMap id="storedFileMap" type="StoredFileRow">
@@ -30,7 +31,7 @@
         <result property="mediaType" column="media_type"/>
     </resultMap>
 
-    <update id="callManage" statementType="CALLABLE">
+    <select id="callManage" statementType="CALLABLE" resultType="java.lang.Long">
         {call sp_stored_file_manage(
             #{operation, mode=IN, jdbcType=CHAR},
             #{id, mode=IN, jdbcType=VARCHAR},
@@ -40,15 +41,9 @@
             #{contentType, mode=IN, jdbcType=VARCHAR},
             #{size, mode=IN, jdbcType=BIGINT},
             #{bucketId, mode=IN, jdbcType=BIGINT},
-            #{createdAt, mode=IN, jdbcType=TIMESTAMP}
+            #{createdAt, mode=IN, jdbcType=TIMESTAMP},
+            #{dateTimePrefix, mode=IN, jdbcType=VARCHAR}
         )}
-    </update>
-
-    <select id="selectMaxSequence" resultType="long">
-        SELECT COALESCE(MAX(CAST(SPLIT_PART(id, '_', 4) AS BIGINT)), 0)
-        FROM stored_files
-        WHERE id LIKE CONCAT(#{dateTimePrefix}, '_%')
-          AND SPLIT_PART(id, '_', 4) ~ '^[0-9]+$'
     </select>
 
     <select id="selectById" resultMap="storedFileMap">

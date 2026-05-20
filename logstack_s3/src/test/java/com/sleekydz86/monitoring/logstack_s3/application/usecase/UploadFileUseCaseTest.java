@@ -25,7 +25,7 @@ import com.sleekydz86.monitoring.logstack_s3.application.port.ObjectStoragePort;
 import com.sleekydz86.monitoring.logstack_s3.application.port.ThumbnailPort;
 import com.sleekydz86.monitoring.logstack_s3.application.query.UploadFileCommand;
 import com.sleekydz86.monitoring.logstack_s3.application.view.FileDetailView;
-import com.sleekydz86.monitoring.logstack_s3.global.common.message.KoreanMessages;
+import com.sleekydz86.monitoring.logstack_s3.domain.message.DomainMessages;
 import com.sleekydz86.monitoring.logstack_s3.domain.exception.FileStorageException;
 import com.sleekydz86.monitoring.logstack_s3.domain.model.StoredFile;
 import com.sleekydz86.monitoring.logstack_s3.domain.repository.FileRepository;
@@ -58,9 +58,8 @@ class UploadFileUseCaseTest {
         var saved = TestFileFixtures.storedFile();
         var view = new FileDetailView(
                 saved.id(), saved.originalFilename(), saved.contentType(), saved.size(),
-                saved.createdAt(), saved.objectKey(), "t", "p", "d", true, false
-        );
-        given(thumbnailPort.generate(any(), anyString())).willReturn(Optional.of(new byte[]{1, 2}));
+                saved.createdAt(), saved.objectKey(), "t", "p", "d", true, false);
+        given(thumbnailPort.generate(any(), anyString())).willReturn(Optional.of(new byte[] { 1, 2 }));
         given(thumbnailPort.contentType()).willReturn("image/jpeg");
         given(fileRepository.save(any(StoredFile.class))).willReturn(saved);
         given(assembler.toDetail(saved)).willReturn(view);
@@ -87,6 +86,6 @@ class UploadFileUseCaseTest {
         // when & then
         assertThatThrownBy(() -> useCase.apply(new UploadFileCommand(broken)))
                 .isInstanceOf(FileStorageException.class)
-                .hasMessage(KoreanMessages.FILE_READ_FAILED);
+                .hasMessage(com.sleekydz86.monitoring.logstack_s3.infrastructure.message.InfrastructureMessages.FILE_READ_FAILED);
     }
 }

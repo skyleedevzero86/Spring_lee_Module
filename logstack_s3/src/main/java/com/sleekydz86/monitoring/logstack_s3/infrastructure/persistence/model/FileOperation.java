@@ -4,7 +4,8 @@ public enum FileOperation {
 
     C,
     U,
-    D;
+    D,
+    S;
 
     public String code() {
         return name();

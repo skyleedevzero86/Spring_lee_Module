@@ -12,17 +12,14 @@ import com.sleekydz86.monitoring.logstack_s3.infrastructure.persistence.model.St
 @Mapper
 public interface StoredFileMapper {
 
-    void callManage(StoredFileProcedureParam param);
-
-    long selectMaxSequence(@Param("dateTimePrefix") String dateTimePrefix);
+    Long callManage(StoredFileProcedureParam param);
 
     StoredFileRow selectById(@Param("id") String id);
 
     List<StoredFileListRow> selectPageFromView(
             @Param("keyword") String keyword,
             @Param("offset") int offset,
-            @Param("limit") int limit
-    );
+            @Param("limit") int limit);
 
     long countFromView(@Param("keyword") String keyword);
 }
