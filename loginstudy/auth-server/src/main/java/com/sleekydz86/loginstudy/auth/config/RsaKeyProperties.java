@@ -5,10 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "auth.rsa")
 public class RsaKeyProperties {
 
-	
-	private String privateKeyLocation = "file:keys/private.pem";
+	private String privateKeyLocation = "file:auth-server/keys/private.pem";
 
-	private String publicKeyLocation = "file:keys/public.pem";
+	private String publicKeyLocation = "file:auth-server/keys/public.pem";
 
 	private String keyId = "loginstudy-auth-key-1";
 
