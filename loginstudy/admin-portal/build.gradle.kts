@@ -7,6 +7,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")

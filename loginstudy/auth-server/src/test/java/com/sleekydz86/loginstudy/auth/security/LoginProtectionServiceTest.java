@@ -35,28 +35,42 @@ class LoginProtectionServiceTest {
 
 	@Test
 	void locksAccountAfterMaxFailures() {
-		service.onFailure("user");
-		service.onFailure("user");
-		service.onFailure("user");
+		// given
+		String username = "user";
 
-		assertThat(redisTemplate.hasKey(LoginProtectionService.lockedKey("user"))).isTrue();
-		assertThatThrownBy(() -> service.assertNotLocked("user"))
+		// when
+		service.onFailure(username);
+		service.onFailure(username);
+		service.onFailure(username);
+
+		// then
+		assertThat(redisTemplate.hasKey(LoginProtectionService.lockedKey(username))).isTrue();
+		assertThatThrownBy(() -> service.assertNotLocked(username))
 				.isInstanceOf(LockedException.class)
 				.hasMessageContaining("계정이 일시적으로 잠겼습니다");
 	}
 
 	@Test
 	void successClearsFailureCounters() {
-		service.onFailure("admin");
-		service.onSuccess("admin");
+		// given
+		String username = "admin";
+		service.onFailure(username);
 
-		assertThat(redisTemplate.hasKey(LoginProtectionService.failureKey("admin"))).isFalse();
-		assertThat(redisTemplate.hasKey(LoginProtectionService.lockedKey("admin"))).isFalse();
+		// when
+		service.onSuccess(username);
+
+		// then
+		assertThat(redisTemplate.hasKey(LoginProtectionService.failureKey(username))).isFalse();
+		assertThat(redisTemplate.hasKey(LoginProtectionService.lockedKey(username))).isFalse();
 	}
 
 	@Test
 	void hashTaggedKeysShareSameUserSlotPrefix() {
-		assertThat(LoginProtectionService.failureKey("demo")).isEqualTo("login:{demo}:failure");
-		assertThat(LoginProtectionService.lockedKey("demo")).isEqualTo("login:{demo}:locked");
+		// given
+		String username = "demo";
+
+		// when / then
+		assertThat(LoginProtectionService.failureKey(username)).isEqualTo("login:{demo}:failure");
+		assertThat(LoginProtectionService.lockedKey(username)).isEqualTo("login:{demo}:locked");
 	}
 }

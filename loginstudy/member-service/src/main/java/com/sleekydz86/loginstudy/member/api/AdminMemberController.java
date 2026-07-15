@@ -5,9 +5,14 @@ import com.sleekydz86.loginstudy.member.api.MemberDtos.KeysetPageResponse;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.MemberResponse;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.MemberSummaryResponse;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.PageResponse;
+import com.sleekydz86.loginstudy.member.config.OpenApiConfig;
 import com.sleekydz86.loginstudy.member.domain.MemberStatus;
 import com.sleekydz86.loginstudy.member.service.AccessDeniedBusinessException;
 import com.sleekydz86.loginstudy.member.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.Collection;
@@ -29,6 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/members")
 @PreAuthorize("hasAuthority('SCOPE_admin') and hasAuthority('ROLE_ADMIN')")
+@Tag(name = "Admin Member", description = "관리자 회원 API (ROLE_ADMIN + SCOPE_admin)")
+@SecurityRequirement(name = OpenApiConfig.BEARER_JWT)
 public class AdminMemberController {
 
 	private final MemberService memberService;
@@ -38,6 +45,7 @@ public class AdminMemberController {
 	}
 
 	@GetMapping
+	@Operation(summary = "회원 OFFSET 검색", description = "상태/이메일/이름/가입일 범위 + page/size")
 	PageResponse<MemberSummaryResponse> search(
 			@RequestParam(required = false) MemberStatus status,
 			@RequestParam(required = false) String email,
@@ -58,6 +66,7 @@ public class AdminMemberController {
 	}
 
 	@GetMapping("/keyset")
+	@Operation(summary = "회원 Keyset 검색", description = "깊은 페이지 OFFSET 대안. cursorJoinedAt + cursorId")
 	KeysetPageResponse searchKeyset(
 			@RequestParam(required = false) MemberStatus status,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant joinedFrom,
@@ -71,12 +80,16 @@ public class AdminMemberController {
 	}
 
 	@GetMapping("/{id}")
-	MemberResponse get(@PathVariable Long id, Authentication authentication) {
+	@Operation(summary = "관리자 회원 상세")
+	MemberResponse get(
+			@Parameter(required = true) @PathVariable Long id,
+			Authentication authentication) {
 		assertAdmin(authentication);
 		return memberService.getByIdForCaller(id, subject(authentication), true);
 	}
 
 	@PostMapping("/{id}/status")
+	@Operation(summary = "회원 상태 변경")
 	MemberResponse changeStatus(
 			@PathVariable Long id,
 			@Valid @RequestBody ChangeStatusRequest request,

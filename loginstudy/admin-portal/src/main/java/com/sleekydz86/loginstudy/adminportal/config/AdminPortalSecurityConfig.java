@@ -23,8 +23,16 @@ public class AdminPortalSecurityConfig {
 			OidcRolesAuthoritiesMapper authoritiesMapper) throws Exception {
 		http
 				.authorizeHttpRequests(authorize -> authorize
-						.requestMatchers("/", "/css/**", "/error", "/access-denied",
-								"/actuator/health", "/actuator/info")
+						.requestMatchers(
+								"/",
+								"/css/**",
+								"/error",
+								"/access-denied",
+								"/actuator/health",
+								"/actuator/info",
+								"/v3/api-docs/**",
+								"/swagger-ui/**",
+								"/swagger-ui.html")
 						.permitAll()
 						.anyRequest()
 						.hasRole("ADMIN"))

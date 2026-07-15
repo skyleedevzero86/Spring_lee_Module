@@ -39,41 +39,63 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 
 	@Test
 	void userCanReadOwnProfileWithMemberReadScope() throws Exception {
-		mockMvc.perform(get("/api/members/me")
-						.with(userJwt("user", List.of("USER"), "openid member.read")))
-				.andExpect(status().isOk())
+		// given
+		var jwt = userJwt("user", List.of("USER"), "openid member.read");
+
+		// when
+		var result = mockMvc.perform(get("/api/members/me").with(jwt));
+
+		// then
+		result.andExpect(status().isOk())
 				.andExpect(jsonPath("$.userSubject").value("user"))
 				.andExpect(jsonPath("$.email").value("user@loginstudy.local"));
 	}
 
 	@Test
 	void requestWithoutTokenIsUnauthorized() throws Exception {
-		mockMvc.perform(get("/api/members/me"))
-				.andExpect(status().isUnauthorized());
+		// given / when
+		var result = mockMvc.perform(get("/api/members/me"));
+
+		// then
+		result.andExpect(status().isUnauthorized());
 	}
 
 	@Test
 	void userWithoutMemberReadScopeIsForbidden() throws Exception {
-		mockMvc.perform(get("/api/members/me")
-						.with(userJwt("user", List.of("USER"), "openid")))
-				.andExpect(status().isForbidden());
+		// given
+		var jwt = userJwt("user", List.of("USER"), "openid");
+
+		// when
+		var result = mockMvc.perform(get("/api/members/me").with(jwt));
+
+		// then
+		result.andExpect(status().isForbidden());
 	}
 
 	@Test
 	void userCannotReadAnotherMemberProfile() throws Exception {
+		// given
 		Long adminId = memberProfileRepository.findOneByUserSubject("admin").orElseThrow().getId();
 
-		mockMvc.perform(get("/api/members/{id}", adminId)
-						.with(userJwt("user", List.of("USER"), "member.read")))
-				.andExpect(status().isForbidden())
+		// when
+		var result = mockMvc.perform(get("/api/members/{id}", adminId)
+				.with(userJwt("user", List.of("USER"), "member.read")));
+
+		// then
+		result.andExpect(status().isForbidden())
 				.andExpect(jsonPath("$.title").value("접근 거부"));
 	}
 
 	@Test
 	void regularUserCannotAccessAdminApiEvenWithMemberScopes() throws Exception {
-		mockMvc.perform(get("/api/admin/members")
-						.with(userJwt("user", List.of("USER"), "member.read member.write")))
-				.andExpect(status().isForbidden());
+		// given
+		var jwt = userJwt("user", List.of("USER"), "member.read member.write");
+
+		// when
+		var result = mockMvc.perform(get("/api/admin/members").with(jwt));
+
+		// then
+		result.andExpect(status().isForbidden());
 	}
 
 	@Test

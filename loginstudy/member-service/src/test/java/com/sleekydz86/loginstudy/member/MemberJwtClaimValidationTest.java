@@ -17,6 +17,7 @@ class MemberJwtClaimValidationTest {
 
 	@Test
 	void issuerValidatorRejectsWrongIssuer() {
+		// given
 		JwtIssuerValidator validator = new JwtIssuerValidator("http://localhost:9000");
 		Jwt jwt = sampleJwt(
 				"http://evil.example",
@@ -24,28 +25,36 @@ class MemberJwtClaimValidationTest {
 				Instant.now().minusSeconds(30),
 				Instant.now().plusSeconds(60));
 
+		// when
 		OAuth2TokenValidatorResult result = validator.validate(jwt);
+
+		// then
 		assertThat(result.hasErrors()).isTrue();
 		assertThat(result.getErrors()).extracting(OAuth2Error::getErrorCode).contains("invalid_token");
 	}
 
 	@Test
 	void audienceValidatorRejectsWrongAudience() {
+		// given
 		JwtClaimValidator<List<String>> audienceValidator = new JwtClaimValidator<>(
 				JwtClaimNames.AUD,
 				aud -> aud != null && aud.contains("member-service"));
-
 		Jwt jwt = sampleJwt(
 				"http://localhost:9000",
 				List.of("other-service"),
 				Instant.now().minusSeconds(30),
 				Instant.now().plusSeconds(60));
+
+		// when
 		OAuth2TokenValidatorResult result = audienceValidator.validate(jwt);
+
+		// then
 		assertThat(result.hasErrors()).isTrue();
 	}
 
 	@Test
 	void timestampValidatorRejectsExpiredToken() {
+		// given
 		JwtTimestampValidator validator = new JwtTimestampValidator();
 		Instant expiredAt = Instant.now().minusSeconds(120);
 		Jwt jwt = sampleJwt(
@@ -54,16 +63,21 @@ class MemberJwtClaimValidationTest {
 				expiredAt.minusSeconds(60),
 				expiredAt);
 
+		// when
 		OAuth2TokenValidatorResult result = validator.validate(jwt);
+
+		// then
 		assertThat(result.hasErrors()).isTrue();
 	}
 
 	@Test
 	void validTokenPassesIssuerAudienceAndExpiryChecks() {
+		// given
 		Instant issuedAt = Instant.now().minusSeconds(30);
 		Instant expiresAt = Instant.now().plusSeconds(300);
 		Jwt jwt = sampleJwt("http://localhost:9000", List.of("member-service"), issuedAt, expiresAt);
 
+		// when / then
 		assertThat(new JwtIssuerValidator("http://localhost:9000").validate(jwt).hasErrors()).isFalse();
 		assertThat(new JwtClaimValidator<List<String>>(
 						JwtClaimNames.AUD,

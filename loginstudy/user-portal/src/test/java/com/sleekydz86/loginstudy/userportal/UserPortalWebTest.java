@@ -33,28 +33,38 @@ class UserPortalWebTest extends RedisTestSupport {
 
 	@Test
 	void indexPageIsPublic() throws Exception {
-		mockMvc.perform(get("/"))
-				.andExpect(status().isOk())
+		// given / when
+		var result = mockMvc.perform(get("/"));
+
+		// then
+		result.andExpect(status().isOk())
 				.andExpect(view().name("index"));
 	}
 
 	@Test
 	void homeRequiresAuthentication() throws Exception {
-		mockMvc.perform(get("/home"))
-				.andExpect(status().is3xxRedirection())
+		// given / when
+		var result = mockMvc.perform(get("/home"));
+
+		// then
+		result.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/oauth2/authorization/user-portal"));
 	}
 
 	@Test
 	void homeIsAccessibleWithOidcLoginAndAuthorizedClient() throws Exception {
-		mockMvc.perform(get("/home")
-						.with(oidcLogin().idToken(token -> token
-								.claim("sub", "user")
-								.claim("email", "user@loginstudy.local")
-								.claim("iss", "http://localhost:9000")
-								.claim("aud", "user-portal")))
-						.with(oauth2Client("user-portal")))
-				.andExpect(status().isOk())
+		// given
+		var oidc = oidcLogin().idToken(token -> token
+				.claim("sub", "user")
+				.claim("email", "user@loginstudy.local")
+				.claim("iss", "http://localhost:9000")
+				.claim("aud", "user-portal"));
+
+		// when
+		var result = mockMvc.perform(get("/home").with(oidc).with(oauth2Client("user-portal")));
+
+		// then
+		result.andExpect(status().isOk())
 				.andExpect(view().name("home"))
 				.andExpect(model().attribute("subject", "user"))
 				.andExpect(model().attributeExists("accessTokenMasked"))
@@ -63,6 +73,7 @@ class UserPortalWebTest extends RedisTestSupport {
 
 	@Test
 	void maskTokenHidesMiddle() {
+		// given / when / then
 		assertThat(HomeController.maskToken("1234567890abcdef")).isEqualTo("12345678...abcdef");
 		assertThat(HomeController.maskToken("short")).isEqualTo("***");
 	}

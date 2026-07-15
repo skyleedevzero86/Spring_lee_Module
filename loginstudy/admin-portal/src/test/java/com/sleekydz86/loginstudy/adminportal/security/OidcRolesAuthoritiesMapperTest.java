@@ -17,6 +17,7 @@ class OidcRolesAuthoritiesMapperTest {
 
 	@Test
 	void mapsRolesClaimCollectionToRoleAuthorities() {
+		// given
 		OidcIdToken idToken = new OidcIdToken(
 				"token-value",
 				java.time.Instant.now(),
@@ -26,14 +27,17 @@ class OidcRolesAuthoritiesMapperTest {
 						"roles", List.of("ADMIN", "USER")));
 		OidcUserAuthority oidcAuthority = new OidcUserAuthority(idToken);
 
+		// when
 		var mapped = mapper.mapAuthorities(Set.of(oidcAuthority));
 
+		// then
 		assertThat(mapped.stream().map(GrantedAuthority::getAuthority))
 				.contains("ROLE_ADMIN", "ROLE_USER", "OIDC_USER");
 	}
 
 	@Test
 	void mapsCommaSeparatedRolesString() {
+		// given
 		OidcIdToken idToken = new OidcIdToken(
 				"token-value",
 				java.time.Instant.now(),
@@ -43,8 +47,10 @@ class OidcRolesAuthoritiesMapperTest {
 						"roles", "ADMIN, USER"));
 		OidcUserAuthority oidcAuthority = new OidcUserAuthority(idToken);
 
+		// when
 		var mapped = mapper.mapAuthorities(List.of(oidcAuthority, new SimpleGrantedAuthority("SCOPE_openid")));
 
+		// then
 		assertThat(mapped.stream().map(GrantedAuthority::getAuthority))
 				.contains("ROLE_ADMIN", "ROLE_USER", "SCOPE_openid");
 	}

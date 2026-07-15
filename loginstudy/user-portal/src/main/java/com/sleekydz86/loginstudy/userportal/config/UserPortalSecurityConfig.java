@@ -21,7 +21,15 @@ public class UserPortalSecurityConfig {
 			OAuth2AuthorizationRequestResolver authorizationRequestResolver) throws Exception {
 		http
 				.authorizeHttpRequests(authorize -> authorize
-						.requestMatchers("/", "/css/**", "/error", "/actuator/health", "/actuator/info")
+						.requestMatchers(
+								"/",
+								"/css/**",
+								"/error",
+								"/actuator/health",
+								"/actuator/info",
+								"/v3/api-docs/**",
+								"/swagger-ui/**",
+								"/swagger-ui.html")
 						.permitAll()
 						.anyRequest()
 						.authenticated())

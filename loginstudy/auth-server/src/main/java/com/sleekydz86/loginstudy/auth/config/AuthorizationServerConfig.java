@@ -73,12 +73,17 @@ public class AuthorizationServerConfig {
 								"/css/**",
 								"/actuator/health",
 								"/actuator/info",
-								"/.well-known/**")
+								"/.well-known/**",
+								"/v3/api-docs/**",
+								"/swagger-ui/**",
+								"/swagger-ui.html")
 						.permitAll()
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
 						.anyRequest().authenticated())
 				.csrf(csrf -> csrf
-						.ignoringRequestMatchers("/actuator/**"))
+						.ignoringRequestMatchers("/actuator/**", "/v3/api-docs/**", "/swagger-ui/**"))
+				.sessionManagement(session -> session
+						.sessionFixation(sessionFixation -> sessionFixation.migrateSession()))
 				.formLogin(form -> form
 						.loginPage("/login")
 						.permitAll())

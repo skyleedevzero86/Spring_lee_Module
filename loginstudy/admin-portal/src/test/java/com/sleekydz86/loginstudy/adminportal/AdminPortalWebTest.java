@@ -34,31 +34,41 @@ class AdminPortalWebTest extends RedisTestSupport {
 
 	@Test
 	void indexPageIsPublic() throws Exception {
-		mockMvc.perform(get("/"))
-				.andExpect(status().isOk())
+		// given / when
+		var result = mockMvc.perform(get("/"));
+
+		// then
+		result.andExpect(status().isOk())
 				.andExpect(view().name("index"));
 	}
 
 	@Test
 	void adminRequiresAuthentication() throws Exception {
-		mockMvc.perform(get("/admin"))
-				.andExpect(status().is3xxRedirection())
+		// given / when
+		var result = mockMvc.perform(get("/admin"));
+
+		// then
+		result.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/oauth2/authorization/admin-portal"));
 	}
 
 	@Test
 	void adminIsAccessibleWithRoleAdmin() throws Exception {
-		mockMvc.perform(get("/admin")
-						.with(oidcLogin()
-								.authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
-								.idToken(token -> token
-										.claim("sub", "admin")
-										.claim("email", "admin@loginstudy.local")
-										.claim("roles", java.util.List.of("ADMIN"))
-										.claim("iss", "http://localhost:9000")
-										.claim("aud", "admin-portal")))
-						.with(oauth2Client("admin-portal")))
-				.andExpect(status().isOk())
+		// given
+		var oidc = oidcLogin()
+				.authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
+				.idToken(token -> token
+						.claim("sub", "admin")
+						.claim("email", "admin@loginstudy.local")
+						.claim("roles", java.util.List.of("ADMIN"))
+						.claim("iss", "http://localhost:9000")
+						.claim("aud", "admin-portal"));
+
+		// when
+		var result = mockMvc.perform(get("/admin").with(oidc).with(oauth2Client("admin-portal")));
+
+		// then
+		result.andExpect(status().isOk())
 				.andExpect(view().name("admin"))
 				.andExpect(model().attribute("subject", "admin"))
 				.andExpect(model().attributeExists("accessTokenMasked"))
@@ -67,21 +77,26 @@ class AdminPortalWebTest extends RedisTestSupport {
 
 	@Test
 	void adminIsDeniedForRoleUser() throws Exception {
-		mockMvc.perform(get("/admin")
-						.with(oidcLogin()
-								.authorities(new SimpleGrantedAuthority("ROLE_USER"))
-								.idToken(token -> token
-										.claim("sub", "user")
-										.claim("email", "user@loginstudy.local")
-										.claim("roles", java.util.List.of("USER"))
-										.claim("iss", "http://localhost:9000")
-										.claim("aud", "admin-portal")))
-						.with(oauth2Client("admin-portal")))
-				.andExpect(status().isForbidden());
+		// given
+		var oidc = oidcLogin()
+				.authorities(new SimpleGrantedAuthority("ROLE_USER"))
+				.idToken(token -> token
+						.claim("sub", "user")
+						.claim("email", "user@loginstudy.local")
+						.claim("roles", java.util.List.of("USER"))
+						.claim("iss", "http://localhost:9000")
+						.claim("aud", "admin-portal"));
+
+		// when
+		var result = mockMvc.perform(get("/admin").with(oidc).with(oauth2Client("admin-portal")));
+
+		// then
+		result.andExpect(status().isForbidden());
 	}
 
 	@Test
 	void maskTokenHidesMiddle() {
+		// given / when / then
 		assertThat(AdminHomeController.maskToken("1234567890abcdef")).isEqualTo("12345678...abcdef");
 		assertThat(AdminHomeController.maskToken("short")).isEqualTo("***");
 	}

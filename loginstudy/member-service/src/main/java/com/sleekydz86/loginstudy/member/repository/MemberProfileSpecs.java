@@ -28,7 +28,10 @@ public final class MemberProfileSpecs {
 				predicates.add(cb.equal(cb.lower(root.get("email")), email.toLowerCase()));
 			}
 			if (name != null && !name.isBlank()) {
-				predicates.add(cb.like(cb.lower(root.get("displayName")), "%" + name.toLowerCase() + "%"));
+				predicates.add(cb.like(
+						cb.lower(root.get("displayName")),
+						"%" + escapeLike(name.toLowerCase()) + "%",
+						'\\'));
 			}
 			if (joinedFrom != null) {
 				predicates.add(cb.greaterThanOrEqualTo(root.get("joinedAt"), joinedFrom));
@@ -66,5 +69,12 @@ public final class MemberProfileSpecs {
 			}
 			return cb.and(predicates.toArray(Predicate[]::new));
 		};
+	}
+
+	static String escapeLike(String value) {
+		return value
+				.replace("\\", "\\\\")
+				.replace("%", "\\%")
+				.replace("_", "\\_");
 	}
 }

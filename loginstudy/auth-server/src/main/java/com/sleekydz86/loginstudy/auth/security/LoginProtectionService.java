@@ -60,11 +60,11 @@ public class LoginProtectionService {
 		redisTemplate.delete(lockedKey(username));
 	}
 
-	static String failureKey(String username) {
+	public static String failureKey(String username) {
 		return "login:{" + username + "}:failure";
 	}
 
-	static String lockedKey(String username) {
+	public static String lockedKey(String username) {
 		return "login:{" + username + "}:locked";
 	}
 }

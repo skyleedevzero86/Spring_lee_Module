@@ -2,6 +2,8 @@ package com.sleekydz86.loginstudy.userportal.web;
 
 import com.sleekydz86.loginstudy.userportal.service.MemberApiClient;
 import com.sleekydz86.loginstudy.userportal.service.MemberApiClient.MemberApiCallResult;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
+@Tag(name = "User Portal Pages", description = "OIDC 사용자 포털 화면")
 public class HomeController {
 
 	private final MemberApiClient memberApiClient;
@@ -23,6 +26,7 @@ public class HomeController {
 	}
 
 	@GetMapping("/home")
+	@Operation(summary = "홈(내 프로필)", description = "OIDC 로그인 후 Access Token으로 member-service /api/members/me 호출")
 	public String home(
 			@AuthenticationPrincipal OidcUser oidcUser,
 			@RegisteredOAuth2AuthorizedClient("user-portal") OAuth2AuthorizedClient authorizedClient,
