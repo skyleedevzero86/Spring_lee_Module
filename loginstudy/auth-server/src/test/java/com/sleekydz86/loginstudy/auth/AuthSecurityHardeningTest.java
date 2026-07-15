@@ -151,7 +151,7 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 		assertThat(cookieName).isEqualTo("AUTHSESSION");
 		assertThat(httpOnly).isEqualTo("true");
 		assertThat(sameSite).isEqualToIgnoringCase("lax");
-		assertThat(exposure).isEqualTo("health,info");
+		assertThat(exposure).isEqualTo("health,info,prometheus");
 	}
 
 	@Test

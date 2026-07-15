@@ -1,6 +1,7 @@
 package com.sleekydz86.loginstudy.auth.security;
 
 import com.sleekydz86.loginstudy.auth.domain.LoginHistory;
+import com.sleekydz86.loginstudy.auth.metrics.AuthSecurityMetrics;
 import com.sleekydz86.loginstudy.auth.repository.LoginHistoryRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.event.EventListener;
@@ -16,12 +17,15 @@ public class LoginHistoryEventListener {
 
 	private final LoginHistoryRepository loginHistoryRepository;
 	private final LoginProtectionService loginProtectionService;
+	private final AuthSecurityMetrics authSecurityMetrics;
 
 	public LoginHistoryEventListener(
 			LoginHistoryRepository loginHistoryRepository,
-			LoginProtectionService loginProtectionService) {
+			LoginProtectionService loginProtectionService,
+			AuthSecurityMetrics authSecurityMetrics) {
 		this.loginHistoryRepository = loginHistoryRepository;
 		this.loginProtectionService = loginProtectionService;
+		this.authSecurityMetrics = authSecurityMetrics;
 	}
 
 	@EventListener
@@ -34,6 +38,7 @@ public class LoginHistoryEventListener {
 			return;
 		}
 		loginProtectionService.onSuccess(authentication.getName());
+		authSecurityMetrics.incrementLoginSuccess();
 		HttpServletRequest request = currentRequest();
 		loginHistoryRepository.save(new LoginHistory(
 				authentication.getName(),
@@ -48,6 +53,7 @@ public class LoginHistoryEventListener {
 		Authentication authentication = event.getAuthentication();
 		String username = authentication != null ? authentication.getName() : "unknown";
 		loginProtectionService.onFailure(username);
+		authSecurityMetrics.incrementLoginFailure();
 		HttpServletRequest request = currentRequest();
 		String reason = event.getException() != null ? event.getException().getClass().getSimpleName() : "unknown";
 		loginHistoryRepository.save(new LoginHistory(

@@ -1,8 +1,10 @@
 package com.sleekydz86.loginstudy.auth.config;
 
+import com.sleekydz86.loginstudy.auth.metrics.TokenEndpointMetricsFilter;
 import java.time.Duration;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -13,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
@@ -43,8 +46,19 @@ public class AuthorizationServerConfig {
 	public static final String CLIENT_MEMBER_SERVICE = "member-service";
 
 	@Bean
+	FilterRegistrationBean<TokenEndpointMetricsFilter> tokenEndpointMetricsFilterRegistration(
+			TokenEndpointMetricsFilter tokenEndpointMetricsFilter) {
+		FilterRegistrationBean<TokenEndpointMetricsFilter> registration =
+				new FilterRegistrationBean<>(tokenEndpointMetricsFilter);
+		registration.setEnabled(false);
+		return registration;
+	}
+
+	@Bean
 	@Order(1)
-	SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+	SecurityFilterChain authorizationServerSecurityFilterChain(
+			HttpSecurity http,
+			TokenEndpointMetricsFilter tokenEndpointMetricsFilter) throws Exception {
 		http
 				.oauth2AuthorizationServer(authorizationServer -> {
 					http.securityMatcher(authorizationServer.getEndpointsMatcher());
@@ -57,7 +71,8 @@ public class AuthorizationServerConfig {
 				.exceptionHandling(exceptions -> exceptions
 						.defaultAuthenticationEntryPointFor(
 								new LoginUrlAuthenticationEntryPoint("/login"),
-								new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
+								new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
+				.addFilterAfter(tokenEndpointMetricsFilter, AuthorizationFilter.class);
 
 		return http.build();
 	}
@@ -73,6 +88,7 @@ public class AuthorizationServerConfig {
 								"/css/**",
 								"/actuator/health",
 								"/actuator/info",
+								"/actuator/prometheus",
 								"/.well-known/**",
 								"/v3/api-docs/**",
 								"/swagger-ui/**",
