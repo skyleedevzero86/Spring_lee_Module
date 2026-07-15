@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### LoginStudy secrets / local keys ###
+auth-server/keys/*.pem
+*.pem
+!.gitkeep
