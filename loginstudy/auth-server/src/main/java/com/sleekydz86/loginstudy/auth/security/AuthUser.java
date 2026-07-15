@@ -16,6 +16,8 @@ import org.springframework.security.core.userdetails.User;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthUser extends User {
 
+	private static final long serialVersionUID = 1L;
+
 	private final Long id;
 	private final String email;
 	private final String tenantId;
