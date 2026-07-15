@@ -1,0 +1,14 @@
+build/
+**/.gradle/
+**/build/
+**/out/
+.git/
+.gitignore
+docs/
+scripts/
+**/*.md
+**/src/test/
+auth-server/keys/
+*.iml
+.idea/
+.vscode/

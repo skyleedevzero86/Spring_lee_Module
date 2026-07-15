@@ -1,0 +1,102 @@
+services:
+  auth-server:
+    profiles: ["apps"]
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        MODULE: auth-server
+    image: loginstudy/auth-server:local
+    container_name: loginstudy-auth-server
+    ports:
+      - "9000:9000"
+    environment:
+      SERVER_PORT: 9000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: loginstudy
+      DB_PASSWORD: loginstudy_dev
+      REDIS_CLUSTER_NODES: redis-1:7001,redis-2:7002,redis-3:7003,redis-4:7004,redis-5:7005,redis-6:7006
+      REDIS_NAT_REMAP: "false"
+      AUTH_RSA_PRIVATE_KEY: file:/keys/private.pem
+      AUTH_RSA_PUBLIC_KEY: file:/keys/public.pem
+      SPRING_SECURITY_OAUTH2_AUTHORIZATIONSERVER_ISSUER: http://localhost:9000
+    volumes:
+      - ../auth-server/keys:/keys:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-cluster-init:
+        condition: service_completed_successfully
+    networks:
+      - loginstudy-net
+
+  member-service:
+    profiles: ["apps"]
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        MODULE: member-service
+    image: loginstudy/member-service:local
+    container_name: loginstudy-member-service
+    ports:
+      - "8083:8083"
+    environment:
+      SERVER_PORT: 8083
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: loginstudy
+      DB_PASSWORD: loginstudy_dev
+      AUTH_ISSUER_URI: http://auth-server:9000
+      REDIS_CLUSTER_NODES: redis-1:7001,redis-2:7002,redis-3:7003,redis-4:7004,redis-5:7005,redis-6:7006
+      REDIS_NAT_REMAP: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-server:
+        condition: service_started
+    networks:
+      - loginstudy-net
+
+  user-portal:
+    profiles: ["apps"]
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        MODULE: user-portal
+    image: loginstudy/user-portal:local
+    container_name: loginstudy-user-portal
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      REDIS_CLUSTER_NODES: redis-1:7001,redis-2:7002,redis-3:7003,redis-4:7004,redis-5:7005,redis-6:7006
+      REDIS_NAT_REMAP: "false"
+    depends_on:
+      - auth-server
+      - member-service
+    networks:
+      - loginstudy-net
+
+  admin-portal:
+    profiles: ["apps"]
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        MODULE: admin-portal
+    image: loginstudy/admin-portal:local
+    container_name: loginstudy-admin-portal
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      REDIS_CLUSTER_NODES: redis-1:7001,redis-2:7002,redis-3:7003,redis-4:7004,redis-5:7005,redis-6:7006
+      REDIS_NAT_REMAP: "false"
+    depends_on:
+      - auth-server
+      - member-service
+    networks:
+      - loginstudy-net
