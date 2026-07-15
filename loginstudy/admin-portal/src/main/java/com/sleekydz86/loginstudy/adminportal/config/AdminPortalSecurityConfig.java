@@ -1,6 +1,8 @@
 package com.sleekydz86.loginstudy.adminportal.config;
 
 import com.sleekydz86.loginstudy.adminportal.security.OidcRolesAuthoritiesMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -15,6 +17,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class AdminPortalSecurityConfig {
+
+	private static final Logger log = LoggerFactory.getLogger(AdminPortalSecurityConfig.class);
 
 	@Bean
 	SecurityFilterChain securityFilterChain(
@@ -42,7 +46,11 @@ public class AdminPortalSecurityConfig {
 						.authorizationEndpoint(authorization -> authorization
 								.authorizationRequestResolver(authorizationRequestResolver))
 						.userInfoEndpoint(userInfo -> userInfo.userAuthoritiesMapper(authoritiesMapper))
-						.defaultSuccessUrl("/admin", true))
+						.defaultSuccessUrl("/admin", true)
+						.failureHandler((request, response, exception) -> {
+							log.warn("OAuth2 로그인 실패: {}", exception.getMessage(), exception);
+							response.sendRedirect("/?loginFailed=1");
+						}))
 				.exceptionHandling(exceptions -> exceptions
 						.accessDeniedPage("/access-denied"))
 				.logout(logout -> logout

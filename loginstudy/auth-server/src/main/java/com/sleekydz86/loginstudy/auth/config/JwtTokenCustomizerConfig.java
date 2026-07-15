@@ -1,6 +1,7 @@
 package com.sleekydz86.loginstudy.auth.config;
 
 import com.sleekydz86.loginstudy.auth.security.AuthUser;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,9 +38,10 @@ public class JwtTokenCustomizerConfig {
 			}
 
 			if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
-				context.getClaims().audience(List.of(
-						AUDIENCE_MEMBER_SERVICE,
-						context.getRegisteredClient().getClientId()));
+				List<String> audience = new ArrayList<>(2);
+				audience.add(AUDIENCE_MEMBER_SERVICE);
+				audience.add(context.getRegisteredClient().getClientId());
+				context.getClaims().audience(audience);
 			}
 		};
 	}

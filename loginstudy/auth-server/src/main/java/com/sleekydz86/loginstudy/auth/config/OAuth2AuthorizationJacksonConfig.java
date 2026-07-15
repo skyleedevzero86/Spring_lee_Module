@@ -1,7 +1,9 @@
 package com.sleekydz86.loginstudy.auth.config;
 
 import com.sleekydz86.loginstudy.auth.security.AuthUser;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,7 +23,9 @@ public class OAuth2AuthorizationJacksonConfig {
 	JsonMapper authorizationServerJsonMapper() {
 		BasicPolymorphicTypeValidator.Builder builder = BasicPolymorphicTypeValidator.builder()
 				.allowIfSubType(AuthUser.class)
-				.allowIfSubType("com.sleekydz86.loginstudy.auth.");
+				.allowIfSubType("com.sleekydz86.loginstudy.auth.")
+				.allowIfSubType(Collection.class)
+				.allowIfSubType(Map.class);
 		OAuth2AuthorizationServerJacksonModule authorizationServerJacksonModule =
 				new OAuth2AuthorizationServerJacksonModule();
 		authorizationServerJacksonModule.configurePolymorphicTypeValidator(builder);
