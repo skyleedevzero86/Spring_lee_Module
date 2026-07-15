@@ -18,5 +18,7 @@ abstract class RedisTestSupport {
 	static void redisProperties(DynamicPropertyRegistry registry) {
 		registry.add("spring.data.redis.host", REDIS::getHost);
 		registry.add("spring.data.redis.port", () -> String.valueOf(REDIS.getMappedPort(6379)));
+		registry.add("loginstudy.redis.cluster-enabled", () -> "false");
+		registry.add("loginstudy.redis.nat-remap", () -> "false");
 	}
 }
