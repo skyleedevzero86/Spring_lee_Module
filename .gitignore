@@ -20,3 +20,35 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+**/target/
+**/bin/
+**/build/
+**/.gradle/
+**/out/
+**/*.class
+**/node_modules/
+**/.idea/
+**/.vscode/
+*.iml
+.DS_Store
+
+
+**/.gradle/
+
+
+# 추적 유지
+!.gitignore
+!LICENSE
+!README.md
+
+# 나머지 전부 무시
+/*
+
+**/out/
+**/*.class
+**/node_modules/
+**/.idea/
+**/.vscode/
+*.iml
+.DS_Store
