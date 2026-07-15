@@ -1,0 +1,158 @@
+name: loginstudy
+
+services:
+  postgres:
+    image: postgres:16.9-alpine
+    container_name: loginstudy-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: loginstudy
+      POSTGRES_PASSWORD: loginstudy_dev
+      POSTGRES_DB: postgres
+      TZ: UTC
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+      - loginstudy-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U loginstudy -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - loginstudy-net
+
+  redis-1:
+    image: redis:7.4-alpine
+    container_name: loginstudy-redis-1
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "7001:7001"
+      - "17001:17001"
+    volumes:
+      - ./redis/redis-7001.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis1-data:/data
+    networks:
+      - loginstudy-net
+
+  redis-2:
+    image: redis:7.4-alpine
+    container_name: loginstudy-redis-2
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "7002:7002"
+      - "17002:17002"
+    volumes:
+      - ./redis/redis-7002.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis2-data:/data
+    networks:
+      - loginstudy-net
+
+  redis-3:
+    image: redis:7.4-alpine
+    container_name: loginstudy-redis-3
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "7003:7003"
+      - "17003:17003"
+    volumes:
+      - ./redis/redis-7003.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis3-data:/data
+    networks:
+      - loginstudy-net
+
+  redis-4:
+    image: redis:7.4-alpine
+    container_name: loginstudy-redis-4
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "7004:7004"
+      - "17004:17004"
+    volumes:
+      - ./redis/redis-7004.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis4-data:/data
+    networks:
+      - loginstudy-net
+
+  redis-5:
+    image: redis:7.4-alpine
+    container_name: loginstudy-redis-5
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "7005:7005"
+      - "17005:17005"
+    volumes:
+      - ./redis/redis-7005.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis5-data:/data
+    networks:
+      - loginstudy-net
+
+  redis-6:
+    image: redis:7.4-alpine
+    container_name: loginstudy-redis-6
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "7006:7006"
+      - "17006:17006"
+    volumes:
+      - ./redis/redis-7006.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis6-data:/data
+    networks:
+      - loginstudy-net
+
+  redis-cluster-init:
+    image: redis:7.4-alpine
+    container_name: loginstudy-redis-init
+    depends_on:
+      - redis-1
+      - redis-2
+      - redis-3
+      - redis-4
+      - redis-5
+      - redis-6
+    networks:
+      - loginstudy-net
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        for host in redis-1 redis-2 redis-3 redis-4 redis-5 redis-6; do
+          port=$$(echo $$host | sed 's/redis-/700/')
+          echo "대기: $$host:$$port"
+          until redis-cli -h $$host -p $$port ping | grep -q PONG; do
+            sleep 1
+          done
+        done
+        if redis-cli -h redis-1 -p 7001 cluster info | grep -q 'cluster_state:ok'; then
+          echo "클러스터가 이미 구성되어 있습니다."
+          exit 0
+        fi
+        echo "Redis Cluster 생성 중 (Master 3 + Replica 3) ..."
+        redis-cli --cluster create \
+          redis-1:7001 redis-2:7002 redis-3:7003 \
+          redis-4:7004 redis-5:7005 redis-6:7006 \
+          --cluster-replicas 1 --cluster-yes
+        echo "클러스터 생성 완료."
+
+volumes:
+  loginstudy-postgres-data:
+    name: loginstudy-postgres-data
+  redis1-data:
+    name: loginstudy-redis1-data
+  redis2-data:
+    name: loginstudy-redis2-data
+  redis3-data:
+    name: loginstudy-redis3-data
+  redis4-data:
+    name: loginstudy-redis4-data
+  redis5-data:
+    name: loginstudy-redis5-data
+  redis6-data:
+    name: loginstudy-redis6-data
+
+networks:
+  loginstudy-net:
+    name: loginstudy-net

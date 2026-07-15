@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Access Denied</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<main class="panel">
+    <p class="eyebrow">403</p>
+    <h1>Access Denied</h1>
+    <p class="subtitle">
+        인증은 되었을 수 있지만 ROLE_ADMIN 권한이 없습니다.
+        일반 사용자(user)로 SSO 로그인하면 이 화면이 정상입니다.
+    </p>
+    <a class="button secondary" th:href="@{/}">홈으로</a>
+    <form th:action="@{/logout}" method="post" style="display:inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit" class="secondary">로그아웃</button>
+    </form>
+</main>
+</body>
+</html>

@@ -1,0 +1,109 @@
+:root {
+    --bg: #0f1c24;
+    --panel: #17303c;
+    --text: #e8f1f5;
+    --muted: #9db4c0;
+    --accent: #2aa5a0;
+    --danger: #d45d5d;
+    --info: #3d7ea6;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at top left, #1f4b57, transparent 45%),
+        radial-gradient(circle at bottom right, #123348, transparent 40%),
+        var(--bg);
+}
+
+.panel {
+    width: min(420px, 92vw);
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--panel) 92%, black);
+}
+
+h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.6rem;
+}
+
+.subtitle {
+    margin: 0 0 1.5rem;
+    color: var(--muted);
+}
+
+label {
+    display: block;
+    margin: 0.8rem 0 0.35rem;
+    font-size: 0.9rem;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #0c171d;
+    color: var(--text);
+}
+
+button {
+    margin-top: 1.2rem;
+    width: 100%;
+    padding: 0.75rem;
+    border: 0;
+    background: var(--accent);
+    color: #042428;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+button.secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: var(--text);
+}
+
+.actions {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.alert {
+    padding: 0.7rem 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.alert.error {
+    background: color-mix(in srgb, var(--danger) 25%, transparent);
+}
+
+.alert.info {
+    background: color-mix(in srgb, var(--info) 25%, transparent);
+}
+
+.hint {
+    margin-top: 1.2rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+fieldset {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    margin: 0;
+    padding: 0.8rem 1rem;
+}
+
+.scope-item {
+    margin: 0.4rem 0;
+}

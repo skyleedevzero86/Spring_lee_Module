@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Admin Home</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<main class="wide">
+    <header class="top">
+        <div>
+            <p class="eyebrow">Admin</p>
+            <h1 th:text="${subject}">admin</h1>
+            <p class="subtitle" th:text="${email}">email</p>
+            <p class="subtitle">Roles: <span th:text="${roles}">ROLE_ADMIN</span></p>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="secondary">로그아웃</button>
+        </form>
+    </header>
+
+    <section class="grid">
+        <article>
+            <h2>Token</h2>
+            <p>Access (masked): <code th:text="${accessTokenMasked}">tok</code></p>
+            <p>ID (masked): <code th:text="${idTokenMasked}">tok</code></p>
+            <p>Scopes: <span th:text="${scopes}">scopes</span></p>
+        </article>
+        <article>
+            <h2>member-service admin API</h2>
+            <p>
+                <span th:if="${memberApiSuccess}" class="ok">HTTP <span th:text="${memberApiStatus}">200</span></span>
+                <span th:unless="${memberApiSuccess}" class="bad">HTTP <span th:text="${memberApiStatus}">0</span></span>
+            </p>
+            <pre th:text="${memberApiBody}">{}</pre>
+        </article>
+    </section>
+</main>
+</body>
+</html>

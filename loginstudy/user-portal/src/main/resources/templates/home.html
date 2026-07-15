@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>User Portal Home</title>
+    <link rel="stylesheet" th:href="@{/css/portal.css}"/>
+</head>
+<body>
+<main class="wide">
+    <header class="top">
+        <div>
+            <p class="eyebrow">Signed in</p>
+            <h1 th:text="${subject}">subject</h1>
+            <p class="subtitle" th:text="${email}">email</p>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="secondary">로그아웃</button>
+        </form>
+    </header>
+
+    <section class="grid">
+        <article>
+            <h2>Access Token</h2>
+            <p><strong>Masked:</strong> <code th:text="${accessTokenMasked}">token</code></p>
+            <p><strong>Expires:</strong> <span th:text="${accessTokenExpiresAt}">-</span></p>
+            <p><strong>Scopes:</strong> <span th:text="${scopes}">scopes</span></p>
+        </article>
+
+        <article>
+            <h2>ID Token</h2>
+            <p><strong>Masked:</strong> <code th:text="${idTokenMasked}">token</code></p>
+            <pre th:text="${idTokenClaims}">{}</pre>
+        </article>
+
+        <article>
+            <h2>UserInfo / Claims</h2>
+            <pre th:text="${claims}">{}</pre>
+        </article>
+
+        <article>
+            <h2>member-service /api/members/me</h2>
+            <p>
+                <span th:if="${memberApiSuccess}" class="ok">HTTP <span th:text="${memberApiStatus}">200</span></span>
+                <span th:unless="${memberApiSuccess}" class="bad">HTTP <span th:text="${memberApiStatus}">0</span></span>
+            </p>
+            <pre th:text="${memberApiBody}">{}</pre>
+        </article>
+    </section>
+</main>
+</body>
+</html>

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Import;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
-class MemberServiceApplicationTests {
+class MemberServiceApplicationTests extends MemberRedisTestSupport {
 
 	@Test
 	void contextLoads() {

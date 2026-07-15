@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>LoginStudy Auth Login</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}"/>
+</head>
+<body>
+<main class="panel">
+    <h1>LoginStudy Identity</h1>
+    <p class="subtitle">Authorization Server 로그인</p>
+
+    <div th:if="${param.error}" class="alert error">
+        사용자 이름 또는 비밀번호가 올바르지 않습니다.
+    </div>
+    <div th:if="${param.logout}" class="alert info">
+        로그아웃되었습니다.
+    </div>
+
+    <form th:action="@{/login}" method="post">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username" required autofocus/>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required/>
+
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit">로그인</button>
+    </form>
+
+    <p class="hint">데모 계정: user / admin (비밀번호는 README 참고)</p>
+</main>
+</body>
+</html>

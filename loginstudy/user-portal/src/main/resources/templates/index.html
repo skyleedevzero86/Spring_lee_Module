@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>User Portal</title>
+    <link rel="stylesheet" th:href="@{/css/portal.css}"/>
+</head>
+<body>
+<main class="panel">
+    <p class="eyebrow">LoginStudy Identity</p>
+    <h1>User Portal</h1>
+    <p class="subtitle">OIDC Authorization Code + PKCE로 로그인하고 member-service를 호출합니다.</p>
+
+    <a class="button" th:href="@{/oauth2/authorization/user-portal}">auth-server로 로그인</a>
+
+    <ul class="notes">
+        <li>Client: user-portal</li>
+        <li>Scopes: openid profile email member.read member.write</li>
+        <li>Redirect: http://localhost:8081/login/oauth2/code/user-portal</li>
+    </ul>
+</main>
+</body>
+</html>
