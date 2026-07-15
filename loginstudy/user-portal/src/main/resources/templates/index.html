@@ -12,6 +12,8 @@
     <h1>User Portal</h1>
     <p class="subtitle">OIDC Authorization Code + PKCE로 로그인하고 member-service를 호출합니다.</p>
 
+    <p class="bad" th:if="${param.loginFailed}">로그인에 실패했습니다. 아래 버튼으로 처음부터 다시 시도하세요. (콜백 URL을 새로고침하지 마세요)</p>
+
     <a class="button" th:href="@{/oauth2/authorization/user-portal}">auth-server로 로그인</a>
 
     <ul class="notes">

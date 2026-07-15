@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 
@@ -23,10 +24,6 @@ public class JwtTokenCustomizerConfig {
 			Authentication principal = context.getPrincipal();
 			Object userPrincipal = principal.getPrincipal();
 
-			List<String> audience = List.of(
-					AUDIENCE_MEMBER_SERVICE,
-					context.getRegisteredClient().getClientId());
-
 			if (userPrincipal instanceof AuthUser authUser) {
 				Set<String> roles = authUser.getAuthorities().stream()
 						.map(GrantedAuthority::getAuthority)
@@ -36,11 +33,13 @@ public class JwtTokenCustomizerConfig {
 				context.getClaims()
 						.claim("email", authUser.getEmail())
 						.claim("roles", roles)
-						.claim("tenant_id", authUser.getTenantId())
-						.audience(audience);
+						.claim("tenant_id", authUser.getTenantId());
 			}
-			else {
-				context.getClaims().audience(audience);
+
+			if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
+				context.getClaims().audience(List.of(
+						AUDIENCE_MEMBER_SERVICE,
+						context.getRegisteredClient().getClientId()));
 			}
 		};
 	}
