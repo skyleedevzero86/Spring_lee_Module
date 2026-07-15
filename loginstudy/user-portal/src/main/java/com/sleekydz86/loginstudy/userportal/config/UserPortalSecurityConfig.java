@@ -1,5 +1,7 @@
 package com.sleekydz86.loginstudy.userportal.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -14,6 +16,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class UserPortalSecurityConfig {
+
+	private static final Logger log = LoggerFactory.getLogger(UserPortalSecurityConfig.class);
 
 	@Bean
 	SecurityFilterChain securityFilterChain(
@@ -38,7 +42,11 @@ public class UserPortalSecurityConfig {
 						.loginPage("/oauth2/authorization/user-portal")
 						.authorizationEndpoint(authorization -> authorization
 								.authorizationRequestResolver(authorizationRequestResolver))
-						.defaultSuccessUrl("/home", true))
+						.defaultSuccessUrl("/home", true)
+						.failureHandler((request, response, exception) -> {
+							log.warn("OAuth2 로그인 실패: {}", exception.getMessage(), exception);
+							response.sendRedirect("/?loginFailed=1");
+						}))
 				.logout(logout -> logout
 						.logoutSuccessUrl("/")
 						.invalidateHttpSession(true)
