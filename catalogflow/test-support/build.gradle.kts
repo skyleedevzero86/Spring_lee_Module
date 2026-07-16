@@ -12,4 +12,5 @@ dependencyManagement {
 dependencies {
 	api(project(":event-contract"))
 	implementation("org.springframework.boot:spring-boot-starter-test")
+	implementation("org.springframework.amqp:spring-rabbit")
 }

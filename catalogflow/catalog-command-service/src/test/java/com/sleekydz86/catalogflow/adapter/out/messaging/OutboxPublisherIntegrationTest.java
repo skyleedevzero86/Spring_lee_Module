@@ -12,6 +12,7 @@ import java.util.UUID;
 import com.sleekydz86.catalogflow.adapter.out.persistence.OutboxEventJpaRepository;
 import com.sleekydz86.catalogflow.adapter.out.persistence.entity.OutboxEventEntity;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
@@ -51,7 +52,9 @@ class OutboxPublisherIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Outbox 미발행 이벤트를 RabbitMQ로 발행하고 published로 표시한다")
 	void shouldPublishAndMarkOutboxEvents() {
+		// given
 		OutboxEventEntity entity = OutboxEventEntity.createEmpty();
 		entity.setId(UUID.randomUUID());
 		entity.setAggregateId(UUID.randomUUID());
@@ -66,8 +69,11 @@ class OutboxPublisherIntegrationTest {
 		entity.setCreatedAt(Instant.now());
 		outboxEventJpaRepository.save(entity);
 
+		// when
 		assertFalse(outboxEventJpaRepository.findUnpublishedEvents().isEmpty());
 		int count = outboxPublisher.publishPendingEvents(100);
+
+		// then
 		assertTrue(count > 0);
 		assertTrue(outboxEventJpaRepository.findUnpublishedEvents().isEmpty());
 	}

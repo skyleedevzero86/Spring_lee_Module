@@ -15,7 +15,7 @@ public class SystemOpenApiConfiguration {
 	OpenAPI catalogSystemOpenApi() {
 		return new OpenAPI()
 				.info(new Info()
-						.title("CatalogFlow System API")
+						.title("CatalogFlow 시스템 API")
 						.description("메인 Command 서비스(8081) 시스템 API 문서")
 						.version("v1"))
 				.addSecurityItem(new SecurityRequirement().addList("bearer-jwt"))
