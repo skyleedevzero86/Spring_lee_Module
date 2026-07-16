@@ -38,3 +38,6 @@ out/
 docs/
 gradle/
 scripts/
+*.sql
+*.yaml
+*.yml
