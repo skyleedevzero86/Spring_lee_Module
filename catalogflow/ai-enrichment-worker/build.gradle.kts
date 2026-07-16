@@ -11,6 +11,11 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
 	implementation("org.springframework.boot:spring-boot-starter-json")
 
+	implementation(platform("org.springframework.ai:spring-ai-bom:2.0.0"))
+	implementation("org.springframework.ai:spring-ai-ollama")
+	implementation("org.springframework.ai:spring-ai-google-genai")
+	implementation("org.springframework.ai:spring-ai-client-chat")
+
 	testImplementation(project(":test-support"))
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")

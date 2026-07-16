@@ -7,13 +7,29 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 
 ## 프로젝트
 
-| 경로                       | 요약                                                                                                                                                        |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [loginstudy](./loginstudy) | 회원·인증 플랫폼 축소판. OAuth2 Authorization Server, OIDC, SSO, Resource Server, Redis Session, PostgreSQL 튜닝을 **Spring Boot 4.1** 기준으로 구성합니다. |
+
+| 경로                           | 요약                                                                                                                                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [loginstudy](./loginstudy)     | 회원·인증 플랫폼 축소판. OAuth2 Authorization Server, OIDC, SSO, Resource Server, Redis Session, PostgreSQL 튜닝을 **Spring Boot 4.1** 기준으로 구성합니다.                                         |
+| [catalogflow](./catalogflow)   | 상품 카탈로그 CQRS 플랫폼. Command/Query 분리, RabbitMQ Outbox, MongoDB Read Model, Redis Cache, LocalStack S3, Stub/Ollama/Gemini AI Enrichment를 **Spring Boot 4.1** 기준으로 구성합니다. |
+
 
 ## Spring 학습 기록
 
 학습할 때마다 날짜·주제·실습 모듈을 이어서 적습니다.
+
+### 2026-07-16 — CatalogFlow AI
+
+- **버전**: Spring Boot 4.1.0, Java 21, Gradle Kotlin DSL, Spring AI 2.0.0
+- **모듈**: `catalog-domain` · `catalog-command-service` · `catalog-query-service` · `ai-enrichment-worker` · `catalog-batch-service` · `event-contract` · `test-support`
+- **익힌 기능**
+  - 헥사고날 + DDD Aggregate / Domain Event
+  - CQRS (PostgreSQL Write / MongoDB Read)
+  - Transactional Outbox + RabbitMQ 토폴로지 · DLQ · 멱등 소비
+  - Redis Cache Aside · 이벤트 기반 무효화
+  - LocalStack S3 Presigned Upload
+  - AI Enrichment Worker (Stub / Ollama / Gemini) + 결과 반영
+  - Docker Compose · Testcontainers
 
 ### 2026-07-15 — LoginStudy Identity Platform
 

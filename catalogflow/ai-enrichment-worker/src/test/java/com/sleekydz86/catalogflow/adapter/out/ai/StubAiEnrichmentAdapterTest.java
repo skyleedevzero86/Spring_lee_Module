@@ -21,7 +21,7 @@ class StubAiEnrichmentAdapterTest {
 	@BeforeEach
 	void setUp() {
 		AiProperties properties = new AiProperties();
-		adapter = new StubAiEnrichmentAdapter(properties, new EnrichmentPromptTemplate());
+		adapter = new StubAiEnrichmentAdapter(new StubEnrichmentEngine(properties, new EnrichmentPromptTemplate()));
 		validator = new EnrichmentResultValidator();
 	}
 

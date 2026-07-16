@@ -1,15 +1,16 @@
 package com.sleekydz86.catalogflow.application.service;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.UUID;
 
 import com.sleekydz86.catalogflow.adapter.out.ai.EnrichmentResultValidator;
+import com.sleekydz86.catalogflow.adapter.out.ai.StubEnrichmentEngine;
 import com.sleekydz86.catalogflow.adapter.out.messaging.EnrichmentResultPublisher;
 import com.sleekydz86.catalogflow.application.port.out.AiEnrichmentPort;
 import com.sleekydz86.catalogflow.eventcontract.CatalogEventTypes;
 import com.sleekydz86.catalogflow.eventcontract.IntegrationEventEnvelope;
 import com.sleekydz86.catalogflow.eventcontract.IntegrationEventPayloads;
+import com.sleekydz86.catalogflow.global.config.AiProperties;
 import com.sleekydz86.catalogflow.global.exception.ApplicationException;
 import com.sleekydz86.catalogflow.global.util.CorrelationIdHolder;
 import org.springframework.stereotype.Service;
@@ -18,18 +19,24 @@ import org.springframework.stereotype.Service;
 public class ProductEnrichmentProcessingService {
 
 	private final AiEnrichmentPort aiEnrichmentPort;
+	private final StubEnrichmentEngine stubEnrichmentEngine;
 	private final EnrichmentResultValidator enrichmentResultValidator;
 	private final EnrichmentResultPublisher enrichmentResultPublisher;
+	private final AiProperties aiProperties;
 	private final Clock clock;
 
 	public ProductEnrichmentProcessingService(
 			AiEnrichmentPort aiEnrichmentPort,
+			StubEnrichmentEngine stubEnrichmentEngine,
 			EnrichmentResultValidator enrichmentResultValidator,
 			EnrichmentResultPublisher enrichmentResultPublisher,
+			AiProperties aiProperties,
 			Clock clock) {
 		this.aiEnrichmentPort = aiEnrichmentPort;
+		this.stubEnrichmentEngine = stubEnrichmentEngine;
 		this.enrichmentResultValidator = enrichmentResultValidator;
 		this.enrichmentResultPublisher = enrichmentResultPublisher;
+		this.aiProperties = aiProperties;
 		this.clock = clock;
 	}
 
@@ -41,13 +48,14 @@ public class ProductEnrichmentProcessingService {
 				IntegrationEventPayloads.readProductEnrichmentRequested(envelope.payload());
 		String correlationId = blankToGenerated(envelope.correlationId());
 		CorrelationIdHolder.set(correlationId);
+		AiEnrichmentPort.EnrichmentRequest request = new AiEnrichmentPort.EnrichmentRequest(
+				envelope.aggregateId(),
+				requestData.name(),
+				requestData.description(),
+				requestData.categoryId(),
+				requestData.supplierName());
 		try {
-			AiEnrichmentPort.EnrichmentResult result = aiEnrichmentPort.enrich(new AiEnrichmentPort.EnrichmentRequest(
-					envelope.aggregateId(),
-					requestData.name(),
-					requestData.description(),
-					requestData.categoryId(),
-					requestData.supplierName()));
+			AiEnrichmentPort.EnrichmentResult result = enrichWithFallback(request);
 			enrichmentResultValidator.validate(result);
 			enrichmentResultPublisher.publishCompleted(
 					envelope.aggregateId(),
@@ -65,6 +73,18 @@ public class ProductEnrichmentProcessingService {
 					envelope.eventId().toString(),
 					resolveFailureReason(exception),
 					clock.instant());
+		}
+	}
+
+	private AiEnrichmentPort.EnrichmentResult enrichWithFallback(AiEnrichmentPort.EnrichmentRequest request) {
+		try {
+			return aiEnrichmentPort.enrich(request);
+		}
+		catch (Exception exception) {
+			if (!aiProperties.isFallbackEnabled() || "stub".equalsIgnoreCase(aiProperties.getProvider())) {
+				throw exception;
+			}
+			return stubEnrichmentEngine.enrich(request);
 		}
 	}
 

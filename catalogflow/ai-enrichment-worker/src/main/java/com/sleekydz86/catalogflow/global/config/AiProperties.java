@@ -9,6 +9,8 @@ public class AiProperties {
 	private boolean fallbackEnabled = false;
 	private String modelName = "stub-enrichment-v1";
 	private String promptVersion = "stub-prompt-v1";
+	private final Ollama ollama = new Ollama();
+	private final Gemini gemini = new Gemini();
 
 	public String getProvider() {
 		return provider;
@@ -40,5 +42,75 @@ public class AiProperties {
 
 	public void setPromptVersion(String promptVersion) {
 		this.promptVersion = promptVersion;
+	}
+
+	public Ollama getOllama() {
+		return ollama;
+	}
+
+	public Gemini getGemini() {
+		return gemini;
+	}
+
+	public static class Ollama {
+
+		private String baseUrl = "http://localhost:11434";
+		private String model = "llama3.2";
+		private double temperature = 0.2d;
+
+		public String getBaseUrl() {
+			return baseUrl;
+		}
+
+		public void setBaseUrl(String baseUrl) {
+			this.baseUrl = baseUrl;
+		}
+
+		public String getModel() {
+			return model;
+		}
+
+		public void setModel(String model) {
+			this.model = model;
+		}
+
+		public double getTemperature() {
+			return temperature;
+		}
+
+		public void setTemperature(double temperature) {
+			this.temperature = temperature;
+		}
+	}
+
+	public static class Gemini {
+
+		private String apiKey = "";
+		private String model = "gemini-2.0-flash";
+		private double temperature = 0.2d;
+
+		public String getApiKey() {
+			return apiKey;
+		}
+
+		public void setApiKey(String apiKey) {
+			this.apiKey = apiKey;
+		}
+
+		public String getModel() {
+			return model;
+		}
+
+		public void setModel(String model) {
+			this.model = model;
+		}
+
+		public double getTemperature() {
+			return temperature;
+		}
+
+		public void setTemperature(double temperature) {
+			this.temperature = temperature;
+		}
 	}
 }
