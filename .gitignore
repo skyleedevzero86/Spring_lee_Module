@@ -30,6 +30,7 @@ TestResults.xml
 !README.md
 !loginstudy/
 !loginstudy/**
+!catalogflow/
 
 loginstudy/auth-server/keys/
 loginstudy/auth-server/keys/**
