@@ -60,6 +60,18 @@ public final class IntegrationEventPayloads {
 				Instant.parse(requiredText(root, "updatedAt")));
 	}
 
+	public static ProductEnrichmentRequestedData readProductEnrichmentRequested(String json) {
+		JsonNode root = readRoot(json);
+		return new ProductEnrichmentRequestedData(
+				requiredText(root, "name"),
+				requiredText(root, "description"),
+				UUID.fromString(requiredText(root, "categoryId")),
+				UUID.fromString(requiredText(root, "supplierId")),
+				optionalText(root, "supplierName"),
+				requiredText(root, "status"),
+				Instant.parse(requiredText(root, "updatedAt")));
+	}
+
 	public static ProductEnrichmentCompletedData readProductEnrichmentCompleted(String json) {
 		JsonNode root = readRoot(json);
 		return new ProductEnrichmentCompletedData(
@@ -68,6 +80,19 @@ public final class IntegrationEventPayloads {
 				optionalText(root, "modelName"),
 				readStringList(root, "keywords"),
 				readStringList(root, "tags"),
+				optionalText(root, "recommendedCategory"),
+				optionalText(root, "warnings"),
+				root.path("requiresHumanReview").asBoolean(true),
+				root.path("confidence").asDouble(0.0d),
+				optionalText(root, "promptVersion"),
+				requiredText(root, "status"),
+				Instant.parse(requiredText(root, "updatedAt")));
+	}
+
+	public static ProductEnrichmentFailedData readProductEnrichmentFailed(String json) {
+		JsonNode root = readRoot(json);
+		return new ProductEnrichmentFailedData(
+				optionalText(root, "reason"),
 				requiredText(root, "status"),
 				Instant.parse(requiredText(root, "updatedAt")));
 	}
@@ -166,12 +191,33 @@ public final class IntegrationEventPayloads {
 			Instant updatedAt) {
 	}
 
+	public record ProductEnrichmentRequestedData(
+			String name,
+			String description,
+			UUID categoryId,
+			UUID supplierId,
+			String supplierName,
+			String status,
+			Instant updatedAt) {
+	}
+
 	public record ProductEnrichmentCompletedData(
 			String summary,
 			String generatedDescription,
 			String modelName,
 			List<String> keywords,
 			List<String> tags,
+			String recommendedCategory,
+			String warnings,
+			boolean requiresHumanReview,
+			double confidence,
+			String promptVersion,
+			String status,
+			Instant updatedAt) {
+	}
+
+	public record ProductEnrichmentFailedData(
+			String reason,
 			String status,
 			Instant updatedAt) {
 	}

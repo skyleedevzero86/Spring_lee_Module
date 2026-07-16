@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.sleekydz86.catalogflow.adapter.out.persistence.entity.AiEnrichmentResultEntity;
 import com.sleekydz86.catalogflow.adapter.out.persistence.entity.ProductEntity;
 import com.sleekydz86.catalogflow.adapter.out.persistence.entity.ProductKeywordEntity;
 import com.sleekydz86.catalogflow.adapter.out.persistence.entity.ProductTagEntity;
@@ -14,6 +15,8 @@ import com.sleekydz86.catalogflow.domain.event.DomainEvent;
 import com.sleekydz86.catalogflow.domain.event.ProductCreated;
 import com.sleekydz86.catalogflow.domain.event.ProductDiscontinued;
 import com.sleekydz86.catalogflow.domain.event.ProductEnrichmentCompleted;
+import com.sleekydz86.catalogflow.domain.event.ProductEnrichmentFailed;
+import com.sleekydz86.catalogflow.domain.event.ProductEnrichmentRequested;
 import com.sleekydz86.catalogflow.domain.event.ProductImageUploaded;
 import com.sleekydz86.catalogflow.domain.event.ProductPriceChanged;
 import com.sleekydz86.catalogflow.domain.event.ProductPublished;
@@ -27,12 +30,15 @@ public class OutboxEventPayloadFactory {
 
 	private final SupplierJpaRepository supplierJpaRepository;
 	private final ProductJpaRepository productJpaRepository;
+	private final AiEnrichmentResultJpaRepository aiEnrichmentResultJpaRepository;
 
 	public OutboxEventPayloadFactory(
 			SupplierJpaRepository supplierJpaRepository,
-			ProductJpaRepository productJpaRepository) {
+			ProductJpaRepository productJpaRepository,
+			AiEnrichmentResultJpaRepository aiEnrichmentResultJpaRepository) {
 		this.supplierJpaRepository = supplierJpaRepository;
 		this.productJpaRepository = productJpaRepository;
+		this.aiEnrichmentResultJpaRepository = aiEnrichmentResultJpaRepository;
 	}
 
 	public String createPayload(DomainEvent event) {
@@ -72,8 +78,16 @@ public class OutboxEventPayloadFactory {
 			appendProductImageUploaded(builder, imageUploaded);
 			return;
 		}
+		if (event instanceof ProductEnrichmentRequested enrichmentRequested) {
+			appendProductEnrichmentRequested(builder, enrichmentRequested);
+			return;
+		}
 		if (event instanceof ProductEnrichmentCompleted enrichmentCompleted) {
 			appendProductEnrichmentCompleted(builder, enrichmentCompleted);
+			return;
+		}
+		if (event instanceof ProductEnrichmentFailed enrichmentFailed) {
+			appendProductEnrichmentFailed(builder, enrichmentFailed);
 			return;
 		}
 		if (event instanceof ProductPublished published) {
@@ -125,15 +139,54 @@ public class OutboxEventPayloadFactory {
 		appendField(builder, "updatedAt", event.occurredAt().toString(), false);
 	}
 
+	private void appendProductEnrichmentRequested(StringBuilder builder, ProductEnrichmentRequested event) {
+		ProductEntity product = productJpaRepository.findById(event.aggregateId().value())
+				.orElseThrow(() -> new ApplicationException("AI 가공 요청 상품을 찾을 수 없습니다"));
+		appendField(builder, "name", product.getName(), false);
+		appendField(builder, "description", product.getDescription(), false);
+		appendField(builder, "categoryId", product.getCategoryId().toString(), false);
+		appendField(builder, "supplierId", product.getSupplierId().toString(), false);
+		appendField(builder, "supplierName", resolveSupplierName(product.getSupplierId()), false);
+		appendField(builder, "status", product.getStatus(), false);
+		appendField(builder, "updatedAt", event.occurredAt().toString(), false);
+	}
+
 	private void appendProductEnrichmentCompleted(StringBuilder builder, ProductEnrichmentCompleted event) {
 		ProductEntity product = productJpaRepository.findById(event.aggregateId().value())
 				.orElseThrow(() -> new ApplicationException("AI 가공 완료 상품을 찾을 수 없습니다"));
-		appendField(builder, "summary", truncate(product.getDescription(), 200), false);
-		appendField(builder, "generatedDescription", product.getDescription(), false);
+		var enrichmentResult = aiEnrichmentResultJpaRepository
+				.findFirstByProductIdOrderByCreatedAtDesc(event.aggregateId().value());
+		String summary = enrichmentResult.map(AiEnrichmentResultEntity::getSummary)
+				.filter(value -> value != null && !value.isBlank())
+				.orElseGet(() -> truncate(product.getDescription(), 200));
+		String generatedDescription = enrichmentResult.map(AiEnrichmentResultEntity::getGeneratedDescription)
+				.filter(value -> value != null && !value.isBlank())
+				.orElseGet(product::getDescription);
+		String recommendedCategory = enrichmentResult.map(AiEnrichmentResultEntity::getRecommendedCategory).orElse("");
+		String warnings = enrichmentResult.map(AiEnrichmentResultEntity::getWarnings).orElse("");
+		boolean requiresHumanReview = enrichmentResult.map(AiEnrichmentResultEntity::isRequiresHumanReview).orElse(true);
+		String confidence = enrichmentResult
+				.map(AiEnrichmentResultEntity::getConfidence)
+				.map(value -> value == null ? "0" : value.toPlainString())
+				.orElse("0");
+		String promptVersion = enrichmentResult.map(AiEnrichmentResultEntity::getPromptVersion).orElse("");
+		appendField(builder, "summary", summary, false);
+		appendField(builder, "generatedDescription", generatedDescription, false);
 		appendField(builder, "modelName", event.modelName(), false);
 		appendStringArrayField(builder, "keywords", readKeywords(product), false);
 		appendStringArrayField(builder, "tags", readTags(product), false);
+		appendField(builder, "recommendedCategory", recommendedCategory, false);
+		appendField(builder, "warnings", warnings, false);
+		builder.append(",\"requiresHumanReview\":").append(requiresHumanReview);
+		builder.append(",\"confidence\":").append(confidence);
+		appendField(builder, "promptVersion", promptVersion, false);
 		appendField(builder, "status", product.getStatus(), false);
+		appendField(builder, "updatedAt", event.occurredAt().toString(), false);
+	}
+
+	private void appendProductEnrichmentFailed(StringBuilder builder, ProductEnrichmentFailed event) {
+		appendField(builder, "reason", event.reason(), false);
+		appendField(builder, "status", "DRAFT", false);
 		appendField(builder, "updatedAt", event.occurredAt().toString(), false);
 	}
 

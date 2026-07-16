@@ -65,7 +65,7 @@ public class S3StorageAdapter implements StoragePort {
 			return new PresignedUpload(storageKey, uploadUrl, downloadUrl, expiresAt);
 		}
 		catch (Exception exception) {
-			throw new ApplicationException("Presigned Upload URL 생성에 실패했습니다", exception);
+			throw new ApplicationException("사전 서명 업로드 URL 생성에 실패했습니다", exception);
 		}
 	}
 
@@ -84,7 +84,7 @@ public class S3StorageAdapter implements StoragePort {
 			return s3Presigner.presignGetObject(presignRequest).url().toString();
 		}
 		catch (Exception exception) {
-			throw new ApplicationException("Presigned Download URL 생성에 실패했습니다", exception);
+			throw new ApplicationException("사전 서명 다운로드 URL 생성에 실패했습니다", exception);
 		}
 	}
 

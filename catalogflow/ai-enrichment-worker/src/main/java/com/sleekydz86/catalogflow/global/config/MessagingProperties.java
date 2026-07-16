@@ -8,11 +8,7 @@ public class MessagingProperties {
 	private String exchangeEvents;
 	private String exchangeCommands;
 	private String exchangeDeadLetter;
-	private String queueQueryProductEvents;
-	private String queueQueryProductEventsRetry;
 	private String queueAiEnrichmentRequests;
-	private String queueEnrichmentResults;
-	private String queueBatchRetry;
 	private String queueDeadLetter;
 	private String routingKeyPrefix;
 	private int consumerPrefetch = 10;
@@ -46,44 +42,12 @@ public class MessagingProperties {
 		this.exchangeDeadLetter = exchangeDeadLetter;
 	}
 
-	public String getQueueQueryProductEvents() {
-		return queueQueryProductEvents;
-	}
-
-	public void setQueueQueryProductEvents(String queueQueryProductEvents) {
-		this.queueQueryProductEvents = queueQueryProductEvents;
-	}
-
-	public String getQueueQueryProductEventsRetry() {
-		return queueQueryProductEventsRetry;
-	}
-
-	public void setQueueQueryProductEventsRetry(String queueQueryProductEventsRetry) {
-		this.queueQueryProductEventsRetry = queueQueryProductEventsRetry;
-	}
-
 	public String getQueueAiEnrichmentRequests() {
 		return queueAiEnrichmentRequests;
 	}
 
 	public void setQueueAiEnrichmentRequests(String queueAiEnrichmentRequests) {
 		this.queueAiEnrichmentRequests = queueAiEnrichmentRequests;
-	}
-
-	public String getQueueEnrichmentResults() {
-		return queueEnrichmentResults;
-	}
-
-	public void setQueueEnrichmentResults(String queueEnrichmentResults) {
-		this.queueEnrichmentResults = queueEnrichmentResults;
-	}
-
-	public String getQueueBatchRetry() {
-		return queueBatchRetry;
-	}
-
-	public void setQueueBatchRetry(String queueBatchRetry) {
-		this.queueBatchRetry = queueBatchRetry;
 	}
 
 	public String getQueueDeadLetter() {
