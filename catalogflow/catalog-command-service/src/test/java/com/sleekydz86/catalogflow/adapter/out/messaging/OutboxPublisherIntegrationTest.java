@@ -2,13 +2,19 @@ package com.sleekydz86.catalogflow.adapter.out.messaging;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 
 import java.time.Instant;
 import java.util.UUID;
 
 import com.sleekydz86.catalogflow.adapter.out.persistence.OutboxEventJpaRepository;
 import com.sleekydz86.catalogflow.adapter.out.persistence.entity.OutboxEventEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +40,15 @@ class OutboxPublisherIntegrationTest {
 
 	@MockitoBean
 	private RabbitTemplate rabbitTemplate;
+
+	@BeforeEach
+	void stubPublisherConfirm() {
+		doAnswer(invocation -> {
+			CorrelationData correlationData = invocation.getArgument(3);
+			correlationData.getFuture().complete(new CorrelationData.Confirm(true, null));
+			return null;
+		}).when(rabbitTemplate).send(anyString(), anyString(), any(Message.class), any(CorrelationData.class));
+	}
 
 	@Test
 	void shouldPublishAndMarkOutboxEvents() {

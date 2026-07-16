@@ -4,9 +4,6 @@ import java.time.Clock;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
-
-import java.util.concurrent.Executor;
 
 @Configuration
 public class ApplicationBeanConfiguration {
@@ -14,10 +11,5 @@ public class ApplicationBeanConfiguration {
 	@Bean
 	Clock clock() {
 		return Clock.systemUTC();
-	}
-
-	@Bean
-	Executor outboxPublisherExecutor(TaskExecutor taskExecutor) {
-		return taskExecutor;
 	}
 }

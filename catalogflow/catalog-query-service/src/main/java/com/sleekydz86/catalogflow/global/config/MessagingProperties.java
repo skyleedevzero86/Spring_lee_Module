@@ -20,6 +20,7 @@ public class MessagingProperties {
 	private long retryInitialDelayMs = 3000;
 	private double retryMultiplier = 2.0;
 	private long publisherConfirmTimeoutMs = 5000;
+	private boolean consumerEnabled = true;
 
 	public String getExchangeEvents() {
 		return exchangeEvents;
@@ -139,5 +140,13 @@ public class MessagingProperties {
 
 	public void setPublisherConfirmTimeoutMs(long publisherConfirmTimeoutMs) {
 		this.publisherConfirmTimeoutMs = publisherConfirmTimeoutMs;
+	}
+
+	public boolean isConsumerEnabled() {
+		return consumerEnabled;
+	}
+
+	public void setConsumerEnabled(boolean consumerEnabled) {
+		this.consumerEnabled = consumerEnabled;
 	}
 }
