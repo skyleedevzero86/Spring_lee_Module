@@ -51,6 +51,41 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
 	}
 
+	@ExceptionHandler(InvalidImageUploadException.class)
+	public ResponseEntity<ProblemDetail> handleInvalidImageUpload(
+			InvalidImageUploadException exception,
+			HttpServletRequest request) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+		problemDetail.setTitle("이미지 업로드 요청이 올바르지 않음");
+		problemDetail.setType(URI.create("https://catalogflow.local/problems/invalid-image-upload"));
+		problemDetail.setProperty("path", request.getRequestURI());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+	}
+
+	@ExceptionHandler(StorageObjectNotFoundException.class)
+	public ResponseEntity<ProblemDetail> handleStorageObjectNotFound(
+			StorageObjectNotFoundException exception,
+			HttpServletRequest request) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+		problemDetail.setTitle("저장소 객체를 찾을 수 없음");
+		problemDetail.setType(URI.create("https://catalogflow.local/problems/storage-object-not-found"));
+		problemDetail.setProperty("path", request.getRequestURI());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+	}
+
+	@ExceptionHandler(ApplicationException.class)
+	public ResponseEntity<ProblemDetail> handleApplicationException(
+			ApplicationException exception,
+			HttpServletRequest request) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+				HttpStatus.INTERNAL_SERVER_ERROR,
+				exception.getMessage());
+		problemDetail.setTitle("애플리케이션 오류");
+		problemDetail.setType(URI.create("https://catalogflow.local/problems/application-error"));
+		problemDetail.setProperty("path", request.getRequestURI());
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ProblemDetail> handleValidation(
 			MethodArgumentNotValidException exception,

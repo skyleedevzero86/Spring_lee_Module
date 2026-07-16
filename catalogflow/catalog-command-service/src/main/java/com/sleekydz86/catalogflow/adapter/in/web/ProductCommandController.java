@@ -4,18 +4,22 @@ import java.net.URI;
 import java.util.UUID;
 
 import com.sleekydz86.catalogflow.adapter.in.web.dto.ChangeProductPriceRequest;
+import com.sleekydz86.catalogflow.adapter.in.web.dto.CreatePresignedUploadUrlRequest;
 import com.sleekydz86.catalogflow.adapter.in.web.dto.CreateProductRequest;
+import com.sleekydz86.catalogflow.adapter.in.web.dto.PresignedUploadUrlResponse;
 import com.sleekydz86.catalogflow.adapter.in.web.dto.ProductResponse;
 import com.sleekydz86.catalogflow.adapter.in.web.dto.RegisterProductImageRequest;
 import com.sleekydz86.catalogflow.adapter.in.web.dto.UpdateProductRequest;
 import com.sleekydz86.catalogflow.adapter.in.web.dto.VersionedActionRequest;
 import com.sleekydz86.catalogflow.application.command.ChangeProductPriceCommand;
+import com.sleekydz86.catalogflow.application.command.CreatePresignedUploadUrlCommand;
 import com.sleekydz86.catalogflow.application.command.CreateProductCommand;
 import com.sleekydz86.catalogflow.application.command.ProductLifecycleCommand;
 import com.sleekydz86.catalogflow.application.command.RegisterProductImageCommand;
 import com.sleekydz86.catalogflow.application.command.UpdateProductCommand;
 import com.sleekydz86.catalogflow.application.port.in.ApproveAiEnrichmentUseCase;
 import com.sleekydz86.catalogflow.application.port.in.ChangeProductPriceUseCase;
+import com.sleekydz86.catalogflow.application.port.in.CreatePresignedUploadUrlUseCase;
 import com.sleekydz86.catalogflow.application.port.in.CreateProductUseCase;
 import com.sleekydz86.catalogflow.application.port.in.PublishProductUseCase;
 import com.sleekydz86.catalogflow.application.port.in.RegisterProductImageUseCase;
@@ -40,6 +44,7 @@ public class ProductCommandController {
 	private final CreateProductUseCase createProductUseCase;
 	private final UpdateProductUseCase updateProductUseCase;
 	private final ChangeProductPriceUseCase changeProductPriceUseCase;
+	private final CreatePresignedUploadUrlUseCase createPresignedUploadUrlUseCase;
 	private final RegisterProductImageUseCase registerProductImageUseCase;
 	private final RequestAiEnrichmentUseCase requestAiEnrichmentUseCase;
 	private final ApproveAiEnrichmentUseCase approveAiEnrichmentUseCase;
@@ -50,6 +55,7 @@ public class ProductCommandController {
 			CreateProductUseCase createProductUseCase,
 			UpdateProductUseCase updateProductUseCase,
 			ChangeProductPriceUseCase changeProductPriceUseCase,
+			CreatePresignedUploadUrlUseCase createPresignedUploadUrlUseCase,
 			RegisterProductImageUseCase registerProductImageUseCase,
 			RequestAiEnrichmentUseCase requestAiEnrichmentUseCase,
 			ApproveAiEnrichmentUseCase approveAiEnrichmentUseCase,
@@ -58,6 +64,7 @@ public class ProductCommandController {
 		this.createProductUseCase = createProductUseCase;
 		this.updateProductUseCase = updateProductUseCase;
 		this.changeProductPriceUseCase = changeProductPriceUseCase;
+		this.createPresignedUploadUrlUseCase = createPresignedUploadUrlUseCase;
 		this.registerProductImageUseCase = registerProductImageUseCase;
 		this.requestAiEnrichmentUseCase = requestAiEnrichmentUseCase;
 		this.approveAiEnrichmentUseCase = approveAiEnrichmentUseCase;
@@ -106,6 +113,19 @@ public class ProductCommandController {
 				request.priceAmount(),
 				request.priceCurrency()));
 		return ProductResponse.from(result);
+	}
+
+	@PostMapping("/{productId}/images/presigned-url")
+	public PresignedUploadUrlResponse createPresignedUploadUrl(
+			@PathVariable UUID productId,
+			@Valid @RequestBody CreatePresignedUploadUrlRequest request) {
+		var result = createPresignedUploadUrlUseCase.create(new CreatePresignedUploadUrlCommand(
+				productId,
+				request.contentType(),
+				request.sizeInBytes(),
+				request.fileName(),
+				request.temporary()));
+		return PresignedUploadUrlResponse.from(result);
 	}
 
 	@PostMapping("/{productId}/images")
