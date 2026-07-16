@@ -1,7 +1,5 @@
 package com.sleekydz86.catalogflow.application.service;
 
-import java.util.UUID;
-
 import com.sleekydz86.catalogflow.application.port.out.ConsumedEventStore;
 import com.sleekydz86.catalogflow.eventcontract.CatalogEventTypes;
 import com.sleekydz86.catalogflow.eventcontract.IntegrationEventEnvelope;
@@ -14,9 +12,13 @@ public class ProductEventIngestionService {
 	public static final String CONSUMER_NAME = "catalog-query-service";
 
 	private final ConsumedEventStore consumedEventStore;
+	private final ProductViewProjectionService productViewProjectionService;
 
-	public ProductEventIngestionService(ConsumedEventStore consumedEventStore) {
+	public ProductEventIngestionService(
+			ConsumedEventStore consumedEventStore,
+			ProductViewProjectionService productViewProjectionService) {
 		this.consumedEventStore = consumedEventStore;
+		this.productViewProjectionService = productViewProjectionService;
 	}
 
 	public void ingest(IntegrationEventEnvelope envelope) {
@@ -26,6 +28,7 @@ public class ProductEventIngestionService {
 		if (consumedEventStore.isConsumed(envelope.eventId(), CONSUMER_NAME)) {
 			return;
 		}
+		productViewProjectionService.project(envelope);
 		consumedEventStore.markConsumed(envelope.eventId(), CONSUMER_NAME);
 	}
 }
