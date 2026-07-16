@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.sleekydz86.catalogflow.application.model.ProductView;
 import com.sleekydz86.catalogflow.application.port.out.ProductViewStore;
+import com.sleekydz86.catalogflow.application.query.ProductQueryCriteria;
 import com.sleekydz86.catalogflow.eventcontract.CatalogEventTypes;
 import com.sleekydz86.catalogflow.eventcontract.IntegrationEventEnvelope;
 import org.junit.jupiter.api.BeforeEach;
@@ -214,6 +216,14 @@ class ProductViewProjectionServiceTest {
 		@Override
 		public void save(ProductView productView) {
 			stored = copy(productView);
+		}
+
+		@Override
+		public List<ProductView> findByCriteria(ProductQueryCriteria criteria, int fetchSize) {
+			if (stored == null) {
+				return List.of();
+			}
+			return List.of(copy(stored));
 		}
 
 		private ProductView copy(ProductView source) {
