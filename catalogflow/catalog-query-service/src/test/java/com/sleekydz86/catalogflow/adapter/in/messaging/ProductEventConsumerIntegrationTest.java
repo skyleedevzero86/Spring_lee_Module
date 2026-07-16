@@ -24,10 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mongodb.MongoDBContainer;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @Testcontainers
@@ -41,6 +43,10 @@ class ProductEventConsumerIntegrationTest {
 	@Container
 	@ServiceConnection
 	static RabbitMQContainer rabbit = new RabbitMQContainer("rabbitmq:4-management-alpine");
+
+	@Container
+	@ServiceConnection(name = "redis")
+	static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
 
 	@Autowired
 	private RabbitTemplate rabbitTemplate;
@@ -67,13 +73,13 @@ class ProductEventConsumerIntegrationTest {
 				+ "\"correlationId\":\"corr-it\","
 				+ "\"causationId\":\"\","
 				+ "\"schemaVersion\":1,"
-				+ "\"name\":\"무선 키보드\","
-				+ "\"description\":\"저소음 키보드\","
+				+ "\"name\":\"\uBB34\uC120 \uD0A4\uBCF4\uB4DC\","
+				+ "\"description\":\"\uC800\uC18C\uC74C \uD0A4\uBCF4\uB4DC\","
 				+ "\"priceAmount\":59000,"
 				+ "\"priceCurrency\":\"KRW\","
 				+ "\"categoryId\":\"" + categoryId + "\","
 				+ "\"supplierId\":\"" + supplierId + "\","
-				+ "\"supplierName\":\"기본 공급사\","
+				+ "\"supplierName\":\"\uAE30\uBCF8 \uACF5\uAE09\uC0AC\","
 				+ "\"status\":\"DRAFT\","
 				+ "\"createdAt\":\"" + now + "\","
 				+ "\"updatedAt\":\"" + now + "\""
@@ -101,7 +107,7 @@ class ProductEventConsumerIntegrationTest {
 		assertTrue(waitUntilConsumed(eventId));
 		assertTrue(waitUntilProductViewCreated(aggregateId));
 		var productView = productViewMongoRepository.findById(aggregateId.toString()).orElseThrow();
-		assertEquals("무선 키보드", productView.getName());
+		assertEquals("\uBB34\uC120 \uD0A4\uBCF4\uB4DC", productView.getName());
 		assertEquals(new BigDecimal("59000"), productView.getPrice());
 		assertEquals("DRAFT", productView.getStatus());
 	}

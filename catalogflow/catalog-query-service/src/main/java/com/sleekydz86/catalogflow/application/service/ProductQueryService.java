@@ -1,7 +1,10 @@
 package com.sleekydz86.catalogflow.application.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.sleekydz86.catalogflow.application.model.ProductView;
 import com.sleekydz86.catalogflow.application.port.in.GetProductQueryUseCase;
@@ -9,6 +12,7 @@ import com.sleekydz86.catalogflow.application.port.in.ListCategoryProductsQueryU
 import com.sleekydz86.catalogflow.application.port.in.ListPopularProductsQueryUseCase;
 import com.sleekydz86.catalogflow.application.port.in.ListProductsQueryUseCase;
 import com.sleekydz86.catalogflow.application.port.in.SearchProductsQueryUseCase;
+import com.sleekydz86.catalogflow.application.port.out.ProductCachePort;
 import com.sleekydz86.catalogflow.application.port.out.ProductViewStore;
 import com.sleekydz86.catalogflow.application.query.ProductPageResult;
 import com.sleekydz86.catalogflow.application.query.ProductQueryCriteria;
@@ -24,15 +28,24 @@ public class ProductQueryService implements
 		ListPopularProductsQueryUseCase {
 
 	private final ProductViewStore productViewStore;
+	private final ProductCachePort productCachePort;
+	private final ConcurrentHashMap<String, ReentrantLock> loadLocks = new ConcurrentHashMap<>();
 
-	public ProductQueryService(ProductViewStore productViewStore) {
+	public ProductQueryService(ProductViewStore productViewStore, ProductCachePort productCachePort) {
 		this.productViewStore = productViewStore;
+		this.productCachePort = productCachePort;
 	}
 
 	@Override
 	public ProductView getById(UUID productId) {
-		return productViewStore.findByProductId(productId)
-				.orElseThrow(() -> new ProductNotFoundException(productId));
+		if (productCachePort.isProductMiss(productId)) {
+			throw new ProductNotFoundException(productId);
+		}
+		Optional<ProductView> cached = productCachePort.getProduct(productId);
+		if (cached.isPresent()) {
+			return cached.get();
+		}
+		return loadProduct(productId);
 	}
 
 	@Override
@@ -47,12 +60,59 @@ public class ProductQueryService implements
 
 	@Override
 	public ProductPageResult listByCategory(ProductQueryCriteria criteria) {
-		return toPage(criteria);
+		String cursor = encodeCursorValue(criteria.cursorPublishedAt(), criteria.cursorProductId());
+		Optional<ProductPageResult> cached = productCachePort.getCategoryPage(
+				criteria.categoryId(),
+				criteria.status(),
+				cursor,
+				criteria.size());
+		if (cached.isPresent()) {
+			return cached.get();
+		}
+		ProductPageResult page = toPage(criteria);
+		productCachePort.putCategoryPage(
+				criteria.categoryId(),
+				criteria.status(),
+				cursor,
+				criteria.size(),
+				page);
+		return page;
 	}
 
 	@Override
 	public ProductPageResult listPopular(ProductQueryCriteria criteria) {
-		return toPage(criteria);
+		Optional<ProductPageResult> cached = productCachePort.getPopular(criteria.size());
+		if (cached.isPresent()) {
+			return cached.get();
+		}
+		ProductPageResult page = toPage(criteria);
+		productCachePort.putPopular(criteria.size(), page);
+		return page;
+	}
+
+	private ProductView loadProduct(UUID productId) {
+		ReentrantLock lock = loadLocks.computeIfAbsent(productId.toString(), key -> new ReentrantLock());
+		lock.lock();
+		try {
+			if (productCachePort.isProductMiss(productId)) {
+				throw new ProductNotFoundException(productId);
+			}
+			Optional<ProductView> cached = productCachePort.getProduct(productId);
+			if (cached.isPresent()) {
+				return cached.get();
+			}
+			Optional<ProductView> stored = productViewStore.findByProductId(productId);
+			if (stored.isPresent()) {
+				productCachePort.putProduct(stored.get());
+				return stored.get();
+			}
+			productCachePort.putProductMiss(productId);
+			throw new ProductNotFoundException(productId);
+		}
+		finally {
+			lock.unlock();
+			loadLocks.remove(productId.toString(), lock);
+		}
 	}
 
 	private ProductPageResult toPage(ProductQueryCriteria criteria) {
@@ -69,7 +129,17 @@ public class ProductQueryService implements
 	}
 
 	private String encodeCursor(ProductView view) {
-		String publishedAt = view.getPublishedAt() == null ? "" : view.getPublishedAt().toString();
-		return publishedAt + "|" + view.getProductId();
+		return encodeCursorValue(
+				view.getPublishedAt(),
+				view.getProductId() == null ? null : view.getProductId().toString());
+	}
+
+	private String encodeCursorValue(java.time.Instant publishedAt, String productId) {
+		if (publishedAt == null && (productId == null || productId.isBlank())) {
+			return null;
+		}
+		String publishedAtText = publishedAt == null ? "" : publishedAt.toString();
+		String productIdText = productId == null ? "" : productId;
+		return publishedAtText + "|" + productIdText;
 	}
 }

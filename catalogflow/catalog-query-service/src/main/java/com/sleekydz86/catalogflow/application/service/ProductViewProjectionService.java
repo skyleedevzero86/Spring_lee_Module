@@ -21,14 +21,13 @@ public class ProductViewProjectionService {
 		this.productViewStore = productViewStore;
 	}
 
-	public void project(IntegrationEventEnvelope envelope) {
+	public Optional<ProductView> project(IntegrationEventEnvelope envelope) {
 		Optional<ProductView> existing = productViewStore.findByProductId(envelope.aggregateId());
 		if (existing.isPresent() && envelope.aggregateVersion() <= existing.get().getVersion()) {
-			return;
+			return Optional.empty();
 		}
 		if (CatalogEventTypes.PRODUCT_CREATED.equals(envelope.eventType())) {
-			applyProductCreated(envelope);
-			return;
+			return Optional.of(applyProductCreated(envelope));
 		}
 		ProductView view = existing.orElseThrow(() -> new ApplicationException(
 				"상품 조회 모델이 없어 이벤트를 적용할 수 없습니다: " + envelope.aggregateId()));
@@ -44,9 +43,10 @@ public class ProductViewProjectionService {
 		}
 		view.setVersion(envelope.aggregateVersion());
 		productViewStore.save(view);
+		return Optional.of(view);
 	}
 
-	private void applyProductCreated(IntegrationEventEnvelope envelope) {
+	private ProductView applyProductCreated(IntegrationEventEnvelope envelope) {
 		IntegrationEventPayloads.ProductCreatedData data = IntegrationEventPayloads.readProductCreated(envelope.payload());
 		ProductView view = ProductView.create(envelope.aggregateId());
 		view.setName(data.name());
@@ -62,6 +62,7 @@ public class ProductViewProjectionService {
 		view.setUpdatedAt(data.updatedAt());
 		view.setVersion(envelope.aggregateVersion());
 		productViewStore.save(view);
+		return view;
 	}
 
 	private void applyProductUpdated(ProductView view, IntegrationEventEnvelope envelope) {

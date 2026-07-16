@@ -26,10 +26,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mongodb.MongoDBContainer;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @Testcontainers
@@ -45,6 +47,10 @@ class CatalogQueryControllerTest {
 	@Container
 	@ServiceConnection
 	static RabbitMQContainer rabbit = new RabbitMQContainer("rabbitmq:4-management-alpine");
+
+	@Container
+	@ServiceConnection(name = "redis")
+	static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
 
 	@Autowired
 	private WebApplicationContext webApplicationContext;
@@ -73,7 +79,7 @@ class CatalogQueryControllerTest {
 		UUID productId = UUID.randomUUID();
 		productViewStore.save(sampleProduct(
 				productId,
-				"무선 키보드",
+				"\uBB34\uC120 \uD0A4\uBCF4\uB4DC",
 				"PUBLISHED",
 				Instant.parse("2026-07-16T12:00:00Z")));
 
@@ -81,9 +87,9 @@ class CatalogQueryControllerTest {
 						.header(CorrelationIdFilter.CORRELATION_ID_HEADER, "corr-query-001"))
 				.andExpect(status().isOk())
 				.andExpect(header().string(CorrelationIdFilter.CORRELATION_ID_HEADER, "corr-query-001"))
-				.andExpect(jsonPath("$.name", is("무선 키보드")))
+				.andExpect(jsonPath("$.name", is("\uBB34\uC120 \uD0A4\uBCF4\uB4DC")))
 				.andExpect(jsonPath("$.status", is("PUBLISHED")))
-				.andExpect(jsonPath("$.supplierName", is("기본 공급사")));
+				.andExpect(jsonPath("$.supplierName", is("\uAE30\uBCF8 \uACF5\uAE09\uC0AC")));
 	}
 
 	@Test
@@ -92,7 +98,7 @@ class CatalogQueryControllerTest {
 
 		mockMvc.perform(get("/api/v1/catalog/products/{productId}", productId))
 				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.title", is("상품을 찾을 수 없음")));
+				.andExpect(jsonPath("$.title", is("\uC0C1\uD488\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC74C")));
 	}
 
 	@Test
@@ -101,12 +107,12 @@ class CatalogQueryControllerTest {
 		UUID secondId = UUID.randomUUID();
 		productViewStore.save(sampleProduct(
 				firstId,
-				"무선 키보드",
+				"\uBB34\uC120 \uD0A4\uBCF4\uB4DC",
 				"PUBLISHED",
 				Instant.parse("2026-07-16T12:00:00Z")));
 		productViewStore.save(sampleProduct(
 				secondId,
-				"유선 마우스",
+				"\uC720\uC120 \uB9C8\uC6B0\uC2A4",
 				"PUBLISHED",
 				Instant.parse("2026-07-16T11:00:00Z")));
 
@@ -118,11 +124,11 @@ class CatalogQueryControllerTest {
 				.andExpect(jsonPath("$.hasNext", is(false)));
 
 		mockMvc.perform(get("/api/v1/catalog/products/search")
-						.param("name", "키보드")
+						.param("name", "\uD0A4\uBCF4\uB4DC")
 						.param("status", "PUBLISHED"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.items", hasSize(1)))
-				.andExpect(jsonPath("$.items[0].name", is("무선 키보드")));
+				.andExpect(jsonPath("$.items[0].name", is("\uBB34\uC120 \uD0A4\uBCF4\uB4DC")));
 
 		mockMvc.perform(get("/api/v1/catalog/categories/{categoryId}/products", CATEGORY_ID)
 						.param("status", "PUBLISHED"))
@@ -138,16 +144,16 @@ class CatalogQueryControllerTest {
 		ProductView view = ProductView.create(productId);
 		view.setName(name);
 		view.setSummary(name);
-		view.setDescription(name + " 설명");
+		view.setDescription(name + " \uC124\uBA85");
 		view.setPrice(new BigDecimal("59000"));
 		view.setCurrency("KRW");
 		view.setStatus(status);
 		view.setCategoryId(CATEGORY_ID);
 		view.setSupplierId(SUPPLIER_ID);
-		view.setSupplierName("기본 공급사");
+		view.setSupplierName("\uAE30\uBCF8 \uACF5\uAE09\uC0AC");
 		view.setImageUrls(List.of("products/" + productId + "/image-1.jpg"));
-		view.setKeywords(List.of("키보드"));
-		view.setTags(List.of("전자제품"));
+		view.setKeywords(List.of("\uD0A4\uBCF4\uB4DC"));
+		view.setTags(List.of("\uC804\uC790\uC81C\uD488"));
 		view.setAiGenerated(false);
 		view.setPublishedAt(publishedAt);
 		view.setCreatedAt(publishedAt);

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.sleekydz86.catalogflow.adapter.out.cache.NoOpProductCacheAdapter;
 import com.sleekydz86.catalogflow.application.model.ProductView;
 import com.sleekydz86.catalogflow.application.port.out.ProductViewStore;
 import com.sleekydz86.catalogflow.application.query.ProductPageResult;
@@ -29,7 +30,7 @@ class ProductQueryServiceTest {
 	@BeforeEach
 	void setUp() {
 		store = new InMemoryProductViewStore();
-		productQueryService = new ProductQueryService(store);
+		productQueryService = new ProductQueryService(store, new NoOpProductCacheAdapter());
 	}
 
 	@Test

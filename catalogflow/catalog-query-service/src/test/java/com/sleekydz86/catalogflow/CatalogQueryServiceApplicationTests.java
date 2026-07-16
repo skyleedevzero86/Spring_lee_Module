@@ -7,6 +7,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mongodb.MongoDBContainer;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @Testcontainers
@@ -19,6 +21,10 @@ class CatalogQueryServiceApplicationTests {
 	@Container
 	@ServiceConnection
 	static RabbitMQContainer rabbit = new RabbitMQContainer("rabbitmq:4-management-alpine");
+
+	@Container
+	@ServiceConnection(name = "redis")
+	static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
 
 	@Test
 	void contextLoads() {

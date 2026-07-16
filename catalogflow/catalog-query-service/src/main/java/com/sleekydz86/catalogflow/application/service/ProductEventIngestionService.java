@@ -1,6 +1,7 @@
 package com.sleekydz86.catalogflow.application.service;
 
 import com.sleekydz86.catalogflow.application.port.out.ConsumedEventStore;
+import com.sleekydz86.catalogflow.application.port.out.ProductCachePort;
 import com.sleekydz86.catalogflow.eventcontract.CatalogEventTypes;
 import com.sleekydz86.catalogflow.eventcontract.IntegrationEventEnvelope;
 import com.sleekydz86.catalogflow.global.exception.ApplicationException;
@@ -13,12 +14,15 @@ public class ProductEventIngestionService {
 
 	private final ConsumedEventStore consumedEventStore;
 	private final ProductViewProjectionService productViewProjectionService;
+	private final ProductCachePort productCachePort;
 
 	public ProductEventIngestionService(
 			ConsumedEventStore consumedEventStore,
-			ProductViewProjectionService productViewProjectionService) {
+			ProductViewProjectionService productViewProjectionService,
+			ProductCachePort productCachePort) {
 		this.consumedEventStore = consumedEventStore;
 		this.productViewProjectionService = productViewProjectionService;
+		this.productCachePort = productCachePort;
 	}
 
 	public void ingest(IntegrationEventEnvelope envelope) {
@@ -28,7 +32,9 @@ public class ProductEventIngestionService {
 		if (consumedEventStore.isConsumed(envelope.eventId(), CONSUMER_NAME)) {
 			return;
 		}
-		productViewProjectionService.project(envelope);
+		productViewProjectionService.project(envelope).ifPresent(view -> productCachePort.evictProductRelated(
+				view.getProductId(),
+				view.getCategoryId()));
 		consumedEventStore.markConsumed(envelope.eventId(), CONSUMER_NAME);
 	}
 }

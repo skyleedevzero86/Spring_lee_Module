@@ -4,6 +4,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties({AppProperties.class, MessagingProperties.class})
+@EnableConfigurationProperties({AppProperties.class, MessagingProperties.class, CacheProperties.class})
 public class GlobalConfiguration {
 }
