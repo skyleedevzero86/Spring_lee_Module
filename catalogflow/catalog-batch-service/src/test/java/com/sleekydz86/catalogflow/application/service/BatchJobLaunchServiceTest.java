@@ -13,9 +13,12 @@ import java.util.Map;
 
 import com.sleekydz86.catalogflow.adapter.in.batch.config.ProductCsvImportJobConfig;
 import com.sleekydz86.catalogflow.global.exception.ApplicationException;
+import com.sleekydz86.catalogflow.global.metrics.CatalogBatchMetrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.job.parameters.JobParameters;
@@ -34,7 +37,8 @@ class BatchJobLaunchServiceTest {
 		BatchJobLaunchService service = new BatchJobLaunchService(
 				mock(JobOperator.class),
 				mock(JobRepository.class),
-				Map.of());
+				Map.of(),
+				new CatalogBatchMetrics(new SimpleMeterRegistry()));
 
 		// when / then
 		ApplicationException exception = assertThrows(
@@ -52,11 +56,14 @@ class BatchJobLaunchServiceTest {
 		JobOperator jobOperator = mock(JobOperator.class);
 		Job job = mock(Job.class);
 		JobExecution execution = mock(JobExecution.class);
+		when(execution.getStatus()).thenReturn(BatchStatus.COMPLETED);
+		when(execution.getStepExecutions()).thenReturn(java.util.List.of());
 		when(jobOperator.start(eq(job), any(JobParameters.class))).thenReturn(execution);
 		BatchJobLaunchService service = new BatchJobLaunchService(
 				jobOperator,
 				mock(JobRepository.class),
-				Map.of(ProductCsvImportJobConfig.JOB_NAME, job));
+				Map.of(ProductCsvImportJobConfig.JOB_NAME, job),
+				new CatalogBatchMetrics(new SimpleMeterRegistry()));
 
 		// when
 		JobExecution result = service.launchCsvImport(csv.toString());
@@ -72,7 +79,8 @@ class BatchJobLaunchServiceTest {
 		BatchJobLaunchService service = new BatchJobLaunchService(
 				mock(JobOperator.class),
 				mock(JobRepository.class),
-				Map.of());
+				Map.of(),
+				new CatalogBatchMetrics(new SimpleMeterRegistry()));
 
 		// when / then
 		assertThrows(ApplicationException.class, () -> service.launch("unknownJob"));

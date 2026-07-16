@@ -20,7 +20,10 @@ import com.sleekydz86.catalogflow.application.port.out.ProductViewStore;
 import com.sleekydz86.catalogflow.application.query.ProductPageResult;
 import com.sleekydz86.catalogflow.application.query.ProductQueryCriteria;
 import com.sleekydz86.catalogflow.global.exception.ProductNotFoundException;
+import com.sleekydz86.catalogflow.global.metrics.CatalogQueryMetrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ProductQueryServiceCacheTest {
@@ -33,18 +36,25 @@ class ProductQueryServiceCacheTest {
 	void setUp() {
 		store = new CountingStore();
 		cache = new InMemoryCache();
-		productQueryService = new ProductQueryService(store, cache);
+		productQueryService = new ProductQueryService(
+				store,
+				cache,
+				new CatalogQueryMetrics(new SimpleMeterRegistry()));
 	}
 
 	@Test
+	@DisplayName("상품 상세 조회는 Cache Aside로 동작한다")
 	void shouldUseCacheAsideForProductDetail() {
+		// given
 		UUID productId = UUID.randomUUID();
 		ProductView view = sample(productId, "캐시된 상품");
 		store.save(view);
 
+		// when
 		ProductView first = productQueryService.getById(productId);
 		ProductView second = productQueryService.getById(productId);
 
+		// then
 		assertEquals("캐시된 상품", first.getName());
 		assertEquals("캐시된 상품", second.getName());
 		assertEquals(1, store.findCount.get());

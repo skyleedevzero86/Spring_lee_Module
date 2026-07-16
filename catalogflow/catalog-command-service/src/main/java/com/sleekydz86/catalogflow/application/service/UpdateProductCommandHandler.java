@@ -15,6 +15,7 @@ import com.sleekydz86.catalogflow.domain.model.ProductName;
 import com.sleekydz86.catalogflow.domain.model.SupplierId;
 import com.sleekydz86.catalogflow.global.exception.ProductNotFoundException;
 import com.sleekydz86.catalogflow.global.exception.SupplierNotFoundException;
+import com.sleekydz86.catalogflow.global.metrics.CatalogCommandMetrics;
 import com.sleekydz86.catalogflow.global.util.CorrelationIdHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,16 +28,19 @@ public class UpdateProductCommandHandler implements UpdateProductUseCase {
 	private final SupplierRepository supplierRepository;
 	private final ProductPersistenceCoordinator persistenceCoordinator;
 	private final Clock clock;
+	private final CatalogCommandMetrics catalogCommandMetrics;
 
 	public UpdateProductCommandHandler(
 			ProductQuerySupport productQuerySupport,
 			SupplierRepository supplierRepository,
 			ProductPersistenceCoordinator persistenceCoordinator,
-			Clock clock) {
+			Clock clock,
+			CatalogCommandMetrics catalogCommandMetrics) {
 		this.productQuerySupport = productQuerySupport;
 		this.supplierRepository = supplierRepository;
 		this.persistenceCoordinator = persistenceCoordinator;
 		this.clock = clock;
+		this.catalogCommandMetrics = catalogCommandMetrics;
 	}
 
 	@Override
@@ -60,6 +64,7 @@ public class UpdateProductCommandHandler implements UpdateProductUseCase {
 				CorrelationIdHolder.getOrGenerate());
 
 		persistenceCoordinator.save(product);
+		catalogCommandMetrics.incrementProductUpdated();
 		return ProductCommandResultMapper.toResult(product);
 	}
 }

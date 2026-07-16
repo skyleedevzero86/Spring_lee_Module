@@ -35,7 +35,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 		"app.security.enabled=true",
 		"app.security.jwt-decoder-mode=symmetric",
 		"app.security.audience=catalogflow-api",
-		"app.security.symmetric-secret=catalogflow-test-symmetric-secret-key-32bytes"
+		"app.security.symmetric-secret=catalogflow-test-symmetric-secret-key-32bytes",
+		"app.network.public-access-enabled=true"
 })
 class ProductCommandSecurityTest {
 

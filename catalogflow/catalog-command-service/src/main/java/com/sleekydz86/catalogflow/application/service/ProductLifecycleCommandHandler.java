@@ -12,6 +12,7 @@ import com.sleekydz86.catalogflow.application.port.in.RequestAiEnrichmentUseCase
 import com.sleekydz86.catalogflow.application.port.in.SuspendProductUseCase;
 import com.sleekydz86.catalogflow.domain.model.Product;
 import com.sleekydz86.catalogflow.domain.model.ProductId;
+import com.sleekydz86.catalogflow.global.metrics.CatalogCommandMetrics;
 import com.sleekydz86.catalogflow.global.util.CorrelationIdHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,14 +28,17 @@ public class ProductLifecycleCommandHandler implements
 	private final ProductQuerySupport productQuerySupport;
 	private final ProductPersistenceCoordinator persistenceCoordinator;
 	private final Clock clock;
+	private final CatalogCommandMetrics catalogCommandMetrics;
 
 	public ProductLifecycleCommandHandler(
 			ProductQuerySupport productQuerySupport,
 			ProductPersistenceCoordinator persistenceCoordinator,
-			Clock clock) {
+			Clock clock,
+			CatalogCommandMetrics catalogCommandMetrics) {
 		this.productQuerySupport = productQuerySupport;
 		this.persistenceCoordinator = persistenceCoordinator;
 		this.clock = clock;
+		this.catalogCommandMetrics = catalogCommandMetrics;
 	}
 
 	@Override
@@ -43,6 +47,7 @@ public class ProductLifecycleCommandHandler implements
 		Instant now = clock.instant();
 		product.requestAiEnrichment(expectedVersion, now, CorrelationIdHolder.getOrGenerate());
 		persistenceCoordinator.save(product);
+		catalogCommandMetrics.incrementAiEnrichmentRequested();
 		return ProductCommandResultMapper.toResult(product);
 	}
 

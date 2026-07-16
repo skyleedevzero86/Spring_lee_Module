@@ -10,6 +10,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
 	implementation("org.springframework.boot:spring-boot-starter-json")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("io.micrometer:micrometer-registry-prometheus")
 
 	implementation(platform("org.springframework.ai:spring-ai-bom:2.0.0"))
 	implementation("org.springframework.ai:spring-ai-ollama")

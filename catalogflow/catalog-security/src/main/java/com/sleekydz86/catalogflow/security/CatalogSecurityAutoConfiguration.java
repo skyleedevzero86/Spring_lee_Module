@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
@@ -31,7 +32,7 @@ import tools.jackson.databind.ObjectMapper;
 @AutoConfiguration
 @ConditionalOnWebApplication
 @EnableMethodSecurity
-@EnableConfigurationProperties(CatalogSecurityProperties.class)
+@EnableConfigurationProperties({CatalogSecurityProperties.class, CatalogNetworkProperties.class})
 public class CatalogSecurityAutoConfiguration {
 
 	@Bean
@@ -44,11 +45,31 @@ public class CatalogSecurityAutoConfiguration {
 	}
 
 	@Bean
+	PublicAccessGuardFilter publicAccessGuardFilter(
+			CatalogNetworkProperties networkProperties,
+			ObjectMapper objectMapper) {
+		return new PublicAccessGuardFilter(networkProperties, objectMapper);
+	}
+
+	@Bean
+	org.springframework.boot.web.servlet.FilterRegistrationBean<PublicAccessGuardFilter> publicAccessGuardFilterRegistration(
+			PublicAccessGuardFilter publicAccessGuardFilter) {
+		org.springframework.boot.web.servlet.FilterRegistrationBean<PublicAccessGuardFilter> registration =
+				new org.springframework.boot.web.servlet.FilterRegistrationBean<>(publicAccessGuardFilter);
+		registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 20);
+		registration.addUrlPatterns("/*");
+		registration.setName("publicAccessGuardFilter");
+		return registration;
+	}
+
+	@Bean
 	@ConditionalOnProperty(prefix = "app.security", name = "enabled", havingValue = "false")
 	SecurityFilterChain catalogSecurityDisabledFilterChain(HttpSecurity http) throws Exception {
 		http
 				.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/actuator/health", "/actuator/info", "/actuator/prometheus").permitAll()
+						.anyRequest().permitAll());
 		return http.build();
 	}
 
@@ -76,6 +97,7 @@ public class CatalogSecurityAutoConfiguration {
 				.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/actuator/health", "/actuator/info", "/actuator/prometheus").permitAll()
 						.requestMatchers(
 								"/api/v1/system",
 								"/api/v1/system/**",

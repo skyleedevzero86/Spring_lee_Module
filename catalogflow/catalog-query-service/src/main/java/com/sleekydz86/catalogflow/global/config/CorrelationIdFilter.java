@@ -8,6 +8,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -26,12 +27,14 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
 			correlationId = UUID.randomUUID().toString();
 		}
 		CorrelationIdHolder.set(correlationId);
+		MDC.put("correlationId", correlationId);
 		response.setHeader(CORRELATION_ID_HEADER, correlationId);
 		try {
 			filterChain.doFilter(request, response);
 		}
 		finally {
 			CorrelationIdHolder.clear();
+			MDC.remove("correlationId");
 		}
 	}
 }

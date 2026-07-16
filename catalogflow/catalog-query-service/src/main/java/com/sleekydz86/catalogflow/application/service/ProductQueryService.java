@@ -17,6 +17,7 @@ import com.sleekydz86.catalogflow.application.port.out.ProductViewStore;
 import com.sleekydz86.catalogflow.application.query.ProductPageResult;
 import com.sleekydz86.catalogflow.application.query.ProductQueryCriteria;
 import com.sleekydz86.catalogflow.global.exception.ProductNotFoundException;
+import com.sleekydz86.catalogflow.global.metrics.CatalogQueryMetrics;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,22 +30,31 @@ public class ProductQueryService implements
 
 	private final ProductViewStore productViewStore;
 	private final ProductCachePort productCachePort;
+	private final CatalogQueryMetrics catalogQueryMetrics;
 	private final ConcurrentHashMap<String, ReentrantLock> loadLocks = new ConcurrentHashMap<>();
 
-	public ProductQueryService(ProductViewStore productViewStore, ProductCachePort productCachePort) {
+	public ProductQueryService(
+			ProductViewStore productViewStore,
+			ProductCachePort productCachePort,
+			CatalogQueryMetrics catalogQueryMetrics) {
 		this.productViewStore = productViewStore;
 		this.productCachePort = productCachePort;
+		this.catalogQueryMetrics = catalogQueryMetrics;
 	}
 
 	@Override
 	public ProductView getById(UUID productId) {
+		catalogQueryMetrics.incrementProductQueried();
 		if (productCachePort.isProductMiss(productId)) {
+			catalogQueryMetrics.incrementCacheHit();
 			throw new ProductNotFoundException(productId);
 		}
 		Optional<ProductView> cached = productCachePort.getProduct(productId);
 		if (cached.isPresent()) {
+			catalogQueryMetrics.incrementCacheHit();
 			return cached.get();
 		}
+		catalogQueryMetrics.incrementCacheMiss();
 		return loadProduct(productId);
 	}
 

@@ -39,7 +39,8 @@ import org.testcontainers.utility.DockerImageName;
 @TestPropertySource(properties = {
 		"app.security.enabled=true",
 		"app.security.jwt-decoder-mode=symmetric",
-		"app.security.audience=catalogflow-api"
+		"app.security.audience=catalogflow-api",
+		"app.network.public-access-enabled=true"
 })
 class CatalogQuerySecurityTest {
 

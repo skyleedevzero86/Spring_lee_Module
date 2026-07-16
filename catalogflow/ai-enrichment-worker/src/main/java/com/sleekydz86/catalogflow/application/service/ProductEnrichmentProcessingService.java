@@ -12,7 +12,9 @@ import com.sleekydz86.catalogflow.eventcontract.IntegrationEventEnvelope;
 import com.sleekydz86.catalogflow.eventcontract.IntegrationEventPayloads;
 import com.sleekydz86.catalogflow.global.config.AiProperties;
 import com.sleekydz86.catalogflow.global.exception.ApplicationException;
+import com.sleekydz86.catalogflow.global.metrics.CatalogAiMetrics;
 import com.sleekydz86.catalogflow.global.util.CorrelationIdHolder;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,6 +26,7 @@ public class ProductEnrichmentProcessingService {
 	private final EnrichmentResultPublisher enrichmentResultPublisher;
 	private final AiProperties aiProperties;
 	private final Clock clock;
+	private final CatalogAiMetrics catalogAiMetrics;
 
 	public ProductEnrichmentProcessingService(
 			AiEnrichmentPort aiEnrichmentPort,
@@ -31,19 +34,23 @@ public class ProductEnrichmentProcessingService {
 			EnrichmentResultValidator enrichmentResultValidator,
 			EnrichmentResultPublisher enrichmentResultPublisher,
 			AiProperties aiProperties,
-			Clock clock) {
+			Clock clock,
+			CatalogAiMetrics catalogAiMetrics) {
 		this.aiEnrichmentPort = aiEnrichmentPort;
 		this.stubEnrichmentEngine = stubEnrichmentEngine;
 		this.enrichmentResultValidator = enrichmentResultValidator;
 		this.enrichmentResultPublisher = enrichmentResultPublisher;
 		this.aiProperties = aiProperties;
 		this.clock = clock;
+		this.catalogAiMetrics = catalogAiMetrics;
 	}
 
 	public void process(IntegrationEventEnvelope envelope) {
 		if (!CatalogEventTypes.PRODUCT_ENRICHMENT_REQUESTED.equals(envelope.eventType())) {
 			throw new ApplicationException("지원하지 않는 AI 요청 이벤트입니다: " + envelope.eventType());
 		}
+		catalogAiMetrics.incrementRequested();
+		Timer.Sample sample = catalogAiMetrics.startTimer();
 		IntegrationEventPayloads.ProductEnrichmentRequestedData requestData =
 				IntegrationEventPayloads.readProductEnrichmentRequested(envelope.payload());
 		String correlationId = blankToGenerated(envelope.correlationId());
@@ -64,8 +71,10 @@ public class ProductEnrichmentProcessingService {
 					envelope.eventId().toString(),
 					result,
 					clock.instant());
+			catalogAiMetrics.incrementCompleted();
 		}
 		catch (Exception exception) {
+			catalogAiMetrics.incrementFailed();
 			enrichmentResultPublisher.publishFailed(
 					envelope.aggregateId(),
 					envelope.aggregateVersion(),
@@ -73,6 +82,9 @@ public class ProductEnrichmentProcessingService {
 					envelope.eventId().toString(),
 					resolveFailureReason(exception),
 					clock.instant());
+		}
+		finally {
+			catalogAiMetrics.record(sample);
 		}
 	}
 

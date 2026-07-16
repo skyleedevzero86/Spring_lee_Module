@@ -9,6 +9,8 @@ import java.util.UUID;
 import com.sleekydz86.catalogflow.adapter.in.batch.config.CatalogMaintenanceJobConfig;
 import com.sleekydz86.catalogflow.adapter.in.batch.config.ProductCsvImportJobConfig;
 import com.sleekydz86.catalogflow.global.exception.ApplicationException;
+import com.sleekydz86.catalogflow.global.metrics.CatalogBatchMetrics;
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.job.parameters.JobParameters;
@@ -23,11 +25,17 @@ public class BatchJobLaunchService {
 	private final JobOperator jobOperator;
 	private final JobRepository jobRepository;
 	private final Map<String, Job> jobs;
+	private final CatalogBatchMetrics catalogBatchMetrics;
 
-	public BatchJobLaunchService(JobOperator jobOperator, JobRepository jobRepository, Map<String, Job> jobs) {
+	public BatchJobLaunchService(
+			JobOperator jobOperator,
+			JobRepository jobRepository,
+			Map<String, Job> jobs,
+			CatalogBatchMetrics catalogBatchMetrics) {
 		this.jobOperator = jobOperator;
 		this.jobRepository = jobRepository;
 		this.jobs = jobs;
+		this.catalogBatchMetrics = catalogBatchMetrics;
 	}
 
 	public JobExecution launchCsvImport(String filePath) {
@@ -65,10 +73,21 @@ public class BatchJobLaunchService {
 		if (job == null) {
 			throw new ApplicationException("지원하지 않는 배치 작업입니다: " + jobName);
 		}
+		catalogBatchMetrics.incrementJobStarted();
 		try {
-			return jobOperator.start(job, parameters);
+			JobExecution execution = jobOperator.start(job, parameters);
+			if (execution.getStatus() == BatchStatus.COMPLETED) {
+				catalogBatchMetrics.incrementJobCompleted();
+				execution.getStepExecutions().forEach(step ->
+						catalogBatchMetrics.incrementItemsProcessed(step.getWriteCount()));
+			}
+			else {
+				catalogBatchMetrics.incrementJobFailed();
+			}
+			return execution;
 		}
 		catch (Exception exception) {
+			catalogBatchMetrics.incrementJobFailed();
 			throw new ApplicationException("배치 작업 실행에 실패했습니다: " + jobName, exception);
 		}
 	}

@@ -20,7 +20,8 @@ public final class TraceIdHolder {
 	public static String getOrGenerate() {
 		String traceId = CURRENT.get();
 		if (traceId == null || traceId.isBlank()) {
-			return UUID.randomUUID().toString();
+			traceId = UUID.randomUUID().toString();
+			CURRENT.set(traceId);
 		}
 		return traceId;
 	}

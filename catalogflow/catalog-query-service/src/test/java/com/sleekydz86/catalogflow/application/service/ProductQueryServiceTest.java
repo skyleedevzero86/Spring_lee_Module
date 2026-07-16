@@ -19,7 +19,10 @@ import com.sleekydz86.catalogflow.application.port.out.ProductViewStore;
 import com.sleekydz86.catalogflow.application.query.ProductPageResult;
 import com.sleekydz86.catalogflow.application.query.ProductQueryCriteria;
 import com.sleekydz86.catalogflow.global.exception.ProductNotFoundException;
+import com.sleekydz86.catalogflow.global.metrics.CatalogQueryMetrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ProductQueryServiceTest {
@@ -30,22 +33,33 @@ class ProductQueryServiceTest {
 	@BeforeEach
 	void setUp() {
 		store = new InMemoryProductViewStore();
-		productQueryService = new ProductQueryService(store, new NoOpProductCacheAdapter());
+		productQueryService = new ProductQueryService(
+				store,
+				new NoOpProductCacheAdapter(),
+				new CatalogQueryMetrics(new SimpleMeterRegistry()));
 	}
 
 	@Test
+	@DisplayName("상품 ID로 상세 정보를 조회한다")
 	void shouldGetProductById() {
+		// given
 		UUID productId = UUID.randomUUID();
 		store.save(publishedProduct(productId, "무선 키보드", Instant.parse("2026-07-16T10:00:00Z")));
 
+		// when
 		ProductView view = productQueryService.getById(productId);
 
+		// then
 		assertEquals("무선 키보드", view.getName());
 	}
 
 	@Test
+	@DisplayName("없는 상품 조회는 예외를 발생시킨다")
 	void shouldThrowWhenProductNotFound() {
+		// given
 		UUID productId = UUID.randomUUID();
+
+		// when / then
 		assertThrows(ProductNotFoundException.class, () -> productQueryService.getById(productId));
 	}
 

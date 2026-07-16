@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+	<springProperty name="APP_NAME" source="spring.application.name" defaultValue="catalogflow"/>
+	<appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>{"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}","level":"%level","service":"${APP_NAME}","correlationId":"%X{correlationId:-}","traceId":"%X{traceId:-}","logger":"%logger{36}","message":"%msg"}%n</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+	<root level="INFO">
+		<appender-ref ref="JSON_CONSOLE"/>
+	</root>
+</configuration>
