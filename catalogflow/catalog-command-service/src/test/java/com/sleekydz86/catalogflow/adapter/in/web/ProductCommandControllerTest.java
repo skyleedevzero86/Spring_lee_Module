@@ -12,6 +12,7 @@ import java.util.UUID;
 import com.sleekydz86.catalogflow.adapter.out.persistence.OutboxEventJpaRepository;
 import com.sleekydz86.catalogflow.global.config.CorrelationIdFilter;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,20 +57,25 @@ class ProductCommandControllerTest {
     }
 
     @Test
+    @DisplayName("유효한 요청으로 상품을 등록하고 Outbox 이벤트를 남긴다")
     void shouldCreateProduct() throws Exception {
+        // given
+        String body = """
+                {
+                  "name": "\uBB34\uC120 \uD0A4\uBCF4\uB4DC",
+                  "description": "\uC800\uC18C\uC74C \uD0A4\uBCF4\uB4DC",
+                  "priceAmount": 59000,
+                  "priceCurrency": "KRW",
+                  "categoryId": "%s",
+                  "supplierId": "%s"
+                }
+                """.formatted(CATEGORY_ID, SUPPLIER_ID);
+
+        // when / then
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(CorrelationIdFilter.CORRELATION_ID_HEADER, "corr-create-001")
-                        .content("""
-                                {
-                                  "name": "\uBB34\uC120 \uD0A4\uBCF4\uB4DC",
-                                  "description": "\uC800\uC18C\uC74C \uD0A4\uBCF4\uB4DC",
-                                  "priceAmount": 59000,
-                                  "priceCurrency": "KRW",
-                                  "categoryId": "%s",
-                                  "supplierId": "%s"
-                                }
-                                """.formatted(CATEGORY_ID, SUPPLIER_ID)))
+                        .content(body))
                 .andExpect(status().isCreated())
                 .andExpect(header().string(CorrelationIdFilter.CORRELATION_ID_HEADER, "corr-create-001"))
                 .andExpect(jsonPath("$.name", is("\uBB34\uC120 \uD0A4\uBCF4\uB4DC")))
@@ -83,25 +89,32 @@ class ProductCommandControllerTest {
     }
 
     @Test
+    @DisplayName("잘못된 상품 등록 요청은 검증 실패로 거절한다")
     void shouldRejectInvalidCreateRequest() throws Exception {
+        // given
+        String body = """
+                {
+                  "name": "",
+                  "description": "\uC124\uBA85",
+                  "priceAmount": -1,
+                  "priceCurrency": "KRW",
+                  "categoryId": "%s",
+                  "supplierId": "%s"
+                }
+                """.formatted(CATEGORY_ID, SUPPLIER_ID);
+
+        // when / then
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "name": "",
-                                  "description": "\uC124\uBA85",
-                                  "priceAmount": -1,
-                                  "priceCurrency": "KRW",
-                                  "categoryId": "%s",
-                                  "supplierId": "%s"
-                                }
-                                """.formatted(CATEGORY_ID, SUPPLIER_ID)))
+                        .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title", is("\uC694\uCCAD \uAC80\uC99D \uC2E4\uD328")));
     }
 
     @Test
+    @DisplayName("상품 가격을 변경하면 버전이 증가한다")
     void shouldChangeProductPrice() throws Exception {
+        // given
         String createResponse = mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -118,9 +131,9 @@ class ProductCommandControllerTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-
         String productId = createResponse.split("\"productId\":\"")[1].split("\"")[0];
 
+        // when / then
         mockMvc.perform(patch("/api/v1/products/{productId}/price", productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

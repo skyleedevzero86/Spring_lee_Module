@@ -7,6 +7,7 @@ plugins {
 dependencies {
 	implementation(project(":catalog-domain"))
 	implementation(project(":event-contract"))
+	implementation(project(":catalog-security"))
 
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -21,8 +22,11 @@ dependencies {
 	implementation("software.amazon.awssdk:s3")
 	implementation("software.amazon.awssdk:url-connection-client")
 
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
+
 	testImplementation(project(":test-support"))
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 	testImplementation("org.testcontainers:testcontainers-postgresql")

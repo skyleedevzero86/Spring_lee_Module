@@ -7,6 +7,7 @@ plugins {
 dependencies {
 	implementation(project(":catalog-domain"))
 	implementation(project(":event-contract"))
+	implementation(project(":catalog-security"))
 
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-batch")
@@ -20,6 +21,7 @@ dependencies {
 
 	testImplementation(project(":test-support"))
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.springframework.batch:spring-batch-test")
 	testImplementation("org.testcontainers:testcontainers-junit-jupiter")

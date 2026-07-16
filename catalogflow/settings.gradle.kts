@@ -14,6 +14,7 @@ rootProject.name = "catalogflow"
 include(
 	"catalog-domain",
 	"event-contract",
+	"catalog-security",
 	"test-support",
 	"catalog-command-service",
 	"catalog-query-service",

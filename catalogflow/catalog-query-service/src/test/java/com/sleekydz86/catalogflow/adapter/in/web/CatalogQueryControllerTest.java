@@ -17,6 +17,7 @@ import com.sleekydz86.catalogflow.application.model.ProductView;
 import com.sleekydz86.catalogflow.application.port.out.ProductViewStore;
 import com.sleekydz86.catalogflow.global.config.CorrelationIdFilter;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +76,9 @@ class CatalogQueryControllerTest {
 	}
 
 	@Test
+	@DisplayName("상품 상세 조회 API는 상품 정보를 반환한다")
 	void shouldGetProductDetail() throws Exception {
+		// given
 		UUID productId = UUID.randomUUID();
 		productViewStore.save(sampleProduct(
 				productId,
@@ -83,6 +86,7 @@ class CatalogQueryControllerTest {
 				"PUBLISHED",
 				Instant.parse("2026-07-16T12:00:00Z")));
 
+		// when / then
 		mockMvc.perform(get("/api/v1/catalog/products/{productId}", productId)
 						.header(CorrelationIdFilter.CORRELATION_ID_HEADER, "corr-query-001"))
 				.andExpect(status().isOk())
@@ -93,16 +97,21 @@ class CatalogQueryControllerTest {
 	}
 
 	@Test
+	@DisplayName("없는 상품 조회는 404를 반환한다")
 	void shouldReturnNotFoundForMissingProduct() throws Exception {
+		// given
 		UUID productId = UUID.randomUUID();
 
+		// when / then
 		mockMvc.perform(get("/api/v1/catalog/products/{productId}", productId))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.title", is("\uC0C1\uD488\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC74C")));
 	}
 
 	@Test
+	@DisplayName("목록·검색·카테고리·인기 상품 조회 API가 동작한다")
 	void shouldListAndSearchProducts() throws Exception {
+		// given
 		UUID firstId = UUID.randomUUID();
 		UUID secondId = UUID.randomUUID();
 		productViewStore.save(sampleProduct(
@@ -116,6 +125,7 @@ class CatalogQueryControllerTest {
 				"PUBLISHED",
 				Instant.parse("2026-07-16T11:00:00Z")));
 
+		// when / then
 		mockMvc.perform(get("/api/v1/catalog/products")
 						.param("status", "PUBLISHED")
 						.param("size", "10"))

@@ -1,0 +1,150 @@
+{
+  "realm": "catalogflow",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "roles": {
+    "realm": [
+      { "name": "CATALOG_VIEWER", "description": "카탈로그 조회" },
+      { "name": "CATALOG_EDITOR", "description": "카탈로그 편집" },
+      { "name": "CATALOG_MANAGER", "description": "카탈로그 공개/중지" },
+      { "name": "SYSTEM_ADMIN", "description": "시스템 관리" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "catalogflow-api",
+      "name": "CatalogFlow API",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "catalogflow-api-secret",
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "email"],
+      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"],
+      "attributes": {
+        "access.token.lifespan": "3600"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-catalogflow-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "catalogflow-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "catalog-scopes",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "catalog_scopes",
+            "claim.name": "scope",
+            "jsonType.label": "String",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "catalog.read",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" },
+      "protocolMappers": [
+        {
+          "name": "catalog-read-scope",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "catalogflow-api",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "catalog.write",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" }
+    },
+    {
+      "name": "catalog.publish",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" }
+    },
+    {
+      "name": "catalog.admin",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" }
+    },
+    {
+      "name": "batch.execute",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" }
+    }
+  ],
+  "users": [
+    {
+      "username": "viewer",
+      "enabled": true,
+      "email": "viewer@catalogflow.local",
+      "firstName": "Catalog",
+      "lastName": "Viewer",
+      "credentials": [
+        { "type": "password", "value": "viewer", "temporary": false }
+      ],
+      "realmRoles": ["CATALOG_VIEWER"]
+    },
+    {
+      "username": "editor",
+      "enabled": true,
+      "email": "editor@catalogflow.local",
+      "firstName": "Catalog",
+      "lastName": "Editor",
+      "credentials": [
+        { "type": "password", "value": "editor", "temporary": false }
+      ],
+      "realmRoles": ["CATALOG_EDITOR"]
+    },
+    {
+      "username": "manager",
+      "enabled": true,
+      "email": "manager@catalogflow.local",
+      "firstName": "Catalog",
+      "lastName": "Manager",
+      "credentials": [
+        { "type": "password", "value": "manager", "temporary": false }
+      ],
+      "realmRoles": ["CATALOG_MANAGER"]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@catalogflow.local",
+      "firstName": "System",
+      "lastName": "Admin",
+      "credentials": [
+        { "type": "password", "value": "admin", "temporary": false }
+      ],
+      "realmRoles": ["SYSTEM_ADMIN"]
+    }
+  ]
+}

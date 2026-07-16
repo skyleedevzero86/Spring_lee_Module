@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
 	implementation(project(":event-contract"))
+	implementation(project(":catalog-security"))
 
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
@@ -17,6 +18,7 @@ dependencies {
 
 	testImplementation(project(":test-support"))
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 	testImplementation("org.testcontainers:testcontainers-mongodb")
