@@ -10,7 +10,6 @@ import com.sleekydz86.loginstudy.auth.config.AuthDataInitializer;
 import com.sleekydz86.loginstudy.auth.config.AuthorizationServerConfig;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +51,9 @@ class ClientCredentialsTokenIntegrationTest extends AuthServerIntegrationTestSup
 				.andReturn();
 
 		// then
-		@SuppressWarnings("unchecked")
-		Map<String, Object> body = objectMapper.readValue(result.getResponse().getContentAsString(), Map.class);
-		String accessToken = String.valueOf(body.get("access_token"));
+		String accessToken = objectMapper.readTree(result.getResponse().getContentAsString())
+				.get("access_token")
+				.asText();
 		String[] parts = accessToken.split("\\.");
 		assertThat(parts).hasSize(3);
 

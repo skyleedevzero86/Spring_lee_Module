@@ -1,6 +1,7 @@
 package com.sleekydz86.loginstudy.member.api;
 
 import com.sleekydz86.loginstudy.member.domain.MemberStatus;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -41,6 +42,7 @@ public final class MemberDtos {
 
 	public record MemberSummaryResponse(
 			Long id,
+			String userSubject,
 			String email,
 			String displayName,
 			MemberStatus status,
@@ -61,6 +63,7 @@ public final class MemberDtos {
 	public record UpdateMemberRequest(
 			@NotNull Long version,
 			@NotBlank @Size(max = 100) String displayName,
+			@Email @Size(max = 255) String email,
 			AddressRequest address,
 			PreferencesRequest preferences) {
 	}

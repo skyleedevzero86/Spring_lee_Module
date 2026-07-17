@@ -169,6 +169,28 @@ input {
     gap: 6px;
 }
 
+.remember-login {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.remember-login input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--primary);
+}
+
+.remember-login small {
+    color: #777;
+    font-size: 12px;
+}
+
 .input-group {
     display: grid;
     grid-template-columns: 112px 1fr;
@@ -389,6 +411,16 @@ input {
 
     .credential-box {
         grid-template-columns: 1fr;
+    }
+
+    .remember-login {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .remember-login small {
+        width: 100%;
+        padding-left: 26px;
     }
 
     .input-group {

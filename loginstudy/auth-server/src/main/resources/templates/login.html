@@ -70,6 +70,15 @@
                     </button>
                 </div>
 
+                <label class="remember-login">
+                    <input type="checkbox"
+                           name="rememberLogin"
+                           value="true"
+                           th:checked="${rememberLogin}"/>
+                    <span>로그인 상태 유지</span>
+                    <small>다음 접속부터 기존 인증 세션으로 자동 로그인합니다.</small>
+                </label>
+
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             </form>
             <p class="demo-hint">데모 계정: user / admin · 공통 비밀번호: ChangeMe123!</p>

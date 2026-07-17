@@ -20,6 +20,32 @@
         </form>
     </header>
 
+    <section class="profile-section" th:if="${authProfile != null}">
+        <div>
+            <p class="eyebrow">MY PROFILE</p>
+            <h2>내 정보 변경</h2>
+            <p class="subtitle">이름·이메일·전화번호를 변경할 수 있습니다.</p>
+        </div>
+        <form class="profile-form" th:action="@{/profile}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="profile-form-row">
+                <label for="displayName">이름</label>
+                <input id="displayName" name="displayName" type="text" maxlength="100"
+                       required th:value="${authProfile.displayName}"/>
+                <label for="profileEmail">이메일</label>
+                <input id="profileEmail" name="email" type="email" maxlength="255"
+                       required th:value="${authProfile.email}"/>
+                <label for="profilePhone">전화번호</label>
+                <input id="profilePhone" name="phone" type="tel" maxlength="30"
+                       required th:value="${authProfile.phone}"/>
+                <button type="submit">변경사항 저장</button>
+            </div>
+        </form>
+        <p class="ok" th:if="${param.updated}">내 정보가 변경되었습니다.</p>
+        <p class="bad" th:if="${param.updateFailed}">내 정보를 변경하지 못했습니다. 다시 시도해 주세요.</p>
+        <p class="bad" th:if="${param.syncFailed}">인증 정보는 변경되었지만 회원 목록 동기화에 실패했습니다.</p>
+    </section>
+
     <section class="grid">
         <article>
             <h2>Access Token</h2>

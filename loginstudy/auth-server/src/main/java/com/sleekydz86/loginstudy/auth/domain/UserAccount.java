@@ -3,6 +3,8 @@ package com.sleekydz86.loginstudy.auth.domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -35,6 +37,10 @@ public class UserAccount {
 
 	@Column(name = "account_non_locked", nullable = false)
 	private boolean accountNonLocked = true;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "account_status", nullable = false, length = 20)
+	private AccountStatus status = AccountStatus.ACTIVE;
 
 	@Column(name = "tenant_id", nullable = false, length = 64)
 	private String tenantId;
@@ -95,6 +101,29 @@ public class UserAccount {
 		this.password = encodedPassword;
 	}
 
+	public void changeStatus(AccountStatus newStatus) {
+		if (this.status == AccountStatus.DELETED && newStatus != AccountStatus.DELETED) {
+			throw new IllegalArgumentException("삭제된 계정은 복구할 수 없습니다");
+		}
+		this.status = newStatus;
+		this.enabled = newStatus == AccountStatus.ACTIVE || newStatus == AccountStatus.SUSPENDED;
+		this.accountNonLocked = newStatus != AccountStatus.SUSPENDED;
+	}
+
+	public void replaceRole(String role) {
+		if (!"USER".equals(role) && !"ADMIN".equals(role)) {
+			throw new IllegalArgumentException("지원하지 않는 권한입니다: " + role);
+		}
+		this.roles.clear();
+		addRole(role);
+	}
+
+	public void changeProfile(String displayName, String email, String phone) {
+		this.displayName = displayName;
+		this.email = email;
+		this.phone = phone;
+	}
+
 	public Long getId() {
 		return id;
 	}
@@ -117,6 +146,10 @@ public class UserAccount {
 
 	public boolean isAccountNonLocked() {
 		return accountNonLocked;
+	}
+
+	public AccountStatus getStatus() {
+		return status;
 	}
 
 	public String getTenantId() {

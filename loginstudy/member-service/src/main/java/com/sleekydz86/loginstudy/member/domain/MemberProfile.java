@@ -83,7 +83,15 @@ public class MemberProfile {
 		this.updatedAt = Instant.now();
 	}
 
+	public void changeEmail(String email) {
+		this.email = email;
+		this.updatedAt = Instant.now();
+	}
+
 	public void changeStatus(MemberStatus newStatus, String changedBy, String reason) {
+		if (this.status == MemberStatus.DELETED && newStatus != MemberStatus.DELETED) {
+			throw new IllegalArgumentException("삭제된 회원은 복구할 수 없습니다");
+		}
 		MemberStatus previous = this.status;
 		this.status = newStatus;
 		this.updatedAt = Instant.now();

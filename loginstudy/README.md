@@ -22,3 +22,7 @@
 | user-portal    | 내부 전용 (`8081`)    |
 | admin-portal   | 내부 전용 (`8082`)    |
 | member-service | 내부 전용 (`8083`)    |
+<br/>
+
+재실행 >> docker compose -f docker/docker-compose.yml -f docker/docker-compose.apps.yml --profile apps restart
+

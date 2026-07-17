@@ -23,6 +23,35 @@
         </form>
     </header>
 
+    <section class="content-section profile-section" th:if="${ownProfile != null}">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">MY PROFILE</p>
+                <h2>내 정보 변경</h2>
+                <p class="section-description">인증 서버의 이름·이메일·전화번호를 변경합니다.</p>
+            </div>
+        </div>
+        <form class="profile-form" th:action="@{/admin/profile}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <label>이름
+                <input type="text" name="displayName" maxlength="100" required
+                       th:value="${ownProfile.displayName}"/>
+            </label>
+            <label>이메일
+                <input type="email" name="email" maxlength="255" required
+                       th:value="${ownProfile.email}"/>
+            </label>
+            <label>전화번호
+                <input type="tel" name="phone" maxlength="30" required
+                       th:value="${ownProfile.phone}"/>
+            </label>
+            <button type="submit">내 정보 저장</button>
+        </form>
+        <p class="ok" th:if="${param.profileUpdated}">내 정보가 변경되었습니다.</p>
+        <p class="bad" th:if="${param.profileFailed}">입력 내용을 확인해 주세요.</p>
+        <p class="bad" th:if="${param.syncFailed}">인증 정보는 변경되었지만 회원 목록 동기화에 실패했습니다.</p>
+    </section>
+
     <section class="content-section member-section">
         <div class="section-heading">
             <div>
@@ -41,15 +70,18 @@
                 <thead>
                 <tr>
                     <th scope="col">번호</th>
+                        <th scope="col">사용자명</th>
                     <th scope="col">이름</th>
                     <th scope="col">이메일</th>
                     <th scope="col">상태</th>
+                        <th scope="col">권한</th>
                     <th scope="col">가입일</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="member : ${members.content}">
                     <td th:text="${member.id}">1</td>
+                        <td th:text="${member.userSubject}">user</td>
                     <td>
                         <button type="button"
                                 class="sensitive-value"
@@ -66,7 +98,45 @@
                                 th:data-url="@{|/admin/members/${member.id}/sensitive/EMAIL/reveal|}"
                                 aria-label="마스킹된 이메일 보기">u***@example.com</button>
                     </td>
-                    <td><span class="status-badge" th:text="${member.status}">ACTIVE</span></td>
+                        <td>
+                            <span class="status-badge"
+                                  th:text="${member.accountStatus == 'ACTIVE' ? '활성' :
+                                      (member.accountStatus == 'SUSPENDED' ? '정지' :
+                                      (member.accountStatus == 'WITHDRAWN' ? '탈퇴' :
+                                      (member.accountStatus == 'DELETED' ? '삭제' : '확인 필요')))}">활성</span>
+                            <form class="inline-control"
+                                  th:if="${member.accountStatus != 'DELETED'}"
+                                  th:action="@{|/admin/members/${member.id}/status|}"
+                                  method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <input type="hidden" name="username" th:value="${member.userSubject}"/>
+                                <select name="status" th:disabled="${member.userSubject == subject}">
+                                    <option value="ACTIVE" th:selected="${member.accountStatus == 'ACTIVE'}">활성</option>
+                                    <option value="SUSPENDED" th:selected="${member.accountStatus == 'SUSPENDED'}">정지</option>
+                                    <option value="WITHDRAWN" th:selected="${member.accountStatus == 'WITHDRAWN'}">탈퇴</option>
+                                    <option value="DELETED">삭제</option>
+                                </select>
+                                <button type="submit" th:disabled="${member.userSubject == subject}">상태 변경</button>
+                            </form>
+                        </td>
+                        <td>
+                            <span class="status-badge" th:text="${member.role == 'ADMIN' ? '관리자' : '사용자'}">사용자</span>
+                            <form class="inline-control"
+                                  th:action="@{|/admin/members/${member.id}/role|}"
+                                  method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <input type="hidden" name="username" th:value="${member.userSubject}"/>
+                                <select name="role"
+                                        th:disabled="${member.accountStatus == 'DELETED' or member.userSubject == subject}">
+                                    <option value="USER" th:selected="${member.role == 'USER'}">사용자</option>
+                                    <option value="ADMIN" th:selected="${member.role == 'ADMIN'}">관리자</option>
+                                </select>
+                                <button type="submit"
+                                        th:disabled="${member.accountStatus == 'DELETED' or member.userSubject == subject}">
+                                    권한 변경
+                                </button>
+                            </form>
+                        </td>
                     <td th:text="${member.joinedAt}">2026-07-17</td>
                 </tr>
                 </tbody>
@@ -74,6 +144,8 @@
         </div>
         <p class="empty-state" th:if="${memberApiSuccess and members.content.isEmpty()}">표시할 사용자가 없습니다.</p>
         <p class="empty-state error" th:unless="${memberApiSuccess}">사용자 목록을 불러오지 못했습니다.</p>
+                <p class="ok" th:if="${param.accountUpdated}">계정 설정이 변경되었습니다.</p>
+                <p class="bad" th:if="${param.accountFailed}">계정 설정을 변경하지 못했습니다.</p>
         <p id="reveal-message" class="reveal-message" role="status" aria-live="polite"></p>
     </section>
 
@@ -93,8 +165,16 @@
         const message = document.getElementById('reveal-message');
 
         document.querySelectorAll('.sensitive-value').forEach((button) => {
+            let hideTimer;
             button.addEventListener('click', async () => {
                 if (button.disabled) return;
+                if (button.dataset.revealed === 'true') {
+                    window.clearTimeout(hideTimer);
+                    button.textContent = button.dataset.masked;
+                    button.dataset.revealed = 'false';
+                    message.textContent = '선택한 항목을 다시 가렸습니다.';
+                    return;
+                }
                 button.disabled = true;
                 message.textContent = '';
                 try {
@@ -107,10 +187,12 @@
                     if (!response.ok) throw new Error('reveal failed');
                     const result = await response.json();
                     button.textContent = result.value;
-                    message.textContent = '선택한 항목을 복원했습니다. 30초 후 다시 가려집니다.';
-                    window.setTimeout(() => {
+                    button.dataset.revealed = 'true';
+                    button.disabled = false;
+                    message.textContent = '선택한 항목을 복원했습니다. 다시 클릭하면 즉시 가려집니다.';
+                    hideTimer = window.setTimeout(() => {
                         button.textContent = button.dataset.masked;
-                        button.disabled = false;
+                        button.dataset.revealed = 'false';
                     }, 30000);
                 } catch (error) {
                     button.disabled = false;

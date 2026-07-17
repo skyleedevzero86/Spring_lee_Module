@@ -15,13 +15,19 @@
     <p class="bad" th:if="${param.loginFailed}">로그인에 실패했습니다. 아래 버튼으로 처음부터 다시 시도하세요. (콜백 URL을 새로고침하지 마세요)</p>
 
     <a class="button"
-       th:href="@{/oauth2/authorization/admin-portal}"
+       th:href="${rememberLogin}
+           ? @{/oauth2/authorization/admin-portal(remember=true)}
+           : @{/oauth2/authorization/admin-portal}"
        th:text="${param.loginFailed} ? '다시 로그인' : '관리자 로그인 페이지로 이동'">
         관리자 로그인 페이지로 이동
     </a>
 
     <script th:unless="${param.loginFailed}" th:inline="javascript">
-        window.location.replace(/*[[@{/oauth2/authorization/admin-portal}]]*/ "/oauth2/authorization/admin-portal");
+        const rememberLogin = /*[[${rememberLogin}]]*/ false;
+        const loginUrl = rememberLogin
+            ? /*[[@{/oauth2/authorization/admin-portal(remember=true)}]]*/ "/oauth2/authorization/admin-portal?remember=true"
+            : /*[[@{/oauth2/authorization/admin-portal}]]*/ "/oauth2/authorization/admin-portal";
+        window.location.replace(loginUrl);
     </script>
 </main>
 </body>

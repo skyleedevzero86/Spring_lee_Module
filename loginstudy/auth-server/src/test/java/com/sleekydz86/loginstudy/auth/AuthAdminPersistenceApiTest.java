@@ -1,7 +1,10 @@
 package com.sleekydz86.loginstudy.auth;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @Import(TestcontainersConfiguration.class)
@@ -64,5 +68,71 @@ class AuthAdminPersistenceApiTest extends AuthServerIntegrationTestSupport {
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.title").value("리소스를 찾을 수 없음"))
 				.andExpect(jsonPath("$.detail").value("사용자를 찾을 수 없습니다: missing-user"));
+	}
+
+	@Test
+	@DisplayName("관리자는 다른 사용자를 정지하고 다시 활성화할 수 있다")
+	void adminCanSuspendAndReactivateAnotherUser() throws Exception {
+		// given
+		String suspended = "{\"status\":\"SUSPENDED\"}";
+		String active = "{\"status\":\"ACTIVE\"}";
+
+		// when / then
+		mockMvc.perform(post("/api/admin/users/user/status")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(suspended)
+						.with(user("admin").roles("ADMIN"))
+						.with(csrf()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("SUSPENDED"))
+				.andExpect(jsonPath("$.accountNonLocked").value(false));
+
+		mockMvc.perform(post("/api/admin/users/user/status")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(active)
+						.with(user("admin").roles("ADMIN"))
+						.with(csrf()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("ACTIVE"));
+	}
+
+	@Test
+	@DisplayName("관리자는 자신의 관리자 권한을 제거할 수 없다")
+	void adminCannotRemoveOwnRole() throws Exception {
+		// when / then
+		mockMvc.perform(post("/api/admin/users/admin/role")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"role\":\"USER\"}")
+						.with(user("admin").roles("ADMIN"))
+						.with(csrf()))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("로그인 사용자는 자신의 이름 이메일 전화번호를 변경할 수 있다")
+	void authenticatedUserCanUpdateOwnProfile() throws Exception {
+		// when / then
+		mockMvc.perform(patch("/api/account/me")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"displayName":"새 이름","email":"new-user@example.com",
+								"phone":"010-9876-5432"}
+								""")
+						.with(user("user").roles("USER"))
+						.with(csrf()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.displayName").value("새 이름"))
+				.andExpect(jsonPath("$.email").value("new-user@example.com"))
+				.andExpect(jsonPath("$.phone").value("010-9876-5432"));
+
+		mockMvc.perform(patch("/api/account/me")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"displayName":"Demo User","email":"user@loginstudy.local",
+								"phone":"010-1111-2222"}
+								""")
+						.with(user("user").roles("USER"))
+						.with(csrf()))
+				.andExpect(status().isOk());
 	}
 }

@@ -73,6 +73,9 @@ public class MemberService {
 		}
 
 		profile.changeDisplayName(request.displayName());
+		if (request.email() != null && !request.email().isBlank()) {
+			profile.changeEmail(request.email().trim().toLowerCase(Locale.ROOT));
+		}
 		applyAddress(profile, request.address());
 		applyPreferences(profile, request.preferences());
 
@@ -237,6 +240,7 @@ public class MemberService {
 	private MemberSummaryResponse toSummary(MemberProfile profile) {
 		return new MemberSummaryResponse(
 				profile.getId(),
+				profile.getUserSubject(),
 				maskEmail(profile.getEmail()),
 				maskName(profile.getDisplayName()),
 				profile.getStatus(),

@@ -69,6 +69,52 @@ button.secondary, .secondary {
     align-items: start;
 }
 
+.profile-section {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.8fr) minmax(320px, 1.2fr);
+    gap: 2rem;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--primary);
+    background: var(--soft);
+}
+
+.profile-section h2 {
+    margin: 0.4rem 0;
+}
+
+.profile-form {
+    align-self: center;
+}
+
+.profile-form label {
+    display: block;
+    align-self: center;
+    font-weight: 700;
+}
+
+.profile-form-row {
+    display: grid;
+    grid-template-columns: auto minmax(150px, 1fr);
+    gap: 0.6rem;
+}
+
+.profile-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.75rem;
+    border: 1px solid #cdd8df;
+    background: #fff;
+    font: inherit;
+}
+
+.profile-form button {
+    margin-top: 0;
+    white-space: nowrap;
+    grid-column: 2;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -105,5 +151,18 @@ code { color: #8b4e00; }
 
     .top {
         flex-direction: column;
+    }
+
+    .profile-section {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .profile-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-form button {
+        grid-column: 1;
     }
 }

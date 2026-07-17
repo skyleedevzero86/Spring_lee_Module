@@ -3,7 +3,9 @@ package com.sleekydz86.loginstudy.auth.service;
 import com.sleekydz86.loginstudy.auth.api.AuthDtos.LoginHistoryResponse;
 import com.sleekydz86.loginstudy.auth.api.AuthDtos.PersistenceHealthResponse;
 import com.sleekydz86.loginstudy.auth.api.AuthDtos.RegisteredClientSummaryResponse;
+import com.sleekydz86.loginstudy.auth.api.AuthDtos.UpdateOwnProfileRequest;
 import com.sleekydz86.loginstudy.auth.api.AuthDtos.UserAccountResponse;
+import com.sleekydz86.loginstudy.auth.domain.AccountStatus;
 import com.sleekydz86.loginstudy.auth.domain.LoginHistory;
 import com.sleekydz86.loginstudy.auth.domain.UserAccount;
 import com.sleekydz86.loginstudy.auth.domain.UserRole;
@@ -11,9 +13,11 @@ import com.sleekydz86.loginstudy.auth.repository.LoginHistoryRepository;
 import com.sleekydz86.loginstudy.auth.repository.UserAccountRepository;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -51,6 +55,56 @@ public class AuthPersistenceQueryService {
 		UserAccount account = userAccountRepository.findByUsername(username)
 				.orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + username));
 		return toUserResponse(account);
+	}
+
+	@Transactional(readOnly = true)
+	public List<UserAccountResponse> findAllUsers() {
+		return userAccountRepository.findAll().stream()
+				.map(this::toUserResponse)
+				.toList();
+	}
+
+	@Transactional
+	public UserAccountResponse changeRole(String username, String role, String actorUsername) {
+		UserAccount account = findAccount(username);
+		String normalizedRole = role.trim().toUpperCase(Locale.ROOT);
+		if (username.equals(actorUsername) && !"ADMIN".equals(normalizedRole)) {
+			throw new AccessDeniedException("자신의 관리자 권한은 제거할 수 없습니다");
+		}
+		account.replaceRole(normalizedRole);
+		return toUserResponse(userAccountRepository.saveAndFlush(account));
+	}
+
+	@Transactional
+	public UserAccountResponse changeStatus(
+			String username,
+			AccountStatus status,
+			String actorUsername) {
+		UserAccount account = findAccount(username);
+		if (username.equals(actorUsername) && status != AccountStatus.ACTIVE) {
+			throw new AccessDeniedException("자신의 계정 상태는 제한할 수 없습니다");
+		}
+		account.changeStatus(status);
+		return toUserResponse(userAccountRepository.saveAndFlush(account));
+	}
+
+	@Transactional(readOnly = true)
+	public UserAccountResponse getOwnProfile(String username) {
+		return toUserResponse(findAccount(username));
+	}
+
+	@Transactional
+	public UserAccountResponse updateOwnProfile(String username, UpdateOwnProfileRequest request) {
+		UserAccount account = findAccount(username);
+		String email = request.email().trim().toLowerCase(Locale.ROOT);
+		if (userAccountRepository.existsByEmailIgnoreCaseAndIdNot(email, account.getId())) {
+			throw new IllegalArgumentException("이미 사용 중인 이메일입니다");
+		}
+		account.changeProfile(
+				request.displayName().trim(),
+				email,
+				request.phone().trim());
+		return toUserResponse(userAccountRepository.saveAndFlush(account));
 	}
 
 	@Transactional(readOnly = true)
@@ -120,11 +174,19 @@ public class AuthPersistenceQueryService {
 				account.getId(),
 				account.getUsername(),
 				account.getEmail(),
+				account.getDisplayName(),
+				account.getPhone(),
 				account.getTenantId(),
 				account.isEnabled(),
 				account.isAccountNonLocked(),
+				account.getStatus(),
 				roles,
 				account.getCreatedAt());
+	}
+
+	private UserAccount findAccount(String username) {
+		return userAccountRepository.findByUsername(username)
+				.orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + username));
 	}
 
 	private LoginHistoryResponse toLoginHistoryResponse(LoginHistory history) {

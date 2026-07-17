@@ -2,6 +2,7 @@ package com.sleekydz86.loginstudy.adminportal.web;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 public final class AdminMemberView {
 
@@ -26,9 +27,41 @@ public final class AdminMemberView {
 
 	public record Member(
 			Long id,
+			String userSubject,
 			String email,
 			String displayName,
 			String status,
-			Instant joinedAt) {
+			Instant joinedAt,
+			String role,
+			String accountStatus) {
+
+		public Member withAccount(AuthUser account) {
+			String primaryRole = account.roles() != null && account.roles().contains("ADMIN")
+					? "ADMIN"
+					: "USER";
+			return new Member(
+					id,
+					userSubject,
+					email,
+					displayName,
+					status,
+					joinedAt,
+					primaryRole,
+					account.status());
+		}
+	}
+
+	public record AuthUser(
+			Long id,
+			String username,
+			String email,
+			String displayName,
+			String phone,
+			String tenantId,
+			boolean enabled,
+			boolean accountNonLocked,
+			String status,
+			Set<String> roles,
+			Instant createdAt) {
 	}
 }

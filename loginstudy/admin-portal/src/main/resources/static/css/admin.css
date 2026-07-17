@@ -171,6 +171,53 @@ table.contable th {
     font-size: 0.88rem;
 }
 
+.profile-form {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.profile-form label {
+    display: grid;
+    gap: 0.4rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.profile-form input,
+.inline-control select {
+    min-height: 2.5rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    padding: 0 0.65rem;
+    background: #fff;
+}
+
+.inline-control {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    min-width: 210px;
+}
+
+.inline-control select {
+    min-height: 2.15rem;
+    min-width: 82px;
+}
+
+.inline-control button {
+    min-height: 2.15rem;
+    padding: 0 0.65rem;
+    font-size: 0.75rem;
+}
+
+button:disabled,
+select:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -205,6 +252,10 @@ code { color: #8b4e00; }
     .top,
     .section-heading {
         flex-direction: column;
+    }
+
+    .profile-form {
+        grid-template-columns: 1fr;
     }
 
     table.contable th,
