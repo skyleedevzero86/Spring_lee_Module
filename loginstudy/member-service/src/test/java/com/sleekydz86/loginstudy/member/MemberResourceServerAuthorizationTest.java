@@ -12,6 +12,7 @@ import com.sleekydz86.loginstudy.member.domain.MemberStatus;
 import com.sleekydz86.loginstudy.member.repository.MemberProfileRepository;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,6 +39,7 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 	private ObjectMapper objectMapper;
 
 	@Test
+	@DisplayName("회원 조회 범위가 있는 사용자는 자신의 프로필을 조회할 수 있다")
 	void userCanReadOwnProfileWithMemberReadScope() throws Exception {
 		// given
 		var jwt = userJwt("user", List.of("USER"), "openid member.read");
@@ -52,6 +54,7 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("토큰이 없는 요청은 인증되지 않는다")
 	void requestWithoutTokenIsUnauthorized() throws Exception {
 		// given / when
 		var result = mockMvc.perform(get("/api/members/me"));
@@ -61,6 +64,7 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("회원 조회 범위가 없는 사용자는 접근이 금지된다")
 	void userWithoutMemberReadScopeIsForbidden() throws Exception {
 		// given
 		var jwt = userJwt("user", List.of("USER"), "openid");
@@ -73,6 +77,7 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("사용자는 다른 회원의 프로필을 조회할 수 없다")
 	void userCannotReadAnotherMemberProfile() throws Exception {
 		// given
 		Long adminId = memberProfileRepository.findOneByUserSubject("admin").orElseThrow().getId();
@@ -87,6 +92,7 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("일반 사용자는 회원 범위가 있어도 관리자 API에 접근할 수 없다")
 	void regularUserCannotAccessAdminApiEvenWithMemberScopes() throws Exception {
 		// given
 		var jwt = userJwt("user", List.of("USER"), "member.read member.write");
@@ -99,14 +105,18 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("관리자 범위가 없는 관리자는 관리자 API에 접근할 수 없다")
 	void adminWithoutAdminScopeCannotAccessAdminApi() throws Exception {
+		// given / when / then
 		mockMvc.perform(get("/api/admin/members")
 						.with(userJwt("admin", List.of("ADMIN"), "member.read")))
 				.andExpect(status().isForbidden());
 	}
 
 	@Test
+	@DisplayName("관리자 역할과 범위가 있으면 회원을 검색할 수 있다")
 	void adminWithRoleAndScopeCanSearchMembers() throws Exception {
+		// given / when / then
 		mockMvc.perform(get("/api/admin/members")
 						.param("status", "ACTIVE")
 						.with(userJwt("admin", List.of("USER", "ADMIN"), "openid member.read admin")))
@@ -116,7 +126,9 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("낙관적 잠금 충돌 시 409를 반환한다")
 	void optimisticLockConflictReturns409() throws Exception {
+		// given
 		var profile = memberProfileRepository.findOneByUserSubject("user").orElseThrow();
 		Map<String, Object> body = Map.of(
 				"version", profile.getVersion() + 99,
@@ -131,6 +143,7 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 						"locale", "ko-KR",
 						"timezone", "Asia/Seoul"));
 
+		// when / then
 		mockMvc.perform(patch("/api/members/{id}", profile.getId())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(body))
@@ -140,9 +153,12 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("관리자는 회원 상태를 변경할 수 있다")
 	void adminCanChangeMemberStatus() throws Exception {
+		// given
 		Long userId = memberProfileRepository.findOneByUserSubject("user").orElseThrow().getId();
 
+		// when
 		mockMvc.perform(post("/api/admin/members/{id}/status", userId)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
@@ -152,6 +168,7 @@ class MemberResourceServerAuthorizationTest extends MemberRedisTestSupport {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value(MemberStatus.SUSPENDED.name()));
 
+		// then
 		assertThat(memberProfileRepository.findOneById(userId).orElseThrow().getStatus())
 				.isEqualTo(MemberStatus.SUSPENDED);
 

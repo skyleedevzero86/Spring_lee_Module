@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>LoginStudy 아이디 찾기</title>
+    <link rel="stylesheet" th:href="@{/css/account-recovery.css}"/>
+</head>
+<body>
+<div class="recovery-shell">
+    <header class="page-header">
+        <h1>아이디/비밀번호찾기</h1>
+        <nav class="breadcrumb" aria-label="현재 위치">
+            <span class="home-icon" aria-hidden="true"></span>
+            <span>통합인증</span><span aria-hidden="true">›</span><strong>아이디/비밀번호찾기</strong>
+        </nav>
+    </header>
+
+    <main class="recovery-content">
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true">LS</span>
+            <strong>LoginStudy Identity</strong>
+        </div>
+
+        <nav class="recovery-tabs" aria-label="계정 찾기 메뉴">
+            <a class="active" th:href="@{/account-recovery/id}" aria-current="page">아이디 찾기</a>
+            <a th:href="@{/account-recovery/password}">비밀번호 찾기</a>
+        </nav>
+
+        <section class="method-card">
+            <p class="method-label">방법1.</p>
+            <h2>아이디를 분실하셨나요?</h2>
+            <p>아래 입력란에 회원성명과 휴대전화번호를 입력해 주세요.</p>
+
+            <form class="recovery-form"
+                  th:action="@{/account-recovery/id}"
+                  th:object="${idLookupForm}"
+                  method="post"
+                  novalidate>
+                <div class="form-row">
+                    <label for="displayName">회원성명</label>
+                    <div>
+                        <input id="displayName"
+                               type="text"
+                               th:field="*{displayName}"
+                               autocomplete="name"/>
+                        <p class="field-error" th:errors="*{displayName}"></p>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label for="phone">휴대전화</label>
+                    <div>
+                        <input id="phone"
+                               type="tel"
+                               th:field="*{phone}"
+                               autocomplete="tel"
+                               placeholder="입력 예) 010-1234-1234"/>
+                        <p class="field-error" th:errors="*{phone}"></p>
+                    </div>
+                </div>
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="find-button" type="submit">찾기</button>
+            </form>
+
+            <div class="result-box" th:if="${searched}" aria-live="polite">
+                <th:block th:if="${!#lists.isEmpty(usernames)}">
+                    <h3>회원님의 아이디입니다.</h3>
+                    <ul>
+                        <li th:each="username : ${usernames}" th:text="${username}">username</li>
+                    </ul>
+                    <a th:href="@{/login}">로그인하기</a>
+                </th:block>
+                <p th:if="${#lists.isEmpty(usernames)}">입력한 정보와 일치하는 아이디를 찾을 수 없습니다.</p>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

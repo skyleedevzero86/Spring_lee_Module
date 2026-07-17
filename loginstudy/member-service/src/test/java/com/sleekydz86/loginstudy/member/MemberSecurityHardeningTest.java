@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.sleekydz86.loginstudy.member.repository.MemberProfileRepository;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,6 +40,7 @@ class MemberSecurityHardeningTest extends MemberRedisTestSupport {
 	private ObjectMapper objectMapper;
 
 	@Test
+	@DisplayName("이름 필터의 SQL 삽입 페이로드는 검색을 우회하지 못한다")
 	void sqlInjectionPayloadInNameFilterDoesNotBypassSearch() throws Exception {
 		// given
 		String sqlInjectionPayload = "x' OR '1'='1";
@@ -54,6 +56,7 @@ class MemberSecurityHardeningTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("CORS는 신뢰할 수 있는 포털 출처를 허용한다")
 	void corsAllowsTrustedPortalOrigin() throws Exception {
 		// given
 		String trustedOrigin = "http://localhost:8081";
@@ -71,6 +74,7 @@ class MemberSecurityHardeningTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("CORS는 신뢰할 수 없는 출처를 거부한다")
 	void corsRejectsUntrustedOrigin() throws Exception {
 		// given
 		String evilOrigin = "https://evil.example";
@@ -86,6 +90,7 @@ class MemberSecurityHardeningTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("Actuator 환경 엔드포인트는 노출되지 않는다")
 	void actuatorEnvIsNotExposed() throws Exception {
 		// given
 		String envEndpoint = "/actuator/env";
@@ -98,6 +103,7 @@ class MemberSecurityHardeningTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("Actuator 상태는 구성 요소 세부 정보를 노출하지 않는다")
 	void actuatorHealthDoesNotRevealComponentDetails() throws Exception {
 		// given
 		String healthEndpoint = "/actuator/health";
@@ -116,6 +122,7 @@ class MemberSecurityHardeningTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("사용자는 다른 회원의 프로필을 수정할 수 없다")
 	void userCannotPatchAnotherMemberProfile() throws Exception {
 		// given
 		Long adminId = memberProfileRepository.findOneByUserSubject("admin").orElseThrow().getId();
@@ -144,6 +151,7 @@ class MemberSecurityHardeningTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("관리자 범위가 없는 역할 클레임은 관리자 API 권한으로 상승할 수 없다")
 	void roleClaimWithoutAdminScopeCannotEscalateToAdminApi() throws Exception {
 		// given
 		RequestPostProcessor spoofedAdminRole = userJwt("user", List.of("ADMIN"), "member.read");

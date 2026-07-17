@@ -1,7 +1,9 @@
 package com.sleekydz86.loginstudy.member.domain;
 
+import com.sleekydz86.loginstudy.member.security.EncryptedStringConverter;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,10 +30,12 @@ public class MemberProfile {
 	@Column(name = "user_subject", nullable = false, unique = true, length = 100)
 	private String userSubject;
 
-	@Column(nullable = false, unique = true, length = 255)
+	@Convert(converter = EncryptedStringConverter.class)
+	@Column(nullable = false, unique = true, columnDefinition = "TEXT")
 	private String email;
 
-	@Column(name = "display_name", nullable = false, length = 100)
+	@Convert(converter = EncryptedStringConverter.class)
+	@Column(name = "display_name", nullable = false, columnDefinition = "TEXT")
 	private String displayName;
 
 	@Enumerated(EnumType.STRING)

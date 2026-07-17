@@ -1,11 +1,12 @@
 :root {
-    --bg: #17120f;
-    --panel: #2a211c;
-    --text: #f3ebe4;
-    --muted: #c2b2a5;
-    --accent: #d08b4c;
-    --bad: #d45d5d;
-    --ok: #7fb77e;
+    --primary: #12a3cc;
+    --primary-dark: #087fa7;
+    --line: #ececec;
+    --soft: #f7f8fb;
+    --text: #222;
+    --muted: #666;
+    --bad: #c73737;
+    --ok: #168653;
 }
 
 * { box-sizing: border-box; }
@@ -15,47 +16,47 @@ body {
     min-height: 100vh;
     font-family: "Segoe UI", "Malgun Gothic", sans-serif;
     color: var(--text);
-    background:
-        radial-gradient(circle at top left, #4a3324, transparent 40%),
-        var(--bg);
+    background: #f2f5f8;
 }
 
 .panel, .wide {
-    width: min(960px, 92vw);
+    width: min(1180px, 94vw);
     margin: 3rem auto;
     padding: 2rem;
-    background: color-mix(in srgb, var(--panel) 92%, black);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 40px rgba(30, 55, 70, 0.08);
 }
 
 .eyebrow {
     margin: 0;
-    color: var(--accent);
+    color: var(--primary-dark);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-size: 0.8rem;
+    font-weight: 700;
 }
 
 h1 { margin: 0.4rem 0; }
 .subtitle { color: var(--muted); }
 
-.button, button {
+.button, .top button {
     display: inline-block;
     margin-top: 1rem;
     margin-right: 0.5rem;
     padding: 0.75rem 1.1rem;
     border: 0;
-    background: var(--accent);
-    color: #24150c;
+    background: var(--primary);
+    color: #fff;
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
 }
 
 button.secondary, .secondary {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.25);
-    color: var(--text);
+    background: #fff;
+    border: 1px solid #cdd8df;
+    color: #333;
 }
 
 .notes { margin-top: 1.5rem; color: var(--muted); }
@@ -67,6 +68,109 @@ button.secondary, .secondary {
     align-items: start;
 }
 
+.content-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    background: #fff;
+}
+
+.section-heading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.section-heading h2 {
+    margin: 0.35rem 0;
+}
+
+.section-description,
+.api-status,
+.reveal-message {
+    margin: 0;
+    color: var(--muted);
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table.contable {
+    width: 100%;
+    border-collapse: collapse;
+    border-top: 2px solid var(--primary);
+    font-size: 0.92rem;
+}
+
+table.contable th,
+table.contable td {
+    padding: 0.85rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    text-align: center;
+    vertical-align: middle;
+}
+
+table.contable th {
+    background: var(--soft);
+    font-weight: 700;
+}
+
+.sensitive-value {
+    appearance: none;
+    border: 0;
+    border-bottom: 1px dashed var(--primary-dark);
+    padding: 0.2rem 0.1rem;
+    color: var(--primary-dark);
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sensitive-value:hover,
+.sensitive-value:focus-visible {
+    color: #055d7b;
+    background: #eefaff;
+    outline: 2px solid transparent;
+}
+
+.sensitive-value:disabled {
+    color: #222;
+    border-bottom-color: transparent;
+    cursor: default;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    color: #126542;
+    background: #e8f8f0;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.empty-state {
+    margin: 0;
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    background: var(--soft);
+}
+
+.empty-state.error {
+    color: var(--bad);
+}
+
+.reveal-message {
+    min-height: 1.25rem;
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -76,8 +180,8 @@ button.secondary, .secondary {
 
 article {
     padding: 1rem;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(0,0,0,0.15);
+    border: 1px solid var(--line);
+    background: var(--soft);
 }
 
 pre {
@@ -88,4 +192,23 @@ pre {
 
 .ok { color: var(--ok); }
 .bad { color: var(--bad); }
-code { color: #ffd7a8; }
+code { color: #8b4e00; }
+
+@media (max-width: 700px) {
+    .panel, .wide {
+        width: 100%;
+        margin: 0;
+        padding: 1rem;
+        border: 0;
+    }
+
+    .top,
+    .section-heading {
+        flex-direction: column;
+    }
+
+    table.contable th,
+    table.contable td {
+        min-width: 110px;
+    }
+}

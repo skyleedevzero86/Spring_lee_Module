@@ -11,11 +11,14 @@
 .\gradlew.bat :admin-portal:bootRun
 ```
 
-| Service        | Port      |
-| -------------- | --------- |
-| auth-server    | 9000      |
-| user-portal    | 8081      |
-| admin-portal   | 8082      |
-| member-service | 8083      |
-| PostgreSQL     | 5432      |
-| Redis Cluster  | 7001-7006 |
+사용자는 `http://localhost:8080`으로만 접속합니다.
+
+<br/>
+
+| Service        | Docker 공개 주소      |
+| -------------- | --------------------- |
+| Main(root)     | http://localhost:8080 |
+| auth-server    | 내부 전용 (`9000`)    |
+| user-portal    | 내부 전용 (`8081`)    |
+| admin-portal   | 내부 전용 (`8082`)    |
+| member-service | 내부 전용 (`8083`)    |

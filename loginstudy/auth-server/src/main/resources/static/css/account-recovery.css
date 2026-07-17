@@ -1,0 +1,347 @@
+@charset "utf-8";
+
+:root {
+    --primary: #164eb2;
+    --primary-dark: #0e347f;
+    --text: #292929;
+    --muted: #666;
+    --line: #d8d8d8;
+    --surface: #f7f8fa;
+    --danger: #b42318;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+}
+
+body,
+button,
+input {
+    font-family: "Pretendard", "NanumBarunGothic", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+body {
+    color: var(--text);
+    background: #fff;
+}
+
+.recovery-shell {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 30px 0 60px;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 24px;
+    border-bottom: 2px solid #454545;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: -0.05em;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #707070;
+    font-size: 14px;
+}
+
+.breadcrumb strong {
+    color: #444;
+}
+
+.home-icon {
+    position: relative;
+    width: 13px;
+    height: 10px;
+    margin-top: 4px;
+    border: 2px solid #777;
+    border-top: 0;
+}
+
+.home-icon::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -6px;
+    width: 7px;
+    height: 7px;
+    border-top: 2px solid #777;
+    border-left: 2px solid #777;
+    transform: rotate(45deg);
+}
+
+.recovery-content {
+    padding-top: 36px;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 34px;
+    color: var(--primary-dark);
+    font-size: 27px;
+    letter-spacing: -0.04em;
+}
+
+.brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    color: #fff;
+    background: var(--primary-dark);
+    border-radius: 50%;
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 800;
+}
+
+.recovery-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 220px));
+    margin-bottom: 42px;
+    border-bottom: 1px solid var(--line);
+}
+
+.recovery-tabs a {
+    padding: 14px 18px;
+    color: #555;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-bottom: 0;
+    text-align: center;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.recovery-tabs a + a {
+    margin-left: -1px;
+}
+
+.recovery-tabs a.active {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.method-card {
+    max-width: 760px;
+    padding: 8px 0 0;
+}
+
+.method-label {
+    margin: 0 0 10px;
+    color: #444;
+    font-size: 14px;
+}
+
+.method-card h2 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.method-card > p:not(.method-label) {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.recovery-form {
+    margin-top: 32px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 380px);
+    align-items: start;
+    min-height: 56px;
+}
+
+.form-row > label {
+    padding-top: 11px;
+    color: #444;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.form-row input {
+    display: block;
+    width: 100%;
+    height: 42px;
+    padding: 7px 12px;
+    color: #333;
+    background: #fff;
+    border: 1px solid #aaa;
+    border-radius: 0;
+    font-size: 14px;
+}
+
+.form-row input:focus {
+    border-color: #66afe9;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(102, 175, 233, 0.2);
+}
+
+.form-row input::placeholder {
+    color: #999;
+}
+
+.field-error,
+.form-error {
+    color: var(--danger);
+    font-size: 13px;
+}
+
+.field-error {
+    min-height: 16px;
+    margin: 4px 0 0;
+}
+
+.form-error {
+    margin: 0 0 14px 120px;
+}
+
+.find-button {
+    min-width: 74px;
+    min-height: 42px;
+    margin-top: 6px;
+    padding: 8px 20px;
+    color: #222;
+    background: #f1f1f1;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.find-button:hover {
+    color: #fff;
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.find-button:focus-visible,
+.recovery-tabs a:focus-visible {
+    outline: 3px solid #8db7f2;
+    outline-offset: 2px;
+}
+
+.result-box {
+    width: min(620px, 100%);
+    margin-top: 34px;
+    padding: 24px;
+    border: 1px solid #cfd8e5;
+    background: #f6f9fe;
+}
+
+.result-box h3,
+.result-box p {
+    margin: 0 0 12px;
+    font-size: 15px;
+}
+
+.result-box ul {
+    margin: 0 0 16px;
+    padding-left: 20px;
+}
+
+.result-box li {
+    margin: 5px 0;
+    color: var(--primary-dark);
+    font-weight: 800;
+}
+
+.result-box a {
+    display: inline-block;
+    padding: 9px 16px;
+    color: #fff;
+    background: var(--primary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.reset-card {
+    max-width: 720px;
+    padding: 30px;
+    border: 1px solid var(--line);
+    background: #fff;
+}
+
+@media (max-width: 767px) {
+    .recovery-shell {
+        width: min(100% - 24px, 640px);
+        padding-top: 22px;
+    }
+
+    .page-header h1 {
+        font-size: 21px;
+    }
+
+    .breadcrumb {
+        font-size: 12px;
+    }
+
+    .brand {
+        font-size: 22px;
+    }
+
+    .recovery-tabs {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 520px) {
+    .breadcrumb span:not(.home-icon),
+    .breadcrumb strong {
+        display: none;
+    }
+
+    .recovery-content {
+        padding-top: 28px;
+    }
+
+    .form-row {
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .form-row > label {
+        display: block;
+        padding: 0 0 7px;
+    }
+
+    .form-error {
+        margin-left: 0;
+    }
+
+    .find-button {
+        width: 100%;
+    }
+
+    .reset-card {
+        padding: 24px 16px;
+    }
+}

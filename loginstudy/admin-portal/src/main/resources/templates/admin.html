@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Admin Home</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>관리자 포털</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
-<main class="wide">
+<main class="wide portal-shell">
     <header class="top">
         <div>
-            <p class="eyebrow">Admin</p>
+            <p class="eyebrow">ADMIN PORTAL</p>
             <h1 th:text="${subject}">admin</h1>
             <p class="subtitle" th:text="${email}">email</p>
-            <p class="subtitle">Roles: <span th:text="${roles}">ROLE_ADMIN</span></p>
+            <p class="subtitle">권한: <span th:text="${roles}">ROLE_ADMIN</span></p>
         </div>
         <form th:action="@{/logout}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -21,22 +23,102 @@
         </form>
     </header>
 
-    <section class="grid">
-        <article>
-            <h2>Token</h2>
-            <p>Access (masked): <code th:text="${accessTokenMasked}">tok</code></p>
-            <p>ID (masked): <code th:text="${idTokenMasked}">tok</code></p>
-            <p>Scopes: <span th:text="${scopes}">scopes</span></p>
-        </article>
-        <article>
-            <h2>member-service admin API</h2>
-            <p>
+    <section class="content-section member-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">MEMBER MANAGEMENT</p>
+                <h2>사용자 목록</h2>
+                <p class="section-description">마스킹된 이름 또는 이메일만 클릭하면 해당 항목만 잠시 복원됩니다.</p>
+            </div>
+            <p class="api-status">
                 <span th:if="${memberApiSuccess}" class="ok">HTTP <span th:text="${memberApiStatus}">200</span></span>
                 <span th:unless="${memberApiSuccess}" class="bad">HTTP <span th:text="${memberApiStatus}">0</span></span>
             </p>
-            <pre th:text="${memberApiBody}">{}</pre>
+        </div>
+
+        <div class="table-wrap" th:if="${memberApiSuccess and !members.content.isEmpty()}">
+            <table class="contable member-table">
+                <thead>
+                <tr>
+                    <th scope="col">번호</th>
+                    <th scope="col">이름</th>
+                    <th scope="col">이메일</th>
+                    <th scope="col">상태</th>
+                    <th scope="col">가입일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="member : ${members.content}">
+                    <td th:text="${member.id}">1</td>
+                    <td>
+                        <button type="button"
+                                class="sensitive-value"
+                                th:text="${member.displayName}"
+                                th:data-masked="${member.displayName}"
+                                th:data-url="@{|/admin/members/${member.id}/sensitive/DISPLAY_NAME/reveal|}"
+                                aria-label="마스킹된 이름 보기">홍*동</button>
+                    </td>
+                    <td>
+                        <button type="button"
+                                class="sensitive-value"
+                                th:text="${member.email}"
+                                th:data-masked="${member.email}"
+                                th:data-url="@{|/admin/members/${member.id}/sensitive/EMAIL/reveal|}"
+                                aria-label="마스킹된 이메일 보기">u***@example.com</button>
+                    </td>
+                    <td><span class="status-badge" th:text="${member.status}">ACTIVE</span></td>
+                    <td th:text="${member.joinedAt}">2026-07-17</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="empty-state" th:if="${memberApiSuccess and members.content.isEmpty()}">표시할 사용자가 없습니다.</p>
+        <p class="empty-state error" th:unless="${memberApiSuccess}">사용자 목록을 불러오지 못했습니다.</p>
+        <p id="reveal-message" class="reveal-message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="grid diagnostics">
+        <article>
+            <h2>로그인 정보</h2>
+            <p>Access Token: <code th:text="${accessTokenMasked}">tok</code></p>
+            <p>ID Token: <code th:text="${idTokenMasked}">tok</code></p>
+            <p>Scopes: <span th:text="${scopes}">scopes</span></p>
         </article>
     </section>
 </main>
+<script>
+    (() => {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+        const message = document.getElementById('reveal-message');
+
+        document.querySelectorAll('.sensitive-value').forEach((button) => {
+            button.addEventListener('click', async () => {
+                if (button.disabled) return;
+                button.disabled = true;
+                message.textContent = '';
+                try {
+                    const response = await fetch(button.dataset.url, {
+                        method: 'POST',
+                        headers: {[csrfHeader]: csrfToken, 'Accept': 'application/json'},
+                        credentials: 'same-origin',
+                        cache: 'no-store'
+                    });
+                    if (!response.ok) throw new Error('reveal failed');
+                    const result = await response.json();
+                    button.textContent = result.value;
+                    message.textContent = '선택한 항목을 복원했습니다. 30초 후 다시 가려집니다.';
+                    window.setTimeout(() => {
+                        button.textContent = button.dataset.masked;
+                        button.disabled = false;
+                    }, 30000);
+                } catch (error) {
+                    button.disabled = false;
+                    message.textContent = '민감정보를 불러오지 못했습니다.';
+                }
+            });
+        });
+    })();
+</script>
 </body>
 </html>

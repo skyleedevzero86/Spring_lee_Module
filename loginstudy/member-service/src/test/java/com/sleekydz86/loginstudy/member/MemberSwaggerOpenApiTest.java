@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +21,7 @@ class MemberSwaggerOpenApiTest extends MemberRedisTestSupport {
 	private MockMvc mockMvc;
 
 	@Test
+	@DisplayName("OpenAPI 문서는 공개되며 회원 API를 설명한다")
 	void openApiDocumentIsPublicAndDescribesMemberApis() throws Exception {
 		// given
 		String openApiPath = "/v3/api-docs";
@@ -37,6 +39,7 @@ class MemberSwaggerOpenApiTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("Swagger UI에 공개적으로 접근할 수 있다")
 	void swaggerUiIsPubliclyReachable() throws Exception {
 		// given
 		String swaggerUiPath = "/swagger-ui.html";

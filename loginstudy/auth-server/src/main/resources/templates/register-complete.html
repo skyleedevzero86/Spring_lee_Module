@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>LoginStudy 회원가입 완료</title>
+    <link rel="stylesheet" th:href="@{/css/register.css}"/>
+</head>
+<body>
+<div class="register-shell">
+    <header class="page-header">
+        <h1>회원가입</h1>
+        <nav class="breadcrumb" aria-label="현재 위치">
+            <span class="home-icon" aria-hidden="true"></span>
+            <span>통합인증</span><span aria-hidden="true">›</span><strong>회원가입</strong>
+        </nav>
+    </header>
+
+    <ol class="step-list" aria-label="회원가입 진행 단계">
+        <li><span>01</span><strong>회원선택</strong></li>
+        <li><span>02</span><strong>약관동의/본인인증</strong></li>
+        <li><span>03</span><strong>정보입력</strong></li>
+        <li class="active" aria-current="step"><span>✓</span><strong>가입완료</strong></li>
+    </ol>
+
+    <main class="complete-panel">
+        <span class="complete-icon" aria-hidden="true">✓</span>
+        <h2>회원가입이 완료되었습니다.</h2>
+        <p>이제 등록한 아이디와 비밀번호로 LoginStudy 서비스를 이용할 수 있습니다.</p>
+        <a class="button primary" th:href="@{/login}">로그인 페이지로 이동</a>
+    </main>
+</div>
+</body>
+</html>

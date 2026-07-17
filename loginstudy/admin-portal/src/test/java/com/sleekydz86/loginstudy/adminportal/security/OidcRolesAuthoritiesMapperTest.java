@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +17,7 @@ class OidcRolesAuthoritiesMapperTest {
 	private final OidcRolesAuthoritiesMapper mapper = new OidcRolesAuthoritiesMapper();
 
 	@Test
+	@DisplayName("역할 클레임 컬렉션을 역할 권한으로 변환한다")
 	void mapsRolesClaimCollectionToRoleAuthorities() {
 		// given
 		OidcIdToken idToken = new OidcIdToken(
@@ -36,6 +38,7 @@ class OidcRolesAuthoritiesMapperTest {
 	}
 
 	@Test
+	@DisplayName("쉼표로 구분된 역할 문자열을 변환한다")
 	void mapsCommaSeparatedRolesString() {
 		// given
 		OidcIdToken idToken = new OidcIdToken(

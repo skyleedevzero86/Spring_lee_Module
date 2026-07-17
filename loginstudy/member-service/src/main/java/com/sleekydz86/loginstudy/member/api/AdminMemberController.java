@@ -5,6 +5,8 @@ import com.sleekydz86.loginstudy.member.api.MemberDtos.KeysetPageResponse;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.MemberResponse;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.MemberSummaryResponse;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.PageResponse;
+import com.sleekydz86.loginstudy.member.api.MemberDtos.SensitiveField;
+import com.sleekydz86.loginstudy.member.api.MemberDtos.SensitiveFieldResponse;
 import com.sleekydz86.loginstudy.member.config.OpenApiConfig;
 import com.sleekydz86.loginstudy.member.domain.MemberStatus;
 import com.sleekydz86.loginstudy.member.service.AccessDeniedBusinessException;
@@ -23,6 +25,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -96,6 +100,22 @@ public class AdminMemberController {
 			Authentication authentication) {
 		assertAdmin(authentication);
 		return memberService.changeStatus(id, subject(authentication), request);
+	}
+
+	@PostMapping("/{id}/sensitive/{field}/reveal")
+	@Operation(summary = "관리자 회원 민감정보 단건 열람", description = "마스킹된 한 개 필드만 복호화합니다.")
+	ResponseEntity<SensitiveFieldResponse> revealSensitiveField(
+			@PathVariable Long id,
+			@PathVariable SensitiveField field,
+			Authentication authentication) {
+		assertAdmin(authentication);
+		SensitiveFieldResponse response =
+				memberService.revealSensitiveField(id, field, subject(authentication));
+		return ResponseEntity.ok()
+				.cacheControl(CacheControl.noStore())
+				.header("Pragma", "no-cache")
+				.header("Referrer-Policy", "no-referrer")
+				.body(response);
 	}
 
 	private static void assertAdmin(Authentication authentication) {

@@ -1,5 +1,8 @@
 package com.sleekydz86.loginstudy.userportal.config;
 
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -7,12 +10,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -23,7 +26,8 @@ public class UserPortalSecurityConfig {
 	@Bean
 	SecurityFilterChain securityFilterChain(
 			HttpSecurity http,
-			OAuth2AuthorizationRequestResolver authorizationRequestResolver) throws Exception {
+			OAuth2AuthorizationRequestResolver authorizationRequestResolver,
+			RoleBasedLoginSuccessHandler roleBasedLoginSuccessHandler) throws Exception {
 		http
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers(
@@ -43,7 +47,7 @@ public class UserPortalSecurityConfig {
 						.loginPage("/oauth2/authorization/user-portal")
 						.authorizationEndpoint(authorization -> authorization
 								.authorizationRequestResolver(authorizationRequestResolver))
-						.defaultSuccessUrl("/home", true)
+						.successHandler(roleBasedLoginSuccessHandler)
 						.failureHandler((request, response, exception) -> {
 							log.warn("OAuth2 로그인 실패: {}", exception.getMessage(), exception);
 							response.sendRedirect("/?loginFailed=1");
@@ -66,6 +70,32 @@ public class UserPortalSecurityConfig {
 						clientRegistrationRepository,
 						"/oauth2/authorization");
 		resolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
-		return resolver;
+		return new OAuth2AuthorizationRequestResolver() {
+			@Override
+			public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
+				return applyLoginPrompt(request, resolver.resolve(request));
+			}
+
+			@Override
+			public OAuth2AuthorizationRequest resolve(
+					HttpServletRequest request,
+					String clientRegistrationId) {
+				return applyLoginPrompt(request, resolver.resolve(request, clientRegistrationId));
+			}
+		};
+	}
+
+	private static OAuth2AuthorizationRequest applyLoginPrompt(
+			HttpServletRequest request,
+			OAuth2AuthorizationRequest authorizationRequest) {
+		if (authorizationRequest == null || Boolean.parseBoolean(request.getParameter("remember"))) {
+			return authorizationRequest;
+		}
+		Map<String, Object> parameters =
+				new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
+		parameters.put("prompt", "login");
+		return OAuth2AuthorizationRequest.from(authorizationRequest)
+				.additionalParameters(parameters)
+				.build();
 	}
 }

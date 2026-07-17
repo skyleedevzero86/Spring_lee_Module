@@ -11,6 +11,7 @@ import com.sleekydz86.loginstudy.auth.config.AuthorizationServerConfig;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +34,7 @@ class ClientCredentialsTokenIntegrationTest extends AuthServerIntegrationTestSup
 	private ObjectMapper objectMapper;
 
 	@Test
+	@DisplayName("클라이언트 자격 증명 토큰에 Bearer 유형과 액세스 토큰이 포함된다")
 	void clientCredentialsTokenContainsBearerTypeAndAccessToken() throws Exception {
 		// given
 		String clientId = AuthorizationServerConfig.CLIENT_MEMBER_SERVICE;

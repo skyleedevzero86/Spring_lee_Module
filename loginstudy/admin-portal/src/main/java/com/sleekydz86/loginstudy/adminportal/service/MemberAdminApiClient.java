@@ -19,6 +19,25 @@ public class MemberAdminApiClient {
 		return get(accessToken, "/api/admin/members?page=0&size=20");
 	}
 
+	public ApiCallResult revealSensitiveField(String accessToken, long memberId, String field) {
+		String path = "/api/admin/members/" + memberId + "/sensitive/" + field + "/reveal";
+		try {
+			String body = memberApiRestClient.post()
+					.uri(path)
+					.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+					.header("X-Correlation-Id", UUID.randomUUID().toString())
+					.retrieve()
+					.body(String.class);
+			return ApiCallResult.success(body == null ? "" : body);
+		}
+		catch (RestClientResponseException ex) {
+			return ApiCallResult.failure(ex.getStatusCode().value(), ex.getResponseBodyAsString());
+		}
+		catch (Exception ex) {
+			return ApiCallResult.failure(0, ex.getMessage());
+		}
+	}
+
 	private ApiCallResult get(String accessToken, String path) {
 		try {
 			String body = memberApiRestClient.get()

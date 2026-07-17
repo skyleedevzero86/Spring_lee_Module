@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.sleekydz86.loginstudy.userportal.service.MemberApiClient;
 import com.sleekydz86.loginstudy.userportal.service.MemberApiClient.MemberApiCallResult;
 import com.sleekydz86.loginstudy.userportal.web.HomeController;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ class UserPortalWebTest extends RedisTestSupport {
 	private MockMvc mockMvc;
 
 	@Test
+	@DisplayName("인덱스 페이지는 공개된다")
 	void indexPageIsPublic() throws Exception {
 		// given / when
 		var result = mockMvc.perform(get("/"));
@@ -42,6 +44,7 @@ class UserPortalWebTest extends RedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("홈 페이지는 인증이 필요하다")
 	void homeRequiresAuthentication() throws Exception {
 		// given / when
 		var result = mockMvc.perform(get("/home"));
@@ -52,6 +55,7 @@ class UserPortalWebTest extends RedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("OIDC 로그인과 인가된 클라이언트로 홈에 접근할 수 있다")
 	void homeIsAccessibleWithOidcLoginAndAuthorizedClient() throws Exception {
 		// given
 		var oidc = oidcLogin().idToken(token -> token
@@ -72,6 +76,7 @@ class UserPortalWebTest extends RedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("토큰 마스킹은 중간 값을 숨긴다")
 	void maskTokenHidesMiddle() {
 		// given / when / then
 		assertThat(HomeController.maskToken("1234567890abcdef")).isEqualTo("12345678...abcdef");

@@ -9,6 +9,8 @@ import com.sleekydz86.loginstudy.member.api.MemberDtos.MemberSummaryResponse;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.PageResponse;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.PreferencesRequest;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.PreferencesResponse;
+import com.sleekydz86.loginstudy.member.api.MemberDtos.SensitiveField;
+import com.sleekydz86.loginstudy.member.api.MemberDtos.SensitiveFieldResponse;
 import com.sleekydz86.loginstudy.member.api.MemberDtos.UpdateMemberRequest;
 import com.sleekydz86.loginstudy.member.domain.MemberAddress;
 import com.sleekydz86.loginstudy.member.domain.MemberPreferences;
@@ -18,7 +20,11 @@ import com.sleekydz86.loginstudy.member.repository.MemberProfileRepository;
 import com.sleekydz86.loginstudy.member.repository.MemberProfileSpecs;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MemberService {
+
+	private static final Logger log = LoggerFactory.getLogger(MemberService.class);
 
 	private final MemberProfileRepository memberProfileRepository;
 
@@ -92,20 +100,44 @@ public class MemberService {
 			Instant joinedFrom,
 			Instant joinedTo,
 			Pageable pageable) {
-		Page<MemberProfile> page = memberProfileRepository.findAll(
-				MemberProfileSpecs.search(
-						status,
-						emptyToNull(email),
-						emptyToNull(name),
-						joinedFrom,
-						joinedTo),
-				pageable);
+		String emailFilter = emptyToNull(email);
+		String nameFilter = emptyToNull(name);
+		Page<MemberProfile> page;
+		if (emailFilter == null && nameFilter == null) {
+			page = memberProfileRepository.findAll(
+					MemberProfileSpecs.search(status, null, null, joinedFrom, joinedTo),
+					pageable);
+		}
+		else {
+			List<MemberProfile> filtered = memberProfileRepository.findAll(
+							MemberProfileSpecs.search(status, null, null, joinedFrom, joinedTo),
+							pageable.getSort())
+					.stream()
+					.filter(profile -> matchesSensitiveFilters(profile, emailFilter, nameFilter))
+					.toList();
+			int fromIndex = Math.min((int) pageable.getOffset(), filtered.size());
+			int toIndex = Math.min(fromIndex + pageable.getPageSize(), filtered.size());
+			page = new PageImpl<>(filtered.subList(fromIndex, toIndex), pageable, filtered.size());
+		}
 		return new PageResponse<>(
 				page.getContent().stream().map(this::toSummary).toList(),
 				page.getNumber(),
 				page.getSize(),
 				page.getTotalElements(),
 				page.getTotalPages());
+	}
+
+	@Transactional(readOnly = true)
+	public SensitiveFieldResponse revealSensitiveField(Long memberId, SensitiveField field, String adminSubject) {
+		MemberProfile profile = memberProfileRepository.findOneById(memberId)
+				.orElseThrow(() -> new ResourceNotFoundException("회원을 찾을 수 없습니다. id=" + memberId));
+		String value = switch (field) {
+			case EMAIL -> profile.getEmail();
+			case DISPLAY_NAME -> profile.getDisplayName();
+		};
+		log.info("관리자 민감정보 열람: adminSubject={}, memberId={}, field={}",
+				adminSubject, memberId, field);
+		return new SensitiveFieldResponse(memberId, field, value);
 	}
 
 	@Transactional(readOnly = true)
@@ -205,10 +237,49 @@ public class MemberService {
 	private MemberSummaryResponse toSummary(MemberProfile profile) {
 		return new MemberSummaryResponse(
 				profile.getId(),
-				profile.getEmail(),
-				profile.getDisplayName(),
+				maskEmail(profile.getEmail()),
+				maskName(profile.getDisplayName()),
 				profile.getStatus(),
 				profile.getJoinedAt());
+	}
+
+	private static boolean matchesSensitiveFilters(
+			MemberProfile profile,
+			String emailFilter,
+			String nameFilter) {
+		boolean emailMatches = emailFilter == null
+				|| profile.getEmail().equalsIgnoreCase(emailFilter);
+		boolean nameMatches = nameFilter == null
+				|| profile.getDisplayName().toLowerCase(Locale.ROOT)
+						.contains(nameFilter.toLowerCase(Locale.ROOT));
+		return emailMatches && nameMatches;
+	}
+
+	private static String maskName(String name) {
+		if (name == null || name.isBlank()) {
+			return "***";
+		}
+		int[] characters = name.codePoints().toArray();
+		if (characters.length == 1) {
+			return "*";
+		}
+		String first = new String(characters, 0, 1);
+		if (characters.length == 2) {
+			return first + "*";
+		}
+		String last = new String(characters, characters.length - 1, 1);
+		return first + "*" + last;
+	}
+
+	private static String maskEmail(String email) {
+		if (email == null || email.isBlank()) {
+			return "***";
+		}
+		int at = email.indexOf('@');
+		if (at <= 0) {
+			return "***";
+		}
+		return email.substring(0, 1) + "***" + email.substring(at);
 	}
 
 	private static String emptyToNull(String value) {

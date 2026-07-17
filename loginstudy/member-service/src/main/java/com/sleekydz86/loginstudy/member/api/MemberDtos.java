@@ -47,6 +47,17 @@ public final class MemberDtos {
 			Instant joinedAt) {
 	}
 
+	public enum SensitiveField {
+		EMAIL,
+		DISPLAY_NAME
+	}
+
+	public record SensitiveFieldResponse(
+			Long memberId,
+			SensitiveField field,
+			String value) {
+	}
+
 	public record UpdateMemberRequest(
 			@NotNull Long version,
 			@NotBlank @Size(max = 100) String displayName,

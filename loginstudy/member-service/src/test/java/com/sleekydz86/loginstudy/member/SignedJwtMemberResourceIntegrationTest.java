@@ -15,6 +15,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -61,6 +62,7 @@ class SignedJwtMemberResourceIntegrationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("서명된 액세스 토큰으로 자신의 프로필을 조회할 수 있다")
 	void signedAccessTokenAllowsReadingOwnProfile() throws Exception {
 		// given
 		String token = mintAccessToken("user", List.of("USER"), "openid member.read");
@@ -75,6 +77,7 @@ class SignedJwtMemberResourceIntegrationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("회원 조회 범위가 없는 서명 토큰은 접근이 금지된다")
 	void signedAccessTokenWithoutMemberReadScopeIsForbidden() throws Exception {
 		// given
 		String token = mintAccessToken("user", List.of("USER"), "openid");
@@ -87,6 +90,7 @@ class SignedJwtMemberResourceIntegrationTest extends MemberRedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("만료된 서명 액세스 토큰은 인증되지 않는다")
 	void expiredSignedAccessTokenIsUnauthorized() throws Exception {
 		// given
 		Instant expired = Instant.now().minusSeconds(120);

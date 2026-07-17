@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.sleekydz86.loginstudy.auth.config.AuthDataInitializer;
 import com.sleekydz86.loginstudy.auth.config.AuthorizationServerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +34,7 @@ class AuthActuatorPrometheusTest extends AuthServerIntegrationTestSupport {
 	private MeterRegistry meterRegistry;
 
 	@Test
+	@DisplayName("Prometheus 엔드포인트가 인증 사용자 정의 카운터를 제공한다")
 	void prometheusEndpointExposesCustomAuthCounters() throws Exception {
 		// given
 		mockMvc.perform(formLogin("/login").user("user").password(AuthDataInitializer.DEMO_USER_PASSWORD))

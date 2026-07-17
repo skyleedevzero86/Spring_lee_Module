@@ -1,10 +1,11 @@
 :root {
-    --bg: #101820;
-    --panel: #1b2a34;
-    --text: #e8f1f5;
-    --muted: #9db4c0;
-    --accent: #3db8a7;
-    --bad: #d45d5d;
+    --primary: #12a3cc;
+    --primary-dark: #087fa7;
+    --line: #ececec;
+    --soft: #f7f8fb;
+    --text: #222;
+    --muted: #666;
+    --bad: #c73737;
 }
 
 * { box-sizing: border-box; }
@@ -14,25 +15,25 @@ body {
     min-height: 100vh;
     font-family: "Segoe UI", "Malgun Gothic", sans-serif;
     color: var(--text);
-    background:
-        radial-gradient(circle at top right, #27485a, transparent 40%),
-        var(--bg);
+    background: #f2f5f8;
 }
 
 .panel, .wide {
-    width: min(960px, 92vw);
+    width: min(1180px, 94vw);
     margin: 3rem auto;
     padding: 2rem;
-    background: color-mix(in srgb, var(--panel) 92%, black);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 40px rgba(30, 55, 70, 0.08);
 }
 
 .eyebrow {
     margin: 0;
-    color: var(--accent);
+    color: var(--primary-dark);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-size: 0.8rem;
+    font-weight: 700;
 }
 
 h1 { margin: 0.4rem 0; }
@@ -43,17 +44,17 @@ h1 { margin: 0.4rem 0; }
     margin-top: 1rem;
     padding: 0.75rem 1.1rem;
     border: 0;
-    background: var(--accent);
-    color: #042428;
+    background: var(--primary);
+    color: #fff;
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
 }
 
 button.secondary, .secondary {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.25);
-    color: var(--text);
+    background: #fff;
+    border: 1px solid #cdd8df;
+    color: #333;
 }
 
 .notes {
@@ -77,18 +78,32 @@ button.secondary, .secondary {
 
 article {
     padding: 1rem;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(0,0,0,0.15);
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--primary);
+    background: var(--soft);
 }
 
 pre {
     white-space: pre-wrap;
     word-break: break-word;
     font-size: 0.85rem;
-    color: #d7e6ee;
+    color: #34434b;
 }
 
-.ok { color: var(--accent); }
+.ok { color: #168653; }
 .bad { color: var(--bad); }
 
-code { color: #b7ffe9; }
+code { color: #8b4e00; }
+
+@media (max-width: 700px) {
+    .panel, .wide {
+        width: 100%;
+        margin: 0;
+        padding: 1rem;
+        border: 0;
+    }
+
+    .top {
+        flex-direction: column;
+    }
+}

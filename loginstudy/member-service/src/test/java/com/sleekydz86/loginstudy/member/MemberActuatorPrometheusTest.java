@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +21,7 @@ class MemberActuatorPrometheusTest extends MemberRedisTestSupport {
 	private MockMvc mockMvc;
 
 	@Test
+	@DisplayName("Prometheus 엔드포인트는 공개되며 JVM과 HTTP 지표를 제공한다")
 	void prometheusEndpointIsPublicAndExposesJvmAndHttpMetrics() throws Exception {
 		// given
 		assertThatPrometheusRegistryIsPresent();

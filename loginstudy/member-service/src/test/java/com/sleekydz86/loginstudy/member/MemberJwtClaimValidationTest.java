@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.util.List;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 class MemberJwtClaimValidationTest {
 
 	@Test
+	@DisplayName("발급자 검증기가 잘못된 발급자를 거부한다")
 	void issuerValidatorRejectsWrongIssuer() {
 		// given
 		JwtIssuerValidator validator = new JwtIssuerValidator("http://localhost:9000");
@@ -34,6 +36,7 @@ class MemberJwtClaimValidationTest {
 	}
 
 	@Test
+	@DisplayName("대상 검증기가 잘못된 대상을 거부한다")
 	void audienceValidatorRejectsWrongAudience() {
 		// given
 		JwtClaimValidator<List<String>> audienceValidator = new JwtClaimValidator<>(
@@ -53,6 +56,7 @@ class MemberJwtClaimValidationTest {
 	}
 
 	@Test
+	@DisplayName("시간 검증기가 만료된 토큰을 거부한다")
 	void timestampValidatorRejectsExpiredToken() {
 		// given
 		JwtTimestampValidator validator = new JwtTimestampValidator();
@@ -71,6 +75,7 @@ class MemberJwtClaimValidationTest {
 	}
 
 	@Test
+	@DisplayName("유효한 토큰은 발급자 대상 만료 검증을 통과한다")
 	void validTokenPassesIssuerAudienceAndExpiryChecks() {
 		// given
 		Instant issuedAt = Instant.now().minusSeconds(30);

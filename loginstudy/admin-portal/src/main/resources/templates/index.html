@@ -9,22 +9,20 @@
 <body>
 <main class="panel">
     <p class="eyebrow">LoginStudy Identity</p>
-    <h1>Admin Portal</h1>
-    <p class="subtitle">
-        user-portal과 다른 OAuth2 Client입니다. auth-server 세션이 있으면 비밀번호 없이 SSO로 들어오고,
-        ROLE_ADMIN이 없으면 403 / Access Denied가 납니다.
-    </p>
+    <h1>관리자 로그인</h1>
+    <p class="subtitle" th:unless="${param.loginFailed}">관리자 로그인 페이지로 이동하고 있습니다.</p>
 
     <p class="bad" th:if="${param.loginFailed}">로그인에 실패했습니다. 아래 버튼으로 처음부터 다시 시도하세요. (콜백 URL을 새로고침하지 마세요)</p>
 
-    <a class="button" th:href="@{/oauth2/authorization/admin-portal}">auth-server로 관리자 로그인</a>
+    <a class="button"
+       th:href="@{/oauth2/authorization/admin-portal}"
+       th:text="${param.loginFailed} ? '다시 로그인' : '관리자 로그인 페이지로 이동'">
+        관리자 로그인 페이지로 이동
+    </a>
 
-    <ul class="notes">
-        <li>Client: admin-portal</li>
-        <li>Required: ROLE_ADMIN + scope admin</li>
-        <li>Redirect: http://localhost:8082/login/oauth2/code/admin-portal</li>
-        <li>SSO: user-portal 로그인 후 이 페이지에서 재로그인 없이 인증됨</li>
-    </ul>
+    <script th:unless="${param.loginFailed}" th:inline="javascript">
+        window.location.replace(/*[[@{/oauth2/authorization/admin-portal}]]*/ "/oauth2/authorization/admin-portal");
+    </script>
 </main>
 </body>
 </html>

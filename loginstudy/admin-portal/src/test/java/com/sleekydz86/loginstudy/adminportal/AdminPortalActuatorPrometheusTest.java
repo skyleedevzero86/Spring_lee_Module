@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,7 @@ class AdminPortalActuatorPrometheusTest extends RedisTestSupport {
 	private MockMvc mockMvc;
 
 	@Test
+	@DisplayName("Prometheus 엔드포인트는 공개된다")
 	void prometheusEndpointIsPublic() throws Exception {
 		// given
 		String prometheusPath = "/actuator/prometheus";

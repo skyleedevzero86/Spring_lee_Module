@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.sleekydz86.loginstudy.auth.config.AuthorizationServerConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +23,9 @@ class AuthAdminPersistenceApiTest extends AuthServerIntegrationTestSupport {
 	private MockMvc mockMvc;
 
 	@Test
+	@DisplayName("관리자는 비밀번호 없이 영속성 상태와 사용자 정보를 조회할 수 있다")
 	void adminCanReadPersistenceHealthAndUserDtoWithoutPassword() throws Exception {
+		// when / then
 		mockMvc.perform(get("/api/admin/persistence/health").with(user("admin").roles("ADMIN")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.registeredClientRepositoryType").value("JdbcRegisteredClientRepository"))
@@ -46,13 +49,17 @@ class AuthAdminPersistenceApiTest extends AuthServerIntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("일반 사용자는 관리자 영속성 API에 접근할 수 없다")
 	void regularUserCannotAccessAdminPersistenceApi() throws Exception {
+		// when / then
 		mockMvc.perform(get("/api/admin/persistence/health").with(user("user").roles("USER")))
 				.andExpect(status().isForbidden());
 	}
 
 	@Test
+	@DisplayName("알 수 없는 사용자는 문제 상세 응답을 반환한다")
 	void unknownUserReturnsProblemDetail() throws Exception {
+		// when / then
 		mockMvc.perform(get("/api/admin/users/missing-user").with(user("admin").roles("ADMIN")))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.title").value("리소스를 찾을 수 없음"))

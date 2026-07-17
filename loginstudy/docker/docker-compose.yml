@@ -5,7 +5,7 @@ services:
     image: postgres:16.9-alpine
     container_name: loginstudy-postgres
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: loginstudy
       POSTGRES_PASSWORD: loginstudy_dev
@@ -29,8 +29,8 @@ services:
     container_name: loginstudy-redis-1
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     ports:
-      - "7001:7001"
-      - "17001:17001"
+      - "127.0.0.1:7001:7001"
+      - "127.0.0.1:17001:17001"
     volumes:
       - ./redis/redis-7001.conf:/usr/local/etc/redis/redis.conf:ro
       - redis1-data:/data
@@ -42,8 +42,8 @@ services:
     container_name: loginstudy-redis-2
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     ports:
-      - "7002:7002"
-      - "17002:17002"
+      - "127.0.0.1:7002:7002"
+      - "127.0.0.1:17002:17002"
     volumes:
       - ./redis/redis-7002.conf:/usr/local/etc/redis/redis.conf:ro
       - redis2-data:/data
@@ -55,8 +55,8 @@ services:
     container_name: loginstudy-redis-3
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     ports:
-      - "7003:7003"
-      - "17003:17003"
+      - "127.0.0.1:7003:7003"
+      - "127.0.0.1:17003:17003"
     volumes:
       - ./redis/redis-7003.conf:/usr/local/etc/redis/redis.conf:ro
       - redis3-data:/data
@@ -68,8 +68,8 @@ services:
     container_name: loginstudy-redis-4
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     ports:
-      - "7004:7004"
-      - "17004:17004"
+      - "127.0.0.1:7004:7004"
+      - "127.0.0.1:17004:17004"
     volumes:
       - ./redis/redis-7004.conf:/usr/local/etc/redis/redis.conf:ro
       - redis4-data:/data
@@ -81,8 +81,8 @@ services:
     container_name: loginstudy-redis-5
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     ports:
-      - "7005:7005"
-      - "17005:17005"
+      - "127.0.0.1:7005:7005"
+      - "127.0.0.1:17005:17005"
     volumes:
       - ./redis/redis-7005.conf:/usr/local/etc/redis/redis.conf:ro
       - redis5-data:/data
@@ -94,8 +94,8 @@ services:
     container_name: loginstudy-redis-6
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     ports:
-      - "7006:7006"
-      - "17006:17006"
+      - "127.0.0.1:7006:7006"
+      - "127.0.0.1:17006:17006"
     volumes:
       - ./redis/redis-7006.conf:/usr/local/etc/redis/redis.conf:ro
       - redis6-data:/data
@@ -141,7 +141,7 @@ services:
     image: prom/prometheus:v2.55.1
     container_name: loginstudy-prometheus
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
@@ -159,7 +159,7 @@ services:
     image: grafana/grafana:11.3.1
     container_name: loginstudy-grafana
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin

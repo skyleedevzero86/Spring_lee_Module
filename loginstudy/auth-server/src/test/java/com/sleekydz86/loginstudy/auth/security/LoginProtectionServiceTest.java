@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -34,6 +35,7 @@ class LoginProtectionServiceTest {
 	}
 
 	@Test
+	@DisplayName("최대 실패 횟수 이후 계정을 잠근다")
 	void locksAccountAfterMaxFailures() {
 		// given
 		String username = "user";
@@ -51,6 +53,7 @@ class LoginProtectionServiceTest {
 	}
 
 	@Test
+	@DisplayName("로그인 성공 시 실패 카운터를 초기화한다")
 	void successClearsFailureCounters() {
 		// given
 		String username = "admin";
@@ -65,6 +68,7 @@ class LoginProtectionServiceTest {
 	}
 
 	@Test
+	@DisplayName("해시 태그 키는 동일한 사용자 슬롯 접두사를 공유한다")
 	void hashTaggedKeysShareSameUserSlotPrefix() {
 		// given
 		String username = "demo";

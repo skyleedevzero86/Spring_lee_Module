@@ -1,6 +1,9 @@
 package com.sleekydz86.loginstudy.adminportal.config;
 
 import com.sleekydz86.loginstudy.adminportal.security.OidcRolesAuthoritiesMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +15,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -71,6 +75,32 @@ public class AdminPortalSecurityConfig {
 						clientRegistrationRepository,
 						"/oauth2/authorization");
 		resolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
-		return resolver;
+		return new OAuth2AuthorizationRequestResolver() {
+			@Override
+			public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
+				return applyLoginPrompt(request, resolver.resolve(request));
+			}
+
+			@Override
+			public OAuth2AuthorizationRequest resolve(
+					HttpServletRequest request,
+					String clientRegistrationId) {
+				return applyLoginPrompt(request, resolver.resolve(request, clientRegistrationId));
+			}
+		};
+	}
+
+	private static OAuth2AuthorizationRequest applyLoginPrompt(
+			HttpServletRequest request,
+			OAuth2AuthorizationRequest authorizationRequest) {
+		if (authorizationRequest == null || Boolean.parseBoolean(request.getParameter("remember"))) {
+			return authorizationRequest;
+		}
+		Map<String, Object> parameters =
+				new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
+		parameters.put("prompt", "login");
+		return OAuth2AuthorizationRequest.from(authorizationRequest)
+				.additionalParameters(parameters)
+				.build();
 	}
 }

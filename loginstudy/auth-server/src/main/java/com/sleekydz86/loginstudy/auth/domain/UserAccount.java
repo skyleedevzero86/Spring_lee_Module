@@ -39,6 +39,21 @@ public class UserAccount {
 	@Column(name = "tenant_id", nullable = false, length = 64)
 	private String tenantId;
 
+	@Column(name = "display_name", nullable = false, length = 100)
+	private String displayName;
+
+	@Column(nullable = false, length = 30)
+	private String phone;
+
+	@Column(name = "member_type", nullable = false, length = 30)
+	private String memberType;
+
+	@Column(name = "terms_accepted_at", nullable = false)
+	private Instant termsAcceptedAt;
+
+	@Column(name = "privacy_accepted_at", nullable = false)
+	private Instant privacyAcceptedAt;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt = Instant.now();
 
@@ -49,14 +64,35 @@ public class UserAccount {
 	}
 
 	public UserAccount(String username, String password, String email, String tenantId) {
+		this(username, password, email, tenantId, username, "-", "DEMO", Instant.now());
+	}
+
+	public UserAccount(
+			String username,
+			String password,
+			String email,
+			String tenantId,
+			String displayName,
+			String phone,
+			String memberType,
+			Instant acceptedAt) {
 		this.username = username;
 		this.password = password;
 		this.email = email;
 		this.tenantId = tenantId;
+		this.displayName = displayName;
+		this.phone = phone;
+		this.memberType = memberType;
+		this.termsAcceptedAt = acceptedAt;
+		this.privacyAcceptedAt = acceptedAt;
 	}
 
 	public void addRole(String role) {
 		this.roles.add(new UserRole(this, role));
+	}
+
+	public void changePassword(String encodedPassword) {
+		this.password = encodedPassword;
 	}
 
 	public Long getId() {
@@ -85,6 +121,26 @@ public class UserAccount {
 
 	public String getTenantId() {
 		return tenantId;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public String getMemberType() {
+		return memberType;
+	}
+
+	public Instant getTermsAcceptedAt() {
+		return termsAcceptedAt;
+	}
+
+	public Instant getPrivacyAcceptedAt() {
+		return privacyAcceptedAt;
 	}
 
 	public Instant getCreatedAt() {

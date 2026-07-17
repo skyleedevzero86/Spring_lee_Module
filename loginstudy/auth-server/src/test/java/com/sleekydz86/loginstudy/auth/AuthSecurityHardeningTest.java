@@ -15,6 +15,7 @@ import com.sleekydz86.loginstudy.auth.config.AuthDataInitializer;
 import com.sleekydz86.loginstudy.auth.config.AuthorizationServerConfig;
 import com.sleekydz86.loginstudy.auth.security.LoginProtectionService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -62,6 +63,7 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("인가 엔드포인트는 알 수 없는 리디렉션 URI를 거부한다")
 	void authorizeEndpointRejectsUnknownRedirectUri() throws Exception {
 		// given
 		String evilRedirect = "https://evil.example/callback";
@@ -80,6 +82,7 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("등록 클라이언트는 와일드카드 리디렉션 URI를 사용하지 않는다")
 	void registeredClientDoesNotUseWildcardRedirectUri() {
 		// given
 		RegisteredClient client = registeredClientRepository
@@ -88,11 +91,14 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 		// when / then
 		assertThat(client).isNotNull();
 		assertThat(client.getRedirectUris())
-				.containsExactly("http://localhost:8081/login/oauth2/code/user-portal");
+				.containsExactlyInAnyOrder(
+						"http://localhost:8081/login/oauth2/code/user-portal",
+						"http://localhost:8080/user/login/oauth2/code/user-portal");
 		assertThat(client.getRedirectUris()).noneMatch(uri -> uri.contains("*"));
 	}
 
 	@Test
+	@DisplayName("클라이언트 비밀 값은 위임 비밀번호 인코더 접두사와 함께 저장된다")
 	void clientSecretIsStoredWithDelegatingPasswordEncoderPrefix() {
 		// given
 		String clientId = AuthorizationServerConfig.CLIENT_USER_PORTAL;
@@ -109,6 +115,7 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("포털 클라이언트는 리프레시 토큰 재사용을 허용하지 않는다")
 	void refreshTokenReuseIsDisabledOnPortalClients() {
 		// given
 		RegisteredClient userPortal = registeredClientRepository
@@ -122,6 +129,7 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("무차별 로그인 시도는 계정을 잠근다")
 	void bruteForceLoginLocksAccount() throws Exception {
 		// given
 		String username = "user";
@@ -140,6 +148,7 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("세션 쿠키 보안 속성이 설정된다")
 	void sessionCookieSecurityFlagsAreConfigured() {
 		// given / when
 		String cookieName = environment.getProperty("server.servlet.session.cookie.name");
@@ -155,6 +164,7 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("Actuator 환경 엔드포인트는 노출되지 않는다")
 	void actuatorEnvIsNotExposed() throws Exception {
 		// given
 		String envEndpoint = "/actuator/env";
@@ -168,6 +178,7 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("잘못된 비밀 값의 클라이언트 자격 증명은 거부된다")
 	void clientCredentialsWithWrongSecretIsRejected() throws Exception {
 		// given
 		String wrongSecret = "not-the-secret";
@@ -184,6 +195,7 @@ class AuthSecurityHardeningTest extends AuthServerIntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("Actuator 상태는 세부 정보 없이 공개된다")
 	void actuatorHealthIsPublicWithoutDetails() throws Exception {
 		// given
 		String healthEndpoint = "/actuator/health";

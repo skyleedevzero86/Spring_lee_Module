@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.sleekydz86.loginstudy.auth.config.AuthDataInitializer;
 import com.sleekydz86.loginstudy.auth.config.AuthorizationServerConfig;
 import com.sleekydz86.loginstudy.auth.service.AuthPersistenceQueryService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,11 +45,14 @@ class OAuth2AuthorizationPersistenceTest extends AuthServerIntegrationTestSuppor
 	private AuthPersistenceQueryService authPersistenceQueryService;
 
 	@Test
+	@DisplayName("클라이언트 자격 증명 인가 정보가 저장된다")
 	void clientCredentialsAuthorizationIsPersisted() throws Exception {
+		// given
 		authPersistenceQueryService.assertJdbcBackedServices();
 
 		Long before = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM oauth2_authorization", Long.class);
 
+		// when
 		mockMvc.perform(post("/oauth2/token")
 						.with(httpBasic(
 								AuthorizationServerConfig.CLIENT_MEMBER_SERVICE,
@@ -59,6 +63,7 @@ class OAuth2AuthorizationPersistenceTest extends AuthServerIntegrationTestSuppor
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.access_token").isNotEmpty());
 
+		// then
 		Long after = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM oauth2_authorization", Long.class);
 		assertThat(after).isGreaterThan(before);
 
@@ -76,7 +81,9 @@ class OAuth2AuthorizationPersistenceTest extends AuthServerIntegrationTestSuppor
 	}
 
 	@Test
+	@DisplayName("인가 동의 정보가 저장된다")
 	void authorizationConsentIsPersisted() {
+		// given
 		RegisteredClient client = registeredClientRepository.findByClientId(AuthorizationServerConfig.CLIENT_USER_PORTAL);
 		assertThat(client).isNotNull();
 
@@ -86,8 +93,10 @@ class OAuth2AuthorizationPersistenceTest extends AuthServerIntegrationTestSuppor
 				.scope("profile")
 				.scope("member.read")
 				.build();
+		// when
 		authorizationConsentService.save(consent);
 
+		// then
 		OAuth2AuthorizationConsent loaded = authorizationConsentService.findById(client.getId(), "user");
 		assertThat(loaded).isNotNull();
 		assertThat(loaded.getScopes()).contains("member.read", "profile");

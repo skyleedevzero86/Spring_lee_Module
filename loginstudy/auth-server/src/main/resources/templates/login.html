@@ -3,33 +3,94 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>LoginStudy Auth Login</title>
-    <link rel="stylesheet" th:href="@{/css/auth.css}"/>
+    <title>LoginStudy 통합 로그인</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
 </head>
-<body>
-<main class="panel">
-    <h1>LoginStudy Identity</h1>
-    <p class="subtitle">Authorization Server 로그인</p>
+<body class="login-page">
+<div class="login-shell">
+    <header class="page-header">
+        <h1>로그인</h1>
+        <nav class="breadcrumb" aria-label="현재 위치">
+            <span class="home-icon" aria-hidden="true"></span>
+            <span>통합인증</span>
+            <span class="divider" aria-hidden="true">›</span>
+            <strong>로그인</strong>
+        </nav>
+    </header>
 
-    <div th:if="${param.error}" class="alert error">
-        사용자 이름 또는 비밀번호가 올바르지 않습니다.
-    </div>
-    <div th:if="${param.logout}" class="alert info">
-        로그아웃되었습니다.
-    </div>
+    <main class="login-content">
+        <section class="login-intro" aria-labelledby="login-title">
+            <p>
+                LoginStudy 통합인증 페이지를 방문해 주셔서 감사합니다.<br/>
+                하나의 계정으로 권한에 맞는 서비스를 안전하게 이용할 수 있습니다.
+            </p>
 
-    <form th:action="@{/login}" method="post">
-        <label for="username">Username</label>
-        <input id="username" name="username" type="text" autocomplete="username" required autofocus/>
+            <div class="brand" id="login-title">
+                <span class="brand-mark" aria-hidden="true">LS</span>
+                <span>LoginStudy Identity</span>
+            </div>
 
-        <label for="password">Password</label>
-        <input id="password" name="password" type="password" autocomplete="current-password" required/>
+            <div th:if="${param.error}" class="alert error" role="alert">
+                아이디 또는 비밀번호가 올바르지 않습니다.
+            </div>
+            <div th:if="${param.logout}" class="alert info" role="status">
+                안전하게 로그아웃되었습니다.
+            </div>
+            <div th:if="${param.passwordReset}" class="alert info" role="status">
+                비밀번호가 변경되었습니다. 새 비밀번호로 로그인해 주세요.
+            </div>
 
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-        <button type="submit">로그인</button>
-    </form>
+            <form class="login-form" th:action="@{/login}" method="post">
+                <div class="credential-box">
+                    <div class="input-group">
+                        <label for="username">아이디</label>
+                        <input id="username"
+                               name="username"
+                               type="text"
+                               placeholder="ID"
+                               autocomplete="username"
+                               required
+                               autofocus/>
 
-    <p class="hint">데모 계정: user / admin (비밀번호는 README 참고)</p>
-</main>
+                        <label for="password">비밀번호</label>
+                        <input id="password"
+                               name="password"
+                               type="password"
+                               placeholder="PASSWORD"
+                               autocomplete="current-password"
+                               required/>
+                    </div>
+
+                    <button class="login-button" type="submit">
+                        <svg aria-hidden="true" viewBox="0 0 24 24">
+                            <circle cx="8" cy="12" r="4"></circle>
+                            <path d="M12 12h9m-3 0v3m-3-3v3"></path>
+                        </svg>
+                        <span>LOGIN</span>
+                    </button>
+                </div>
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            </form>
+            <p class="demo-hint">데모 계정: user / admin · 공통 비밀번호: ChangeMe123!</p>
+        </section>
+
+        <section class="account-guide" aria-label="계정 도움말">
+            <article>
+                <h2>아이디 / 비밀번호 찾기</h2>
+                <p>아이디 또는 비밀번호가 기억나지 않으세요?</p>
+                <div class="guide-actions">
+                    <a class="guide-button" th:href="@{/account-recovery/id}">아이디 찾기</a>
+                    <a class="guide-button" th:href="@{/account-recovery/password}">비밀번호 찾기</a>
+                </div>
+            </article>
+            <article>
+                <h2>회원가입 하기</h2>
+                <p>궁금하면 500원 통합회원이 아니시라면 회원가입해 주세요.</p>
+                <a class="guide-button" th:href="@{/register}">회원가입</a>
+            </article>
+        </section>
+    </main>
+</div>
 </body>
 </html>

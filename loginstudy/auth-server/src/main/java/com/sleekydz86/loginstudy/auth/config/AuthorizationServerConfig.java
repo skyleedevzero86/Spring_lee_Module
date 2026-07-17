@@ -82,6 +82,9 @@ public class AuthorizationServerConfig {
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers(
 								"/login",
+								"/register",
+								"/register/**",
+								"/account-recovery/**",
 								"/error",
 								"/css/**",
 								"/actuator/health",
@@ -140,7 +143,9 @@ public class AuthorizationServerConfig {
 				.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 				.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
 				.redirectUri("http://localhost:8081/login/oauth2/code/user-portal")
+				.redirectUri("http://localhost:8080/user/login/oauth2/code/user-portal")
 				.postLogoutRedirectUri("http://localhost:8081/")
+				.postLogoutRedirectUri("http://localhost:8080/user/")
 				.scope(OidcScopes.OPENID)
 				.scope(OidcScopes.PROFILE)
 				.scope(OidcScopes.EMAIL)
@@ -163,7 +168,9 @@ public class AuthorizationServerConfig {
 				.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 				.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
 				.redirectUri("http://localhost:8082/login/oauth2/code/admin-portal")
+				.redirectUri("http://localhost:8080/admin/login/oauth2/code/admin-portal")
 				.postLogoutRedirectUri("http://localhost:8082/")
+				.postLogoutRedirectUri("http://localhost:8080/admin/")
 				.scope(OidcScopes.OPENID)
 				.scope(OidcScopes.PROFILE)
 				.scope(OidcScopes.EMAIL)
