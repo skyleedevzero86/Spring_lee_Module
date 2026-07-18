@@ -4,12 +4,16 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
 @Service
 public class AuthAdminApiClient {
+
+	private static final Logger log = LoggerFactory.getLogger(AuthAdminApiClient.class);
 
 	private final RestClient authApiRestClient;
 
@@ -77,9 +81,13 @@ public class AuthAdminApiClient {
 			return ApiCallResult.success(body == null ? "" : body);
 		}
 		catch (RestClientResponseException ex) {
+			log.warn("인증 API 호출 실패: method={}, path={}, status={}",
+					method, path, ex.getStatusCode().value());
 			return ApiCallResult.failure(ex.getStatusCode().value(), ex.getResponseBodyAsString());
 		}
 		catch (Exception ex) {
+			log.warn("인증 API 연결 실패: method={}, path={}, cause={}",
+					method, path, ex.getMessage());
 			return ApiCallResult.failure(0, ex.getMessage());
 		}
 	}

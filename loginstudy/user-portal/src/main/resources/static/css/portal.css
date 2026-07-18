@@ -88,6 +88,20 @@ button.secondary, .secondary {
     align-self: center;
 }
 
+.profile-editor {
+    align-self: center;
+    min-width: 0;
+}
+
+.profile-notice {
+    margin: 0 0 1rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-weight: 700;
+}
+
 .profile-form label {
     display: block;
     align-self: center;
@@ -101,12 +115,19 @@ button.secondary, .secondary {
 }
 
 .profile-form input {
+    width: 100%;
     flex: 1;
     min-width: 0;
     padding: 0.75rem;
     border: 1px solid #cdd8df;
     background: #fff;
     font: inherit;
+}
+
+.saved-value {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--muted);
 }
 
 .profile-form button {

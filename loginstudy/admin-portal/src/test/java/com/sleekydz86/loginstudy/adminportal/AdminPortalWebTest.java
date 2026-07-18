@@ -19,6 +19,7 @@ import com.sleekydz86.loginstudy.adminportal.service.AuthAdminApiClient;
 import com.sleekydz86.loginstudy.adminportal.service.MemberAdminApiClient;
 import com.sleekydz86.loginstudy.adminportal.service.MemberAdminApiClient.ApiCallResult;
 import com.sleekydz86.loginstudy.adminportal.web.AdminHomeController;
+import com.sleekydz86.loginstudy.adminportal.web.AdminMemberView;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -33,9 +34,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 
 @Import({
-	AdminPortalOAuth2TestConfig.class,
-	AdminPortalWebTest.MockMemberApiConfig.class,
-	AdminPortalWebTest.MockAuthApiConfig.class
+		AdminPortalOAuth2TestConfig.class,
+		AdminPortalWebTest.MockMemberApiConfig.class,
+		AdminPortalWebTest.MockAuthApiConfig.class
 })
 @SpringBootTest(properties = "spring.main.allow-bean-definition-overriding=true")
 @AutoConfigureMockMvc
@@ -92,6 +93,7 @@ class AdminPortalWebTest extends RedisTestSupport {
 				.andExpect(content().string(containsString(
 						"data-url=\"/admin/members/1/sensitive/DISPLAY_NAME/reveal\"")))
 				.andExpect(content().string(containsString("홍*동")))
+				.andExpect(content().string(containsString("value=\"010-9999-8888\"")))
 				.andExpect(content().string(containsString("활성")));
 	}
 
@@ -146,6 +148,22 @@ class AdminPortalWebTest extends RedisTestSupport {
 	}
 
 	@Test
+	@DisplayName("인증 사용자 조회가 없어도 회원 상태를 표시한다")
+	void memberStatusIsFallbackWhenAccountStatusIsUnavailable() {
+		AdminMemberView.Member member = new AdminMemberView.Member(
+				1L,
+				"user",
+				"u***@example.com",
+				"홍*동",
+				"SUSPENDED",
+				null,
+				null,
+				null);
+
+		assertThat(member.effectiveStatus()).isEqualTo("SUSPENDED");
+	}
+
+	@Test
 	@DisplayName("관리자는 회원의 권한을 변경할 수 있다")
 	void adminCanChangeMemberRole() throws Exception {
 		// given
@@ -179,8 +197,14 @@ class AdminPortalWebTest extends RedisTestSupport {
 							"displayName":"홍길동","phone":"010-1234-5678","status":"ACTIVE",
 							"enabled":true,"accountNonLocked":true,"roles":["USER"]}]
 							"""));
+			Mockito.when(client.getOwnProfile(Mockito.anyString()))
+					.thenReturn(AuthAdminApiClient.ApiCallResult.success("""
+							{"id":2,"username":"admin","email":"admin@loginstudy.local",
+							"displayName":"admin","phone":"010-9999-8888","status":"ACTIVE",
+							"enabled":true,"accountNonLocked":true,"roles":["ADMIN"]}
+							"""));
 			Mockito.when(client.changeRole(
-							Mockito.anyString(), Mockito.eq("user"), Mockito.eq("ADMIN")))
+					Mockito.anyString(), Mockito.eq("user"), Mockito.eq("ADMIN")))
 					.thenReturn(AuthAdminApiClient.ApiCallResult.success("{}"));
 			return client;
 		}
@@ -201,7 +225,7 @@ class AdminPortalWebTest extends RedisTestSupport {
 							"page":0,"size":20,"totalElements":1,"totalPages":1}
 							"""));
 			Mockito.when(client.revealSensitiveField(
-							Mockito.anyString(), Mockito.eq(1L), Mockito.eq("DISPLAY_NAME")))
+					Mockito.anyString(), Mockito.eq(1L), Mockito.eq("DISPLAY_NAME")))
 					.thenReturn(ApiCallResult.success(
 							"{\"memberId\":1,\"field\":\"DISPLAY_NAME\",\"value\":\"홍길동\"}"));
 			return client;

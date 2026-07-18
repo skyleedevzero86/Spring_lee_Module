@@ -26,24 +26,41 @@
             <h2>내 정보 변경</h2>
             <p class="subtitle">이름·이메일·전화번호를 변경할 수 있습니다.</p>
         </div>
-        <form class="profile-form" th:action="@{/profile}" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <div class="profile-form-row">
-                <label for="displayName">이름</label>
-                <input id="displayName" name="displayName" type="text" maxlength="100"
-                       required th:value="${authProfile.displayName}"/>
-                <label for="profileEmail">이메일</label>
-                <input id="profileEmail" name="email" type="email" maxlength="255"
-                       required th:value="${authProfile.email}"/>
-                <label for="profilePhone">전화번호</label>
-                <input id="profilePhone" name="phone" type="tel" maxlength="30"
-                       required th:value="${authProfile.phone}"/>
-                <button type="submit">변경사항 저장</button>
+        <div class="profile-editor">
+            <div class="profile-notice ok" role="status" aria-live="polite"
+                 th:if="${param.updated}">
+                변경사항이 저장되었습니다. 아래 전화번호는 서버에서 다시 확인한 현재 저장값입니다.
             </div>
-        </form>
-        <p class="ok" th:if="${param.updated}">내 정보가 변경되었습니다.</p>
-        <p class="bad" th:if="${param.updateFailed}">내 정보를 변경하지 못했습니다. 다시 시도해 주세요.</p>
-        <p class="bad" th:if="${param.syncFailed}">인증 정보는 변경되었지만 회원 목록 동기화에 실패했습니다.</p>
+            <div class="profile-notice bad" role="alert"
+                 th:if="${param.updateFailed}">
+                변경사항을 저장하지 못했습니다. 입력 내용을 확인한 뒤 다시 시도해 주세요.
+            </div>
+            <div class="profile-notice bad" role="alert"
+                 th:if="${param.syncFailed}">
+                인증 정보는 변경되었지만 회원 목록 동기화에 실패했습니다.
+            </div>
+            <form class="profile-form" th:action="@{/profile}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="profile-form-row">
+                    <label for="displayName">이름</label>
+                    <input id="displayName" name="displayName" type="text" maxlength="100"
+                           required th:value="${authProfile.displayName}"/>
+                    <label for="profileEmail">이메일</label>
+                    <input id="profileEmail" name="email" type="email" maxlength="255"
+                           required th:value="${authProfile.email}"/>
+                    <label for="profilePhone">전화번호</label>
+                    <div>
+                        <input id="profilePhone" name="phone" type="tel" maxlength="30"
+                               required th:value="${authProfile.phone}"/>
+                        <small class="saved-value"
+                               th:text="|현재 저장된 전화번호: ${authProfile.phone}|">
+                            현재 저장된 전화번호
+                        </small>
+                    </div>
+                    <button type="submit">변경사항 저장</button>
+                </div>
+            </form>
+        </div>
     </section>
 
     <section class="grid">

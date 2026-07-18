@@ -35,6 +35,12 @@ public final class AdminMemberView {
 			String role,
 			String accountStatus) {
 
+		public String effectiveStatus() {
+			return accountStatus == null || accountStatus.isBlank()
+					? status
+					: accountStatus;
+		}
+
 		public Member withAccount(AuthUser account) {
 			String primaryRole = account.roles() != null && account.roles().contains("ADMIN")
 					? "ADMIN"

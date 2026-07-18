@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +33,8 @@ import tools.jackson.databind.ObjectMapper;
 @Controller
 @Tag(name = "Admin Portal Pages", description = "관리자 OIDC 포털 화면")
 public class AdminHomeController {
+
+	private static final Logger log = LoggerFactory.getLogger(AdminHomeController.class);
 
 	private final MemberAdminApiClient memberAdminApiClient;
 	private final AuthAdminApiClient authAdminApiClient;
@@ -55,6 +59,8 @@ public class AdminHomeController {
 		String accessToken = authorizedClient.getAccessToken().getTokenValue();
 		ApiCallResult apiResult = memberAdminApiClient.listMembers(accessToken);
 		AuthAdminApiClient.ApiCallResult authUsersResult = authAdminApiClient.listUsers(accessToken);
+		AuthAdminApiClient.ApiCallResult ownProfileResult =
+				authAdminApiClient.getOwnProfile(accessToken);
 		Map<String, AdminMemberView.AuthUser> accounts = parseAuthUsers(authUsersResult);
 		AdminMemberView.Page members = enrichMembers(parseMembers(apiResult), accounts);
 
@@ -71,7 +77,10 @@ public class AdminHomeController {
 		model.addAttribute("memberApiStatus", apiResult.statusCode());
 		model.addAttribute("members", members);
 		model.addAttribute("accountApiSuccess", authUsersResult.success());
-		model.addAttribute("ownProfile", findOwnProfile(accounts, oidcUser));
+		AdminMemberView.AuthUser ownProfile = parseAuthUser(ownProfileResult);
+		model.addAttribute("ownProfile", ownProfile == null
+				? findOwnProfile(accounts, oidcUser)
+				: ownProfile);
 		return "admin";
 	}
 
@@ -90,8 +99,8 @@ public class AdminHomeController {
 		if (member == null || "DELETED".equals(member.accountStatus())) {
 			return "redirect:/admin?accountFailed=1";
 		}
-		AuthAdminApiClient.ApiCallResult authResult =
-				authAdminApiClient.changeStatus(accessToken, username, normalizedStatus);
+		AuthAdminApiClient.ApiCallResult authResult = authAdminApiClient.changeStatus(accessToken, username,
+				normalizedStatus);
 		if (!authResult.success()) {
 			return "redirect:/admin?accountFailed=1";
 		}
@@ -119,8 +128,7 @@ public class AdminHomeController {
 		if (normalizedRole == null || findMember(accessToken, memberId, username) == null) {
 			return "redirect:/admin?accountFailed=1";
 		}
-		AuthAdminApiClient.ApiCallResult result =
-				authAdminApiClient.changeRole(accessToken, username, normalizedRole);
+		AuthAdminApiClient.ApiCallResult result = authAdminApiClient.changeRole(accessToken, username, normalizedRole);
 		return result.success()
 				? "redirect:/admin?accountUpdated=1"
 				: "redirect:/admin?accountFailed=1";
@@ -134,8 +142,8 @@ public class AdminHomeController {
 			@RequestParam String phone,
 			@RegisteredOAuth2AuthorizedClient("admin-portal") OAuth2AuthorizedClient authorizedClient) {
 		String accessToken = authorizedClient.getAccessToken().getTokenValue();
-		AuthAdminApiClient.ApiCallResult authResult =
-				authAdminApiClient.updateOwnProfile(accessToken, displayName, email, phone);
+		AuthAdminApiClient.ApiCallResult authResult = authAdminApiClient.updateOwnProfile(accessToken, displayName,
+				email, phone);
 		if (!authResult.success()) {
 			return "redirect:/admin?profileFailed=1";
 		}
@@ -158,8 +166,7 @@ public class AdminHomeController {
 			return projection.success()
 					? "redirect:/admin?profileUpdated=1"
 					: "redirect:/admin?syncFailed=1";
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			return "redirect:/admin?syncFailed=1";
 		}
 	}
@@ -196,8 +203,7 @@ public class AdminHomeController {
 		}
 		try {
 			return objectMapper.readValue(apiResult.body(), AdminMemberView.Page.class);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			return AdminMemberView.Page.empty();
 		}
 	}
@@ -209,15 +215,47 @@ public class AdminHomeController {
 		}
 		try {
 			return Arrays.stream(objectMapper.readValue(
-							apiResult.body(),
-							AdminMemberView.AuthUser[].class))
+					apiResult.body(),
+					AdminMemberView.AuthUser[].class))
 					.collect(Collectors.toMap(
 							AdminMemberView.AuthUser::username,
 							Function.identity()));
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			return Map.of();
 		}
+	}
+
+	private AdminMemberView.AuthUser parseAuthUser(
+			AuthAdminApiClient.ApiCallResult apiResult) {
+		if (!apiResult.success() || apiResult.body().isBlank()) {
+			return null;
+		}
+		try {
+			var node = objectMapper.readTree(apiResult.body());
+			return new AdminMemberView.AuthUser(
+					node.get("id") == null ? null : node.get("id").asLong(),
+					jsonText(node, "username"),
+					jsonText(node, "email"),
+					jsonText(node, "displayName"),
+					jsonText(node, "phone"),
+					jsonText(node, "tenantId"),
+					node.get("enabled") != null && node.get("enabled").asBoolean(),
+					node.get("accountNonLocked") != null
+							&& node.get("accountNonLocked").asBoolean(),
+					jsonText(node, "status"),
+					Set.of(),
+					null);
+		}
+		catch (Exception ex) {
+			log.warn("내 정보 응답 변환 실패: {}", ex.getMessage());
+			return null;
+		}
+	}
+
+	private static String jsonText(tools.jackson.databind.JsonNode node, String field) {
+		return node.get(field) == null || node.get(field).isNull()
+				? ""
+				: node.get(field).stringValue();
 	}
 
 	private static AdminMemberView.Page enrichMembers(

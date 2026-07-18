@@ -178,6 +178,15 @@ table.contable th {
     align-items: end;
 }
 
+.profile-notice {
+    margin: 0 0 1rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+    background: var(--soft);
+    font-weight: 700;
+}
+
 .profile-form label {
     display: grid;
     gap: 0.4rem;
@@ -192,6 +201,12 @@ table.contable th {
     border-radius: 0.5rem;
     padding: 0 0.65rem;
     background: #fff;
+}
+
+.saved-value {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 400;
 }
 
 .inline-control {

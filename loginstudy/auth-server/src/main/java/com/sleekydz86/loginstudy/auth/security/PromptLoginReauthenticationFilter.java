@@ -44,9 +44,9 @@ public class PromptLoginReauthenticationFilter extends OncePerRequestFilter {
 				&& authentication.isAuthenticated()
 				&& !(authentication instanceof AnonymousAuthenticationToken)) {
 			new SecurityContextLogoutHandler().logout(request, response, authentication);
-			if (state != null) {
-				request.getSession(true).setAttribute(REAUTHENTICATION_STATE, state);
-			}
+		}
+		if (state != null) {
+			request.getSession(true).setAttribute(REAUTHENTICATION_STATE, state);
 		}
 		filterChain.doFilter(request, response);
 	}

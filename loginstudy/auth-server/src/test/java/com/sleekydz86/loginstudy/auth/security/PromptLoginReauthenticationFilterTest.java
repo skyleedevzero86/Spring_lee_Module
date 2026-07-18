@@ -50,4 +50,42 @@ class PromptLoginReauthenticationFilterTest {
 		assertThat(chainCalled).isTrue();
 		assertThat(request.getSession(false)).isNotNull();
 	}
+
+	@Test
+	@DisplayName("첫 로그인 후 같은 OAuth 요청으로 복귀하면 인증을 유지한다")
+	void promptLoginKeepsAuthenticationAfterInitialLogin() throws Exception {
+		// given
+		PromptLoginReauthenticationFilter filter = new PromptLoginReauthenticationFilter();
+		MockHttpServletRequest initialRequest = promptLoginRequest("state-456");
+		MockHttpServletResponse initialResponse = new MockHttpServletResponse();
+
+		// when
+		filter.doFilter(initialRequest, initialResponse, (request, response) -> {
+		});
+		var session = initialRequest.getSession(false);
+		SecurityContextHolder.getContext().setAuthentication(
+				new UsernamePasswordAuthenticationToken(
+						"user",
+						"password",
+						List.of(new SimpleGrantedAuthority("ROLE_USER"))));
+		MockHttpServletRequest resumedRequest = promptLoginRequest("state-456");
+		resumedRequest.setSession(session);
+		AtomicBoolean authenticationKept = new AtomicBoolean();
+		filter.doFilter(
+				resumedRequest,
+				new MockHttpServletResponse(),
+				(request, response) -> authenticationKept.set(
+						SecurityContextHolder.getContext().getAuthentication() != null));
+
+		// then
+		assertThat(authenticationKept).isTrue();
+	}
+
+	private static MockHttpServletRequest promptLoginRequest(String state) {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/oauth2/authorize");
+		request.setServletPath("/oauth2/authorize");
+		request.setParameter("prompt", "login");
+		request.setParameter("state", state);
+		return request;
+	}
 }
