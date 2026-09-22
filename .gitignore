@@ -25,6 +25,7 @@ TestResults.xml
 **/.gradle/
 
 /*
+!/failurelab/
 !/jvmboard/
 !/concurrentlab/
 !.gitignore

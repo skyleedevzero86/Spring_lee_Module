@@ -7,24 +7,35 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 
 ## 프로젝트
 
-| 경로                         | 요약                                                                                                                                                                                        |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [loginstudy](./loginstudy)   | 회원·인증 플랫폼 축소판. OAuth2 Authorization Server, OIDC, SSO, Resource Server, Redis Session, PostgreSQL 튜닝을 **Spring Boot 4.1** 기준으로 구성합니다.                                 |
-| [catalogflow](./catalogflow) | 상품 카탈로그 CQRS 플랫폼. Command/Query 분리, RabbitMQ Outbox, MongoDB Read Model, Redis Cache, LocalStack S3, Stub/Ollama/Gemini AI Enrichment를 **Spring Boot 4.1** 기준으로 구성합니다. |
-| [jvmboard](./jvmboard)       | JVM 런타임 대시보드. MXBean으로 Java/힙/GC/가동시간을 조회하고 Vue 3 Dashboard로 표시합니다. <br>헥사고날·DDD·SOLID를 **Spring Boot 4.1 + Java 27** 기준으로 구성합니다.                    |
-| [concurrentlab](./concurrentlab) | Concurrent API Lab. 고객 통합조회(프로필·주문·추천)를 Sequential vs `StructuredTaskScope`로 비교합니다. <br>헥사고날·Strategy·Vue 3(pnpm)·**Java 27 Preview** 기준입니다. |
+| 경로                             | 요약                                                                                                                                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [loginstudy](./loginstudy)       | 회원·인증 플랫폼 축소판. OAuth2 Authorization Server, OIDC, SSO, Resource Server, Redis Session, PostgreSQL 튜닝을 **Spring Boot 4.1** 기준으로 구성합니다.                                 |
+| [catalogflow](./catalogflow)     | 상품 카탈로그 CQRS 플랫폼. Command/Query 분리, RabbitMQ Outbox, MongoDB Read Model, Redis Cache, LocalStack S3, Stub/Ollama/Gemini AI Enrichment를 **Spring Boot 4.1** 기준으로 구성합니다. |
+| [jvmboard](./jvmboard)           | JVM 런타임 대시보드. MXBean으로 Java/힙/GC/가동시간을 조회하고 Vue 3 Dashboard로 표시합니다. <br>헥사고날·DDD·SOLID를 **Spring Boot 4.1 + Java 27** 기준으로 구성합니다.                    |
+| [concurrentlab](./concurrentlab) | Concurrent API Lab. 고객 통합조회(프로필·주문·추천)를 Sequential vs `StructuredTaskScope`로 비교합니다. <br>헥사고날·Strategy·Vue 3· **Java 27 Preview** 기준입니다.                        |
+| [failurelab](./failurelab)       | 장애/Timeout Lab. 하위 작업 실패·타임아웃 시 SUCCESS/FAILED/CANCELLED와 예외 전파를 보여줍니다. <br>헥사고날·`StructuredTaskScope`·Vue 3· **Java 27 Preview** 기준입니다.                   |
 
 ## Spring 학습 기록
 
 학습할 때마다 날짜·주제·실습 모듈을 이어서 적습니다.
 
+### 2026-09-23 — Failure / Timeout Lab
+
+- **버전**: Spring Boot 4.1.1, Java 27, Gradle Kotlin DSL, Vue 3, pnpm
+- **모듈**: `failurelab` (backend) · `frontend`(frontend)
+- **익힌 기능**
+  - `StructuredTaskScope` + timeout으로 실패 시 sibling 취소
+  - Task 상태 SUCCESS / FAILED / CANCELLED 관찰
+  - 예외 전파 와 Reason 표시
+  - Vue 3 장애 시뮬레이션 UI
+
 ### 2026-09-22 — Concurrent API Lab
 
-- **버전**: Spring Boot 4.1.1, Java 27 (`--enable-preview`), Gradle Kotlin DSL, Vue 3, pnpm
-- **모듈**: `concurrentlab` (backend) · `frontend`
+- **버전**: Spring Boot 4.1.1, Java 27 , Gradle Kotlin DSL, Vue 3, pnpm
+- **모듈**: `concurrentlab` (backend) · `frontend` (frontend)
 - **익힌 기능**
   - `StructuredTaskScope` 기반 구조화 동시성 vs 순차 실행 지연 비교
-  - 헥사고날 + DDD (`customer` / `global`) + Strategy · Factory
+  - 헥사고날 + DDD + Strategy · Factory
   - 시뮬레이션 어댑터 (`Thread.sleep` 500/800/600ms)
   - Vue 3 고객 통합조회 UI (pnpm)
 
