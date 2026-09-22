@@ -26,6 +26,7 @@ TestResults.xml
 
 /*
 !/jvmboard/
+!/concurrentlab/
 !.gitignore
 !LICENSE
 !README.md

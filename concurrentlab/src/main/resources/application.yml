@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: concurrentlab
+
+server:
+  port: 8081
+
+concurrentlab:
+  latency:
+    profile-millis: 500
+    orders-millis: 800
+    recommendations-millis: 600
