@@ -1,0 +1,156 @@
+:root {
+  color-scheme: dark;
+  --bg: #141614;
+  --card: #f3f0e8;
+  --ink: #1b1a17;
+  --muted: #6f6b62;
+  --line: #e2ddd2;
+  --bar: #1f6b45;
+  --live: #1f7a4d;
+  font-family: "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 500px at 50% -10%, #2a312c 0%, transparent 55%),
+    var(--bg);
+  color: var(--card);
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.shell {
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 72px 0 48px;
+}
+
+.heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #b7c2b8;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #d7e7da;
+  font-size: 13px;
+}
+
+.live i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 0 0 rgba(31, 122, 77, 0.7);
+  animation: pulse 1.8s infinite;
+}
+
+.card {
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 18px;
+  padding: 8px 28px 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 16px;
+  align-items: baseline;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.row dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.row dd {
+  margin: 0;
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 20px;
+  text-align: right;
+}
+
+.meter {
+  height: 6px;
+  margin: 4px 0 8px;
+  border-radius: 99px;
+  background: #e7e2d8;
+  overflow: hidden;
+}
+
+.meter span {
+  display: block;
+  height: 100%;
+  background: var(--bar);
+}
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  color: #9aa59b;
+  font-size: 12px;
+  font-family: "Cascadia Mono", Consolas, monospace;
+}
+
+.error {
+  margin: 0 0 12px;
+  color: #ffb4a8;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .row dd {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live i {
+    animation: none;
+  }
+}
+
+@keyframes pulse {
+  70% {
+    box-shadow: 0 0 0 8px rgba(31, 122, 77, 0);
+  }
+}

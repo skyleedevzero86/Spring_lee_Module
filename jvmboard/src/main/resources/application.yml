@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: jvmboard
+
+server:
+  port: 8080

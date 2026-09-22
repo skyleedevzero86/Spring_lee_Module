@@ -25,6 +25,7 @@ TestResults.xml
 **/.gradle/
 
 /*
+!/jvmboard/
 !.gitignore
 !LICENSE
 !README.md
