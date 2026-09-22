@@ -12,11 +12,22 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [loginstudy](./loginstudy)     | 회원·인증 플랫폼 축소판. OAuth2 Authorization Server, OIDC, SSO, Resource Server, Redis Session, PostgreSQL 튜닝을 **Spring Boot 4.1** 기준으로 구성합니다.                                         |
 | [catalogflow](./catalogflow)   | 상품 카탈로그 CQRS 플랫폼. Command/Query 분리, RabbitMQ Outbox, MongoDB Read Model, Redis Cache, LocalStack S3, Stub/Ollama/Gemini AI Enrichment를 **Spring Boot 4.1** 기준으로 구성합니다. |
+| [jvmboard](./jvmboard)         | JVM 런타임 대시보드. MXBean으로 Java/힙/GC/가동시간을 조회하고 Vue 3 Dashboard로 표시합니다. 헥사고날·DDD·SOLID를 **Spring Boot 4.1 + Java 27** 기준으로 구성합니다. |
 
 
 ## Spring 학습 기록
 
 학습할 때마다 날짜·주제·실습 모듈을 이어서 적습니다.
+
+### 2026-09-22 — JVMBoard Dashboard
+
+- **버전**: Spring Boot 4.1.1, Java 27, Gradle Kotlin DSL, Vue 3
+- **모듈**: `jvmboard` (backend) · `frontend` (Vue + Vite)
+- **익힌 기능**
+  - 헥사고날 + DDD (`system` 조회 패키지 / `global` 설정·유틸)
+  - `GET /api/system` — Runtime · Memory · GC · Uptime MXBean 스냅샷
+  - Vue 3 대시보드 실시간 폴링
+  - Gradle Java toolchain (Azul Zulu 27)
 
 ### 2026-07-16 — CatalogFlow AI
 

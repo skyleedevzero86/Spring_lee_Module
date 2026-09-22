@@ -23,13 +23,13 @@ const rows = computed(() => {
   }
   const current = snapshot.value
   return [
-    ['Java Version', current.javaVersion],
+    ['Java 버전', current.javaVersion],
     ['JVM', current.jvm],
     ['CPU', current.cpu],
-    ['Heap Used', current.heapUsed],
-    ['Heap Max', current.heapMax],
-    ['Garbage Collector', current.garbageCollector],
-    ['Uptime', current.uptime],
+    ['힙 사용량', current.heapUsed],
+    ['힙 최대', current.heapMax],
+    ['가비지 컬렉터', current.garbageCollector],
+    ['가동 시간', current.uptime],
   ]
 })
 
@@ -44,7 +44,7 @@ async function load() {
   try {
     const response = await fetch('/api/system')
     if (!response.ok) {
-      throw new Error(String(response.status))
+      throw new Error(`응답 상태 코드: ${response.status}`)
     }
     snapshot.value = (await response.json()) as SystemSnapshot
     error.value = ''
@@ -69,10 +69,10 @@ onUnmounted(() => {
   <main class="shell">
     <header class="heading">
       <div>
-        <p class="eyebrow">Runtime</p>
-        <h1>Dashboard</h1>
+        <p class="eyebrow">런타임</p>
+        <h1>대시보드</h1>
       </div>
-      <p class="live"><i></i> Live</p>
+      <p class="live"><i></i> 실시간</p>
     </header>
 
     <p v-if="error" class="error">{{ error }}</p>
@@ -90,8 +90,8 @@ onUnmounted(() => {
     </section>
 
     <footer class="foot">
-      <span>GET /api/system</span>
-      <span>2s</span>
+      <span>시스템 API · /api/system</span>
+      <span>2초</span>
     </footer>
   </main>
 </template>
