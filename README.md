@@ -15,10 +15,20 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 | [concurrentlab](./concurrentlab) | Concurrent API Lab. 고객 통합조회(프로필·주문·추천)를 Sequential vs `StructuredTaskScope`로 비교합니다. <br>헥사고날·Strategy·Vue 3· **Java 27 Preview** 기준입니다.                        |
 | [failurelab](./failurelab)       | 장애/Timeout Lab. 하위 작업 실패·타임아웃 시 SUCCESS/FAILED/CANCELLED와 예외 전파를 보여줍니다. <br>헥사고날·`StructuredTaskScope`·Vue 3· **Java 27 Preview** 기준입니다.                   |
 | [lazylab](./lazylab)             | Lazy Constant Lab. `LazyConstant`로 AI 모델 설정을 최초 접근 시 한 번만 로드합니다. <br>헥사고날·JEP 531·Vue 3·**Java 27 Preview** 기준입니다.                                              |
+| [pemlab](./pemlab)               | PEM Security Lab. `PEMEncoder`/`PEMDecoder`로 키 분석·RSA 키 쌍 생성을 보여줍니다. <br>헥사고날·JEP 538·Vue 3·**Java 27 Preview** 기준입니다.                                               |
 
 ## Spring 학습 기록
 
 학습할 때마다 날짜·주제·실습 모듈을 이어서 적습니다.
+
+### 2026-09-23 — PEM Security Lab
+
+- **버전**: Spring Boot 4.1.1, Java 27 , Gradle Kotlin DSL, Vue 3, pnpm
+- **모듈**: `pemlab` (backend) · `frontend`
+- **익힌 기능**
+  - `PEMDecoder`로 PUBLIC/PRIVATE KEY 분석
+  - `PEMEncoder` + `KeyPairGenerator`로 RSA 2048 키 쌍 생성
+  - Vue 3 PEM Inspector UI
 
 ### 2026-09-23 — Lazy Constant Lab
 

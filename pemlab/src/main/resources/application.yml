@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: pemlab
+
+server:
+  port: 8084
+
+pemlab:
+  keygen:
+    algorithm: RSA
+    key-size: 2048
