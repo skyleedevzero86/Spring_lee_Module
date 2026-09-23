@@ -1,0 +1,7 @@
+{
+  "modelName": "lab-transformer-v27",
+  "provider": "local-ai",
+  "temperature": 0.2,
+  "maxTokens": 2048,
+  "endpoint": "https://models.local/v1/chat"
+}

@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: lazylab
+
+server:
+  port: 8083
+
+lazylab:
+  config:
+    resource-path: classpath:config/model-config.json
+    load-delay-millis: 800

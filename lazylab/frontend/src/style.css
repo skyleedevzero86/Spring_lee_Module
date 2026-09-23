@@ -1,0 +1,143 @@
+:root {
+  --bg: #0f1418;
+  --panel: #f3efe6;
+  --ink: #171512;
+  --muted: #6c675d;
+  --line: #ddd5c7;
+  --accent: #245f7a;
+  --ok: #1f6b45;
+  --soft: #e8e2d6;
+  font-family: "IBM Plex Sans KR", "Noto Sans KR", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--panel);
+  background:
+    radial-gradient(900px 420px at 85% -10%, #1d3a48 0%, transparent 55%),
+    radial-gradient(700px 360px at 5% 0%, #243028 0%, transparent 50%),
+    var(--bg);
+}
+
+.shell {
+  width: min(720px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 56px 0 64px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #a9c0cb;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: clamp(32px, 5vw, 44px);
+  letter-spacing: -0.04em;
+}
+
+.lead {
+  margin: 0 0 28px;
+  max-width: 44ch;
+  color: #c7d5db;
+  line-height: 1.55;
+}
+
+.panel {
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+}
+
+.card {
+  background: var(--soft);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.card h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.status {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.status.NOT_INITIALIZED {
+  color: var(--muted);
+}
+
+.status.INITIALIZED {
+  color: var(--ok);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font: inherit;
+  cursor: pointer;
+  background: var(--accent);
+  color: white;
+}
+
+button.secondary {
+  background: var(--ink);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.result {
+  margin-top: 18px;
+  background: #fffdf8;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.result p {
+  margin: 0 0 8px;
+}
+
+.result p:last-child {
+  margin-bottom: 0;
+}
+
+.load {
+  font-size: 28px;
+  letter-spacing: -0.03em;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 13px;
+  font-family: Consolas, monospace;
+}
+
+.error {
+  margin: 14px 0 0;
+  color: #9a3b2f;
+}
