@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: jvmperf
+
+server:
+  port: 8086
+
+jvmperf:
+  load:
+    chunk-megabytes: 100

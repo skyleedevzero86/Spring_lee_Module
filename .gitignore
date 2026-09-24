@@ -25,6 +25,7 @@ TestResults.xml
 **/.gradle/
 
 /*
+!/jvmperf/
 !/patternlab/
 !/pemlab/
 !/lazylab/

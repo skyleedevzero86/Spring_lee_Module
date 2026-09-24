@@ -1,0 +1,138 @@
+:root {
+  --bg: #10140f;
+  --panel: #f4efe6;
+  --ink: #171512;
+  --muted: #6d675c;
+  --line: #ddd4c5;
+  --bar: #1f6b45;
+  --soft: #ebe4d7;
+  font-family: "IBM Plex Sans KR", "Noto Sans KR", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--panel);
+  background:
+    radial-gradient(900px 420px at 90% -10%, #243028 0%, transparent 55%),
+    radial-gradient(700px 360px at 0% 0%, #2a2218 0%, transparent 50%),
+    var(--bg);
+}
+
+.shell {
+  width: min(720px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 52px 0 64px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #b7c2b8;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: clamp(30px, 5vw, 42px);
+  letter-spacing: -0.04em;
+}
+
+.lead {
+  margin: 0 0 28px;
+  max-width: 44ch;
+  color: #c8d0c8;
+  line-height: 1.55;
+}
+
+.panel {
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+}
+
+.card {
+  background: var(--soft);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.track {
+  height: 14px;
+  border-radius: 999px;
+  background: #d8d0c2;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.track span {
+  display: block;
+  height: 100%;
+  background: var(--bar);
+}
+
+.meta,
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: Consolas, monospace;
+  font-size: 14px;
+}
+
+.row {
+  padding: 6px 0;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font: inherit;
+  cursor: pointer;
+  background: var(--ink);
+  color: white;
+  margin-top: 8px;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.compare {
+  margin-top: 18px;
+  background: #fffdf8;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.compare h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.arrow {
+  margin: 10px 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.error {
+  margin: 14px 0 0;
+  color: #9a3b2f;
+}
