@@ -18,10 +18,20 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 | [pemlab](./pemlab)               | PEM Security Lab. `PEMEncoder`/`PEMDecoder`로 키 분석·RSA 키 쌍 생성을 보여줍니다. <br>헥사고날·JEP 538·Vue 3·**Java 27 Preview** 기준입니다.                                               |
 | [patternlab](./patternlab)       | Primitive Pattern Lab. `switch`/`instanceof` primitive pattern으로 숫자 정확 변환을 보여줍니다. <br> JEP 532·Vue 3(TS)·**Java 27 Preview** 기준입니다.                                      |
 | [jvmperf](./jvmperf)             | JVM Performance Lab. 힙·G1 GC·스레드 모니터와 100MB 할당 전후 비교를 보여줍니다. <br>MXBean·Vue 3·**Java 27** 기준입니다.                                                                   |
+| [opspilot](./opspilot)           | OpsPilot. Jev/Mock AI 장애 분류, Fault Simulator, Resilience4j, Redis 캐시, 통계 차트 UI. <br>Virtual Thread·Vue 3·**Spring Boot 4.1 + Java 25** 기준입니다.                                |
 
 ## Spring 학습 기록
 
 학습할 때마다 날짜·주제·실습 모듈을 이어서 적습니다.
+
+### 2026-09-25 — OpsPilot AI Incident Triage
+
+- **버전**: Spring Boot 4.1.1, Java 25, Gradle Kotlin DSL, Vue 3, TypeScript, pnpm, Chart.js
+- **모듈**: `opspilot` (backend) · `frontend`
+- **익힌 기능**
+  - Jev noul/choice/score + Mock AI Strategy
+  - Virtual Thread · Resilience4j · Redis fingerprint cache
+  - Fault Simulator · 기간별/시간별 통계 API · Vue 대시보드 차트
 
 ### 2026-09-24 — JVM Performance Lab
 

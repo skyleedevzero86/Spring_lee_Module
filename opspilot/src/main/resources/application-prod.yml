@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:opspilot}
+    username: ${POSTGRES_USER:opspilot}
+    password: ${POSTGRES_PASSWORD:opspilot}
+
+jev:
+  enabled: true
+
+app:
+  ai:
+    mode: ${APP_AI_MODE:jev}
+
+opspilot:
+  cache:
+    mode: redis
+    ttl: 10m

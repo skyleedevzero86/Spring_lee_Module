@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:opspilot;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.data.redis.autoconfigure.RedisAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.RedisRepositoriesAutoConfiguration
+
+jev:
+  enabled: false
+
+app:
+  ai:
+    mode: mock
+
+opspilot:
+  cache:
+    mode: memory
+    ttl: 10m

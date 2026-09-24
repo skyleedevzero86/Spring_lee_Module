@@ -1,0 +1,92 @@
+spring:
+  application:
+    name: opspilot
+  profiles:
+    default: local
+    group:
+      local:
+        - virtual
+      prod:
+        - virtual
+  http:
+    clients:
+      connect-timeout: 5s
+      read-timeout: 3s
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+server:
+  port: ${SERVER_PORT:8090}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,circuitbreakers,retries
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+jev:
+  enabled: false
+  base-url: ${JEV_BASE_URL:https://api.typesafe.ai}
+  model: ${JEV_MODEL:jev-latest}
+  api-key: ${TYPESAFE_API_KEY:}
+
+app:
+  ai:
+    mode: mock
+    urgent-threshold: 0.6
+
+opspilot:
+  cache:
+    mode: memory
+    ttl: 10m
+  notification:
+    enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      jevTriage:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true
+        automatic-transition-from-open-to-half-open-enabled: true
+  retry:
+    instances:
+      jevTriage:
+        max-attempts: 2
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+  ratelimiter:
+    instances:
+      jevTriage:
+        limit-for-period: 20
+        limit-refresh-period: 1s
+        timeout-duration: 0s
+  bulkhead:
+    instances:
+      jevTriage:
+        max-concurrent-calls: 10
+        max-wait-duration: 0
