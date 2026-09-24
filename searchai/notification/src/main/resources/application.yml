@@ -1,0 +1,20 @@
+server:
+  port: ${NOTIFY_PORT:8095}
+
+spring:
+  application:
+    name: searchai-notification
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  notification:
+    telegram-enabled: ${NOTIFY_TELEGRAM_ENABLED:false}
+    telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
+    telegram-chat-id: ${TELEGRAM_CHAT_ID:}
+    slack-enabled: ${NOTIFY_SLACK_ENABLED:false}
+    slack-webhook-url: ${SLACK_WEBHOOK_URL:}

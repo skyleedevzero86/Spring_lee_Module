@@ -1,0 +1,29 @@
+spring:
+  autoconfigure:
+    exclude: []
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:127.0.0.1}:${POSTGRES_PORT:5432}/${POSTGRES_DB:searchai}
+    username: ${POSTGRES_USER:searchai}
+    password: ${POSTGRES_PASSWORD:searchai}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  ai:
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 1536
+        initialize-schema: true
+
+app:
+  ai:
+    mode: openai
+  vector:
+    mode: pgvector
+  cache:
+    mode: redis

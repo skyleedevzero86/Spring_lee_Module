@@ -1,0 +1,14 @@
+spring:
+  autoconfigure:
+    exclude: []
+
+app:
+  ai:
+    mode: openai
+  vector:
+    mode: redis
+  router:
+    mode: jev
+    confidence-threshold: 0.8
+  cache:
+    mode: redis

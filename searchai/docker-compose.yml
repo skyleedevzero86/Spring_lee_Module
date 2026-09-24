@@ -1,0 +1,68 @@
+services:
+  redis-stack:
+    image: redis/redis-stack:latest
+    container_name: searchai-redis
+    ports:
+      - "9379:6379"
+    environment:
+      REDIS_ARGS: "--requirepass 123456"
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: searchai-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: searchai
+      POSTGRES_USER: searchai
+      POSTGRES_PASSWORD: searchai
+    volumes:
+      - searchai-pg:/var/lib/postgresql/data
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searchai-searxng
+    ports:
+      - "6080:8080"
+    environment:
+      BASE_URL: "http://localhost:6080/"
+      INSTANCE_NAME: "lee-instance"
+    volumes:
+      - ./docker/searxng:/etc/searxng
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: searchai-prometheus
+    ports:
+      - "9092:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: searchai-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards/json:ro
+    depends_on:
+      - prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    container_name: searchai-jaeger
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
+volumes:
+  searchai-pg:

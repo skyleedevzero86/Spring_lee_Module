@@ -1,0 +1,116 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "LLM 호출량",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(llm_request_total_total[5m])) by (model)",
+          "legendFormat": "{{model}}"
+        }
+      ]
+    },
+    {
+      "title": "Model별 비용",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(llm_cost_total_total[5m])) by (model)",
+          "legendFormat": "{{model}}"
+        }
+      ]
+    },
+    {
+      "title": "p95 Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(llm_request_duration_seconds_bucket[5m])) by (le, model))",
+          "legendFormat": "{{model}}"
+        }
+      ]
+    },
+    {
+      "title": "실패율",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(llm_request_failure_total[5m])) by (model) / clamp_min(sum(rate(llm_request_total_total[5m])) by (model), 1e-9)",
+          "legendFormat": "{{model}}"
+        }
+      ]
+    },
+    {
+      "title": "Token 사용량",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(rate(llm_tokens_input_total[5m])) by (model)",
+          "legendFormat": "in {{model}}"
+        },
+        {
+          "expr": "sum(rate(llm_tokens_output_total[5m])) by (model)",
+          "legendFormat": "out {{model}}"
+        }
+      ]
+    },
+    {
+      "title": "Cache Hit / Miss",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        { "expr": "sum(rate(llm_cache_hit_total[5m]))", "legendFormat": "hit" },
+        { "expr": "sum(rate(llm_cache_miss_total[5m]))", "legendFormat": "miss" }
+      ]
+    },
+    {
+      "title": "Routing 방식",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [
+        { "expr": "sum(rate(llm_routing_rule_total[5m]))", "legendFormat": "RULE" },
+        { "expr": "sum(rate(llm_routing_jev_total[5m]))", "legendFormat": "JEV" },
+        { "expr": "sum(rate(llm_routing_fallback_total[5m]))", "legendFormat": "FALLBACK" },
+        { "expr": "sum(rate(llm_routing_manual_total[5m]))", "legendFormat": "MANUAL" }
+      ]
+    },
+    {
+      "title": "CircuitBreaker 상태",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        {
+          "expr": "llm_circuit_state",
+          "legendFormat": "{{tier}}"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["searchai", "llm-gateway"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "browser",
+  "title": "SearchAI LLM Gateway",
+  "uid": "searchai-llm-gateway",
+  "version": 1
+}

@@ -25,6 +25,7 @@ TestResults.xml
 **/.gradle/
 
 /*
+!/searchai/
 !/opspilot/
 !/jvmperf/
 !/patternlab/

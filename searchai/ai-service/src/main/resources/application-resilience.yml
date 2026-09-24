@@ -1,0 +1,26 @@
+app:
+  fallback:
+    routes:
+      LUNA: [TERRA]
+      TERRA: [LUNA, SOL]
+      SOL: [TERRA, ASTRA]
+      ASTRA: [SOL, TERRA]
+  resilience:
+    retry:
+      max-attempts: 3
+      wait-duration-ms: 200
+    circuit-breaker:
+      failure-rate-threshold: 50
+      sliding-window-size: 10
+      wait-duration-in-open-state-ms: 30000
+      permitted-number-of-calls-in-half-open-state: 3
+    rate-limiter:
+      limit-for-period: 40
+      limit-refresh-period-ms: 1000
+    bulkhead:
+      max-concurrent-calls: 20
+      max-wait-duration-ms: 0
+  cost-aware:
+    enabled: true
+    min-success-rate: 0.95
+    prefer-cheaper-when: similar-quality

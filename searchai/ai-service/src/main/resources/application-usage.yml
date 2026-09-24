@@ -1,0 +1,38 @@
+app:
+  usage:
+    max-output-tokens: 300
+    per-request-limit: 300
+    daily-limit: 5000
+    weekly-limit: 25000
+    monthly-limit: 100000
+    daily-cost-limit: 2.0
+    monthly-cost-limit: 10.0
+    soft-ratio: 0.8
+    warn-ratio: 0.9
+    anomaly-multiplier: 3.0
+    rate-limit-per-minute: 30
+    plans:
+      FREE:
+        max-output-tokens: 300
+        daily-limit: 5000
+        weekly-limit: 25000
+        monthly-limit: 50000
+        monthly-cost-limit: 5.0
+        rate-limit-per-minute: 10
+        max-tier-cap: SOL
+      PRO:
+        max-output-tokens: 2000
+        daily-limit: 50000
+        weekly-limit: 200000
+        monthly-limit: 500000
+        monthly-cost-limit: 50.0
+        rate-limit-per-minute: 60
+        max-tier-cap: ASTRA
+      ADMIN:
+        max-output-tokens: 4000
+        daily-limit: 200000
+        weekly-limit: 1000000
+        monthly-limit: 5000000
+        monthly-cost-limit: 500.0
+        rate-limit-per-minute: 120
+        max-tier-cap: ASTRA

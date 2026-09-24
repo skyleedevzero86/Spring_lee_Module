@@ -1,0 +1,27 @@
+app:
+  models:
+    tiers:
+      LUNA:
+        model-name: gpt-5.6-luna
+        priority: 1
+        estimated-input-cost: 0.0002
+        estimated-output-cost: 0.0006
+        enabled: true
+      TERRA:
+        model-name: gpt-5.6-terra
+        priority: 2
+        estimated-input-cost: 0.0005
+        estimated-output-cost: 0.0015
+        enabled: true
+      SOL:
+        model-name: gpt-5.6-sol
+        priority: 3
+        estimated-input-cost: 0.002
+        estimated-output-cost: 0.006
+        enabled: true
+      ASTRA:
+        model-name: gpt-6-astra
+        priority: 4
+        estimated-input-cost: 0.008
+        estimated-output-cost: 0.024
+        enabled: true

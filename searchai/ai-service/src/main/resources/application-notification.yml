@@ -1,0 +1,9 @@
+app:
+  notification:
+    telegram-enabled: ${NOTIFY_TELEGRAM_ENABLED:false}
+    telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
+    telegram-chat-id: ${TELEGRAM_CHAT_ID:}
+    slack-enabled: ${NOTIFY_SLACK_ENABLED:false}
+    slack-webhook-url: ${SLACK_WEBHOOK_URL:}
+    relay-enabled: ${NOTIFY_RELAY_ENABLED:false}
+    relay-url: ${NOTIFY_RELAY_URL:http://127.0.0.1:8095/notify}

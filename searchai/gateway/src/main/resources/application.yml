@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: searchai-gateway
+  http:
+    codecs:
+      max-in-memory-size: 20MB
+  grpc:
+    client:
+      channel:
+        ai-service:
+          target: ${AI_GRPC_TARGET:static://127.0.0.1:9090}
+
+server:
+  port: ${SERVER_PORT:8088}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  security:
+    jwt-secret: ${JWT_SECRET:searchai-demo-secret-change-me-please-32b}
+    token-ttl-seconds: 86400
+    users:
+      - username: admin
+        password: admin123
+        role: ADMIN
+      - username: user
+        password: user123
+        role: USER

@@ -1,0 +1,12 @@
+.gradle/
+build/
+out/
+.idea/
+*.iml
+hs_err_pid*.log
+replay_pid*.log
+
+data/
+frontend/node_modules/
+frontend/dist/
+docs/
