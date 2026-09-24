@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: patternlab
+
+server:
+  port: 8085

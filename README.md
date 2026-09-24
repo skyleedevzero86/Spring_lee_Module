@@ -16,10 +16,20 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 | [failurelab](./failurelab)       | 장애/Timeout Lab. 하위 작업 실패·타임아웃 시 SUCCESS/FAILED/CANCELLED와 예외 전파를 보여줍니다. <br>헥사고날·`StructuredTaskScope`·Vue 3· **Java 27 Preview** 기준입니다.                   |
 | [lazylab](./lazylab)             | Lazy Constant Lab. `LazyConstant`로 AI 모델 설정을 최초 접근 시 한 번만 로드합니다. <br>헥사고날·JEP 531·Vue 3·**Java 27 Preview** 기준입니다.                                              |
 | [pemlab](./pemlab)               | PEM Security Lab. `PEMEncoder`/`PEMDecoder`로 키 분석·RSA 키 쌍 생성을 보여줍니다. <br>헥사고날·JEP 538·Vue 3·**Java 27 Preview** 기준입니다.                                               |
+| [patternlab](./patternlab)       | Primitive Pattern Lab. `switch`/`instanceof` primitive pattern으로 숫자 정확 변환을 보여줍니다. <br> JEP 532·Vue 3(TS)·**Java 27 Preview** 기준입니다.                                      |
 
 ## Spring 학습 기록
 
 학습할 때마다 날짜·주제·실습 모듈을 이어서 적습니다.
+
+### 2026-09-24 — Primitive Pattern Lab
+
+- **버전**: Spring Boot 4.1.1, Java 27, Gradle Kotlin DSL, Vue 3, TypeScript, pnpm
+- **모듈**: `patternlab` (backend) · `frontend`
+- **익힌 기능**
+  - primitive type pattern
+  - `switch`로 기본 분류
+  - Vue 3 + TypeScript 함수형 UI
 
 ### 2026-09-23 — PEM Security Lab
 
