@@ -1,11 +1,13 @@
 package com.sleekydz86.searchai.usage.application.service;
 
+import com.sleekydz86.searchai.global.config.AppProperties;
 import com.sleekydz86.searchai.global.metrics.LlmMetricsService;
 import com.sleekydz86.searchai.router.domain.ModelTier;
 import com.sleekydz86.searchai.router.domain.RoutingDecision;
 import com.sleekydz86.searchai.router.domain.RoutingType;
 import com.sleekydz86.searchai.usage.application.anomaly.AnomalyDetectionStrategy;
 import com.sleekydz86.searchai.usage.application.port.out.NotificationSender;
+import com.sleekydz86.searchai.usage.application.port.out.RateLimitPort;
 import com.sleekydz86.searchai.usage.application.port.out.UsageStorePort;
 import com.sleekydz86.searchai.usage.domain.BudgetState;
 import com.sleekydz86.searchai.usage.domain.LlmUsageRecord;
@@ -22,6 +24,7 @@ import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,31 +45,44 @@ public final class UsagePolicyService {
 	private final LlmMetricsService llmMetricsService;
 	private final List<AnomalyDetectionStrategy> anomalyStrategies;
 	private final List<NotificationSender> notificationSenders;
-	private final ConcurrentHashMap<String, WindowCounter> rateWindows = new ConcurrentHashMap<>();
+	private final RateLimitPort rateLimitPort;
+	private final AppProperties appProperties;
+	private final ModelPriceService modelPriceService;
 	private final ConcurrentHashMap<String, Long> alertCooldown = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, WindowCounter> burstWindows = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, WindowCounter> expensiveWindows = new ConcurrentHashMap<>();
 
 	public UsagePolicyService(
 		UsageStorePort usageStorePort,
 		RuntimePolicyService runtimePolicyService,
 		LlmMetricsService llmMetricsService,
 		List<AnomalyDetectionStrategy> anomalyStrategies,
-		List<NotificationSender> notificationSenders
+		List<NotificationSender> notificationSenders,
+		RateLimitPort rateLimitPort,
+		AppProperties appProperties,
+		ModelPriceService modelPriceService
 	) {
 		this.usageStorePort = usageStorePort;
 		this.runtimePolicyService = runtimePolicyService;
 		this.llmMetricsService = llmMetricsService;
 		this.anomalyStrategies = anomalyStrategies;
 		this.notificationSenders = notificationSenders;
+		this.rateLimitPort = rateLimitPort;
+		this.appProperties = appProperties;
+		this.modelPriceService = modelPriceService;
 	}
 
 	public PolicyDecision authorize(String username, RequestType requestType, long estimatedTokens) {
-		RuntimePolicy policy = runtimePolicyService.current();
-		if (!tryAcquireRate(username, policy.rateLimitPerMinute())) {
+		EffectiveLimits limits = resolveLimits(username);
+		if (!rateLimitPort.tryAcquire(username, limits.rateLimitPerMinute())) {
 			llmMetricsService.recordBlocked();
+			emitAlertOnce("RATE_LIMIT", username, "MEDIUM",
+				"분당 요청 한도 초과 — user=" + username + ", limit=" + limits.rateLimitPerMinute());
 			return PolicyDecision.deny("분당 요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.");
 		}
-		if (estimatedTokens > policy.perRequestLimit()) {
-			return PolicyDecision.deny("요청당 최대 토큰(" + policy.perRequestLimit() + ")을 초과했습니다.");
+		detectBurst(username);
+		if (estimatedTokens > limits.perRequestLimit()) {
+			return PolicyDecision.deny("요청당 최대 토큰(" + limits.perRequestLimit() + ")을 초과했습니다.");
 		}
 
 		long today = usageStorePort.sumTokensSince(username, startOfDay());
@@ -75,16 +91,29 @@ public final class UsagePolicyService {
 		double todayCost = sumCost(username, startOfDay());
 		double monthCost = sumCost(username, startOfMonth());
 
-		double dayRatio = (double) (today + estimatedTokens) / policy.dailyLimit();
-		double weekRatio = (double) (week + estimatedTokens) / policy.weeklyLimit();
-		double monthRatio = (double) (month + estimatedTokens) / policy.monthlyLimit();
-		double dayCostRatio = (todayCost) / policy.dailyCostLimit();
-		double monthCostRatio = (monthCost) / policy.monthlyCostLimit();
+		double dayRatio = (double) (today + estimatedTokens) / limits.dailyLimit();
+		double weekRatio = (double) (week + estimatedTokens) / limits.weeklyLimit();
+		double monthRatio = (double) (month + estimatedTokens) / limits.monthlyLimit();
+		double dayCostRatio = todayCost / limits.dailyCostLimit();
+		double monthCostRatio = monthCost / limits.monthlyCostLimit();
 		double ratio = Math.max(Math.max(dayRatio, weekRatio), Math.max(monthRatio, Math.max(dayCostRatio, monthCostRatio)));
-		ModelTier cap = parseTier(policy.maxTierCap());
-		long maxOut = policy.maxOutputTokens();
+		ModelTier cap = limits.maxTierCap();
+		long maxOut = limits.maxOutputTokens();
 
-		detectAnomaly(username, today + estimatedTokens, policy);
+		detectAnomaly(username, today + estimatedTokens, limits.anomalyMultiplier());
+
+		if (dayRatio >= 1.0) {
+			emitAlertOnce("DAILY_TOKEN_EXCEEDED", username, "HIGH",
+				"일일 Token 한도 초과 — user=" + username);
+		}
+		if (monthRatio >= 1.0) {
+			emitAlertOnce("MONTHLY_TOKEN_EXCEEDED", username, "HIGH",
+				"월간 Token 한도 초과 — user=" + username);
+		}
+		if (monthCostRatio >= 1.0) {
+			emitAlertOnce("MONTHLY_COST_EXCEEDED", username, "HIGH",
+				"월간 Cost 한도 초과 — user=" + username);
+		}
 
 		if (ratio >= 1.0) {
 			emitAlertOnce("HARD_LIMIT", username, "HIGH",
@@ -105,6 +134,7 @@ public final class UsagePolicyService {
 			return PolicyDecision.deny("일/주/월 토큰 또는 비용 한도를 초과했습니다.");
 		}
 
+		RuntimePolicy policy = runtimePolicyService.current();
 		if (ratio >= policy.warnRatio()) {
 			emitAlertOnce("WARN_LIMIT", username, "MEDIUM",
 				"Budget 90%+ — user=" + username + ", ratio=" + pct(ratio));
@@ -140,7 +170,7 @@ public final class UsagePolicyService {
 		String actual = actualModel == null || actualModel.isBlank() ? selected : actualModel;
 		boolean fallback = !selected.equals(actual) || decision.routingType() == RoutingType.FALLBACK;
 		String tier = TokenCostCalculator.resolveTier(actual).displayName();
-		double cost = TokenCostCalculator.estimate(actual, promptTokens, completionTokens);
+		double cost = modelPriceService.estimate(actual, promptTokens, completionTokens, Instant.now());
 		usageStorePort.save(new LlmUsageRecord(
 			decision.requestId(),
 			username,
@@ -165,6 +195,9 @@ public final class UsagePolicyService {
 		llmMetricsService.recordTokens(actual, promptTokens, completionTokens);
 		llmMetricsService.recordCost(actual, cost);
 		llmMetricsService.recordCache(cached);
+		if (TokenCostCalculator.resolveTier(actual) == ModelTier.ASTRA) {
+			detectExpensiveSpike(username);
+		}
 		log.info("사용량 기록: user={} selected={} actual={} tokens={} cost=${} cache={}",
 			username, selected, actual, promptTokens + completionTokens, cost, cached);
 	}
@@ -219,16 +252,114 @@ public final class UsagePolicyService {
 		);
 	}
 
-	private void detectAnomaly(String username, long todayProjected, RuntimePolicy policy) {
+	private EffectiveLimits resolveLimits(String username) {
+		RuntimePolicy base = runtimePolicyService.current();
+		String planName = resolvePlanName(username, base.defaultPlan());
+		AppProperties.PlanDef plan = appProperties.usage() == null
+			? null
+			: appProperties.usage().plansOrEmpty().get(planName);
+		if (plan == null) {
+			return new EffectiveLimits(
+				base.maxOutputTokens(),
+				base.perRequestLimit(),
+				base.dailyLimit(),
+				base.weeklyLimit(),
+				base.monthlyLimit(),
+				base.dailyCostLimit(),
+				base.monthlyCostLimit(),
+				base.rateLimitPerMinute(),
+				parseTier(base.maxTierCap()),
+				base.anomalyMultiplier()
+			);
+		}
+		return new EffectiveLimits(
+			plan.maxOutputTokens() > 0 ? plan.maxOutputTokens() : base.maxOutputTokens(),
+			base.perRequestLimit(),
+			plan.dailyLimit() > 0 ? plan.dailyLimit() : base.dailyLimit(),
+			plan.weeklyLimit() > 0 ? plan.weeklyLimit() : base.weeklyLimit(),
+			plan.monthlyLimit() > 0 ? plan.monthlyLimit() : base.monthlyLimit(),
+			base.dailyCostLimit(),
+			plan.monthlyCostLimit() > 0 ? plan.monthlyCostLimit() : base.monthlyCostLimit(),
+			plan.rateLimitPerMinute() > 0 ? plan.rateLimitPerMinute() : base.rateLimitPerMinute(),
+			min(parseTier(base.maxTierCap()), parseTier(plan.maxTierCap() == null ? "ASTRA" : plan.maxTierCap())),
+			base.anomalyMultiplier()
+		);
+	}
+
+	private String resolvePlanName(String username, String defaultPlan) {
+		if (username != null && username.equalsIgnoreCase("admin")) {
+			return "ADMIN";
+		}
+		return defaultPlan == null || defaultPlan.isBlank() ? "PRO" : defaultPlan.toUpperCase();
+	}
+
+	private void detectAnomaly(String username, long todayProjected, double multiplier) {
 		double avg = usageStorePort.averageDailyTokens(username, 7);
-		double std = avg * 0.35;
+		double std = stdDevDaily(username, 7, avg);
 		for (AnomalyDetectionStrategy strategy : anomalyStrategies) {
 			AnomalyDetectionStrategy.AnomalyResult result = strategy.detect(username, todayProjected, avg, std);
 			if (result.anomalous()) {
 				emitAlertOnce("ANOMALY", username, "HIGH",
-					"[LLM 사용량 경고] 사용자=" + username + ", " + result.reason());
+					"[LLM 사용량 경고] 사용자=" + username + ", " + result.reason()
+						+ " (policyMultiplier=" + multiplier + ")");
 				llmMetricsService.recordAnomaly();
 				break;
+			}
+		}
+	}
+
+	private double stdDevDaily(String username, int days, double avg) {
+		Instant from = Instant.now().minus(days, ChronoUnit.DAYS);
+		List<LlmUsageRecord> records = usageStorePort.findBetween(username, from, Instant.now());
+		if (records.isEmpty() || avg <= 0) {
+			return avg * 0.35;
+		}
+		Map<LocalDate, Long> byDay = new LinkedHashMap<>();
+		for (LlmUsageRecord record : records) {
+			LocalDate day = LocalDate.ofInstant(record.createdAt(), ZoneOffset.UTC);
+			byDay.merge(day, record.totalTokens(), Long::sum);
+		}
+		if (byDay.size() < 2) {
+			return avg * 0.35;
+		}
+		double variance = byDay.values().stream()
+			.mapToDouble(v -> {
+				double diff = v - avg;
+				return diff * diff;
+			})
+			.average()
+			.orElse(0);
+		return Math.sqrt(variance);
+	}
+
+	private void detectBurst(String username) {
+		long now = System.currentTimeMillis();
+		WindowCounter counter = burstWindows.computeIfAbsent(username, k -> new WindowCounter());
+		synchronized (counter) {
+			if (now - counter.windowStart > 10_000L) {
+				counter.windowStart = now;
+				counter.count.set(0);
+			}
+			int n = counter.count.incrementAndGet();
+			if (n >= 20) {
+				emitAlertOnce("BURST", username, "HIGH",
+					"단기간 폭주 호출 — user=" + username + ", 10초내 " + n + "회");
+			}
+		}
+	}
+
+	private void detectExpensiveSpike(String username) {
+		long now = System.currentTimeMillis();
+		WindowCounter counter = expensiveWindows.computeIfAbsent(username, k -> new WindowCounter());
+		synchronized (counter) {
+			if (now - counter.windowStart > 60_000L) {
+				counter.windowStart = now;
+				counter.count.set(0);
+			}
+			int n = counter.count.incrementAndGet();
+			if (n >= 5) {
+				emitAlertOnce("EXPENSIVE_SPIKE", username, "MEDIUM",
+					"고가 Model(ASTRA) 사용 급증 — user=" + username + ", 1분내 " + n + "회");
 			}
 		}
 	}
@@ -251,26 +382,18 @@ public final class UsagePolicyService {
 			.sum();
 	}
 
-	private boolean tryAcquireRate(String username, int limit) {
-		long now = System.currentTimeMillis();
-		WindowCounter counter = rateWindows.computeIfAbsent(username, key -> new WindowCounter());
-		synchronized (counter) {
-			if (now - counter.windowStart > 60_000L) {
-				counter.windowStart = now;
-				counter.count.set(0);
-			}
-			return counter.count.incrementAndGet() <= limit;
-		}
-	}
-
 	private static String pct(double ratio) {
 		return String.format("%.0f%%", ratio * 100);
 	}
 
 	private static ModelTier parseTier(String value) {
+		if (value == null || value.isBlank()) {
+			return ModelTier.ASTRA;
+		}
 		try {
 			return ModelTier.valueOf(value.trim().toUpperCase());
 		} catch (Exception ex) {
+			log.warn("잘못된 모델 티어 '{}', ASTRA로 대체합니다", value);
 			return ModelTier.ASTRA;
 		}
 	}
@@ -297,6 +420,20 @@ public final class UsagePolicyService {
 	private static final class WindowCounter {
 		private long windowStart = System.currentTimeMillis();
 		private final AtomicInteger count = new AtomicInteger();
+	}
+
+	private record EffectiveLimits(
+		long maxOutputTokens,
+		long perRequestLimit,
+		long dailyLimit,
+		long weeklyLimit,
+		long monthlyLimit,
+		double dailyCostLimit,
+		double monthlyCostLimit,
+		int rateLimitPerMinute,
+		ModelTier maxTierCap,
+		double anomalyMultiplier
+	) {
 	}
 
 	public record ModelStat(

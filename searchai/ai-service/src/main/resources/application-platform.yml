@@ -1,0 +1,6 @@
+spring:
+  threads:
+    virtual:
+      enabled: false
+
+# Baseline platform-thread profile for comparison with application-virtual.yml

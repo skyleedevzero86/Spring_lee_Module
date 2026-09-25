@@ -103,6 +103,61 @@
           "legendFormat": "{{tier}}"
         }
       ]
+    },
+    {
+      "title": "Budget Warning / Exceeded",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "targets": [
+        { "expr": "sum(rate(llm_budget_warning_total[5m]))", "legendFormat": "warning" },
+        { "expr": "sum(rate(llm_budget_exceeded_total[5m]))", "legendFormat": "exceeded" }
+      ]
+    },
+    {
+      "title": "Anomaly / Downgrade / Blocked",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "targets": [
+        { "expr": "sum(rate(llm_anomaly_detected_total[5m]))", "legendFormat": "anomaly" },
+        { "expr": "sum(rate(llm_model_downgrade_total[5m]))", "legendFormat": "downgrade" },
+        { "expr": "sum(rate(llm_request_blocked_total[5m]))", "legendFormat": "blocked" }
+      ]
+    },
+    {
+      "title": "gRPC Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(grpc_request_duration_seconds_bucket[5m])) by (le, method))",
+          "legendFormat": "{{method}}"
+        }
+      ]
+    },
+    {
+      "title": "JVM Heap",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+      "targets": [
+        { "expr": "jvm_memory_used_bytes{area=\"heap\"}", "legendFormat": "{{id}}" }
+      ]
+    },
+    {
+      "title": "GC Pause",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 48 },
+      "targets": [
+        { "expr": "rate(jvm_gc_pause_seconds_sum[5m])", "legendFormat": "{{action}}" }
+      ]
+    },
+    {
+      "title": "HikariCP Connections",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 48 },
+      "targets": [
+        { "expr": "hikaricp_connections_active", "legendFormat": "active" },
+        { "expr": "hikaricp_connections_idle", "legendFormat": "idle" }
+      ]
     }
   ],
   "schemaVersion": 39,
@@ -112,5 +167,5 @@
   "timezone": "browser",
   "title": "SearchAI LLM Gateway",
   "uid": "searchai-llm-gateway",
-  "version": 1
+  "version": 2
 }

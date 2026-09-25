@@ -11,6 +11,7 @@ app:
     warn-ratio: 0.9
     anomaly-multiplier: 3.0
     rate-limit-per-minute: 30
+    rate-limit-backend: ${USAGE_RATE_LIMIT_BACKEND:memory}
     plans:
       FREE:
         max-output-tokens: 300

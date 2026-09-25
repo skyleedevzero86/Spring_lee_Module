@@ -7,3 +7,7 @@ app:
     slack-webhook-url: ${SLACK_WEBHOOK_URL:}
     relay-enabled: ${NOTIFY_RELAY_ENABLED:false}
     relay-url: ${NOTIFY_RELAY_URL:http://127.0.0.1:8095/notify}
+    email-enabled: ${NOTIFY_EMAIL_ENABLED:false}
+    email-to: ${NOTIFY_EMAIL_TO:}
+    email-from: ${NOTIFY_EMAIL_FROM:searchai@localhost}
+    email-webhook-url: ${NOTIFY_EMAIL_WEBHOOK_URL:}

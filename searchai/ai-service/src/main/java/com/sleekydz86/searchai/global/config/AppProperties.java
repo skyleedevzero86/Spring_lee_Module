@@ -247,7 +247,11 @@ public record AppProperties(
 		boolean slackEnabled,
 		String slackWebhookUrl,
 		boolean relayEnabled,
-		String relayUrl
+		String relayUrl,
+		boolean emailEnabled,
+		String emailTo,
+		String emailFrom,
+		String emailWebhookUrl
 	) {
 	}
 

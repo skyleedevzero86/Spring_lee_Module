@@ -44,7 +44,7 @@ public final class ModelRouterService {
 	public RoutingDecision route(String prompt) {
 		RoutingDecision decision = ruleBasedRouter.tryRoute(prompt)
 			.map(d -> {
-				log.info("Hybrid Router RULE → {} (confidence={})", d.model(), d.confidence());
+				log.info("규칙 라우터 선택 → 모델={} (신뢰도={})", d.model(), d.confidence());
 				return d;
 			})
 			.orElseGet(() -> {
@@ -57,7 +57,7 @@ public final class ModelRouterService {
 					RoutingType.JEV,
 					jev.requestId()
 				);
-				log.info("Hybrid Router JEV → {} (confidence={})", typed.model(), typed.confidence());
+				log.info("Jev 라우터 선택 → 모델={} (신뢰도={})", typed.model(), typed.confidence());
 				return confidencePromotionPolicy.apply(typed);
 			});
 		decision = costAwareRoutingPolicy.apply(decision);
@@ -65,8 +65,17 @@ public final class ModelRouterService {
 	}
 
 	public RoutingDecision routeManual(String forcedTier) {
-		ModelTier tier = ModelTier.valueOf(forcedTier.trim().toUpperCase());
-		log.info("수동 라우팅 Override → {}", modelCatalogService.modelName(tier));
+		if (forcedTier == null || forcedTier.isBlank()) {
+			throw new IllegalArgumentException("수동 라우팅 티어가 비어 있습니다");
+		}
+		ModelTier tier;
+		try {
+			tier = ModelTier.valueOf(forcedTier.trim().toUpperCase());
+		} catch (IllegalArgumentException ex) {
+			log.warn("잘못된 수동 라우팅 티어: {}", forcedTier);
+			throw new IllegalArgumentException("지원하지 않는 모델 티어입니다: " + forcedTier);
+		}
+		log.info("수동 라우팅 지정 → {}", modelCatalogService.modelName(tier));
 		return applyHealth(RoutingDecision.of(
 			tier,
 			modelCatalogService.modelName(tier),
@@ -80,7 +89,7 @@ public final class ModelRouterService {
 		if (decision.tier().ordinal() <= maxAllowed.ordinal()) {
 			return decision;
 		}
-		log.info("Budget 강등: {} → {}", decision.tier(), maxAllowed);
+		log.info("예산 정책 강등: {} → {}", decision.tier(), maxAllowed);
 		return decision.withTier(maxAllowed, modelCatalogService.modelName(maxAllowed));
 	}
 
@@ -88,7 +97,7 @@ public final class ModelRouterService {
 		if (!modelCatalogService.enabled(decision.tier()) || !modelHealthRegistry.isRoutable(decision.tier())) {
 			ModelTier healthy = modelHealthRegistry.nearestAvailable(decision.tier());
 			if (healthy != decision.tier() && modelCatalogService.enabled(healthy)) {
-				log.info("Health Policy: {} ({}) → {}", decision.tier(),
+				log.info("상태 정책 우회: {} ({}) → {}", decision.tier(),
 					modelHealthRegistry.health(decision.tier()), healthy);
 				return decision.withTier(healthy, modelCatalogService.modelName(healthy));
 			}

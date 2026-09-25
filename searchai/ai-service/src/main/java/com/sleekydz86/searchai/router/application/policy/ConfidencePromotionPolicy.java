@@ -30,7 +30,7 @@ public final class ConfidencePromotionPolicy {
 		if (upgraded == decision.tier()) {
 			return decision;
 		}
-		log.info("Confidence {} < {} → {} 승격", decision.confidence(), threshold, upgraded);
+		log.info("신뢰도 {} < 임계값 {} → {} 승격", decision.confidence(), threshold, upgraded);
 		return decision.withTier(upgraded, modelCatalogService.modelName(upgraded));
 	}
 }

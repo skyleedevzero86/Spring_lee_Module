@@ -66,7 +66,7 @@ public final class ModelHealthRegistry {
 		int fail = failures.get(tier).incrementAndGet();
 		if (total >= Math.max(5, windowSize / 2) && fail * 100.0 / total >= failureRateThreshold) {
 			openUntil.get(tier).set(System.currentTimeMillis() + openDurationMs);
-			log.warn("모델 {} Circuit OPEN (실패율 높음, {}ms 차단)", tier, openDurationMs);
+			log.warn("모델 {} 회로차단기 열림 (실패율 높음, {}ms 동안 차단)", tier, openDurationMs);
 			failures.get(tier).set(0);
 			calls.get(tier).set(0);
 		}

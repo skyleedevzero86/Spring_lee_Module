@@ -25,6 +25,9 @@ message ChatRequest {
 message ChatChunk {
   string content = 1;
   string event_type = 2;
+  string request_id = 3;
+  int64 sequence = 4;
+  string finish_reason = 5;
 }
 
 service AiChatService {

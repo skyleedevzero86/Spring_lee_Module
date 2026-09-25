@@ -66,10 +66,15 @@ public final class ChatController {
 		AuthUser user = (AuthUser) authentication.getPrincipal();
 		String streamUserId = user.username() + ":" + (sessionId == null || sessionId.isBlank() ? "default" : sessionId);
 		return sseHub.connect(streamUserId)
-			.map(payload -> ServerSentEvent.<String>builder()
-				.event(payload.eventType())
-				.data(payload.content())
-				.build());
+			.map(payload -> {
+				var builder = ServerSentEvent.<String>builder()
+					.event(payload.eventType())
+					.data(payload.content());
+				if (payload.id() != null && !payload.id().isBlank()) {
+					builder.id(payload.id());
+				}
+				return builder.build();
+			});
 	}
 
 	public record ChatRequest(

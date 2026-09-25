@@ -75,9 +75,6 @@ public final class StreamChatService implements StreamChatUseCase {
 				if (!policy.llmRequired() || requestType.isInternalOnly()) {
 					return internalAnswer(query, requestType, policy);
 				}
-				if (policy.generalBlocked() && requestType.requiresExternalLlm()) {
-					return Flux.just(StreamChunk.add(policy.message()), StreamChunk.finish("done"));
-				}
 				return continueChat(query, requestType, policy);
 			})
 			.onErrorResume(error -> {
@@ -127,6 +124,8 @@ public final class StreamChatService implements StreamChatUseCase {
 		String prompt,
 		PolicyDecision policy
 	) {
+		String requestId = decision.requestId();
+		AtomicLong seq = new AtomicLong();
 		String cacheKey = sha256(decision.model() + "|stream|maxOut=" + policy.maxOutputTokens() + "|" + prompt);
 		var cached = responseCachePort.get(cacheKey);
 		if (cached.isPresent()) {
@@ -142,23 +141,33 @@ public final class StreamChatService implements StreamChatUseCase {
 					"cached", "true",
 					"budget", policy.budgetState().name(),
 					"requestType", requestType.name()
-				)))),
-				Flux.fromIterable(chunkText(trimToMaxOutput(cached.get(), policy.maxOutputTokens()), 28)).map(StreamChunk::add),
-				Mono.just(StreamChunk.finish("done"))
+				)), requestId, seq.incrementAndGet())),
+				Flux.fromIterable(chunkText(trimToMaxOutput(cached.get(), policy.maxOutputTokens()), 28))
+					.map(part -> StreamChunk.add(part, requestId, seq.incrementAndGet())),
+				Mono.just(StreamChunk.finish("done", requestId, seq.incrementAndGet(), "stop"))
+			);
+		}
+
+		if (policy.generalBlocked() && requestType.requiresExternalLlm()) {
+			llmMetricsService.recordCache(false);
+			return Flux.just(
+				StreamChunk.add(policy.message(), requestId, seq.incrementAndGet()),
+				StreamChunk.finish("done", requestId, seq.incrementAndGet(), "budget_exceeded")
 			);
 		}
 
 		AtomicReference<StringBuilder> buffer = new AtomicReference<>(new StringBuilder());
+		AtomicReference<String> actualModel = new AtomicReference<>(decision.model());
 		AtomicLong started = new AtomicLong(System.currentTimeMillis());
 		return Flux.concat(
 			Mono.just(StreamChunk.routing(decision.asSsePayload(Map.of(
 				"cached", "false",
 				"budget", policy.budgetState().name(),
 				"requestType", requestType.name()
-			)))),
-			llmStreamPort.stream(prompt, decision.model())
+			)), requestId, seq.incrementAndGet())),
+			llmStreamPort.stream(prompt, decision.model(), actualModel)
 				.doOnNext(part -> buffer.get().append(part))
-				.map(StreamChunk::add)
+				.map(part -> StreamChunk.add(part, requestId, seq.incrementAndGet()))
 				.doOnComplete(() -> {
 					String answer = trimToMaxOutput(buffer.get().toString(), policy.maxOutputTokens());
 					responseCachePort.put(cacheKey, answer);
@@ -167,7 +176,7 @@ public final class StreamChatService implements StreamChatUseCase {
 						TokenCostCalculator.estimatePromptTokens(prompt),
 						TokenCostCalculator.estimatePromptTokens(answer),
 						System.currentTimeMillis() - started.get(),
-						true, false, decision.model(), null
+						true, false, actualModel.get(), null
 					);
 					llmMetricsService.recordTokensTotal(
 						TokenCostCalculator.estimatePromptTokens(prompt) + TokenCostCalculator.estimatePromptTokens(answer)
@@ -178,9 +187,9 @@ public final class StreamChatService implements StreamChatUseCase {
 					TokenCostCalculator.estimatePromptTokens(prompt),
 					0,
 					System.currentTimeMillis() - started.get(),
-					false, false, decision.model(), error.getClass().getSimpleName()
+					false, false, actualModel.get(), error.getClass().getSimpleName()
 				)),
-			Mono.just(StreamChunk.finish("done"))
+			Mono.just(StreamChunk.finish("done", requestId, seq.incrementAndGet(), "stop"))
 		);
 	}
 
@@ -208,6 +217,7 @@ public final class StreamChatService implements StreamChatUseCase {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			return HexFormat.of().formatHex(digest.digest(value.getBytes(StandardCharsets.UTF_8)));
 		} catch (Exception ex) {
+			log.warn("SHA-256 해시 실패, 대체 해시 사용: {}", ex.getMessage());
 			return Integer.toHexString(value.hashCode());
 		}
 	}

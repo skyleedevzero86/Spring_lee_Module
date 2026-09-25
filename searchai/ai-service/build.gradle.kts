@@ -52,4 +52,5 @@ dependencies {
     testImplementation("org.mockito:mockito-core")
     testImplementation("org.mockito:mockito-junit-jupiter")
     testImplementation("org.assertj:assertj-core")
+    testImplementation("com.squareup.okhttp3::4.12.0")
 }

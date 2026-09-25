@@ -198,6 +198,7 @@ public final class UsageStatsService {
 				int year = ldt.get(weekFields.weekBasedYear());
 				yield year + "-W" + String.format("%02d", week);
 			}
+			case MONTH -> ldt.format(DateTimeFormatter.ofPattern("yyyy-MM"));
 		};
 	}
 }

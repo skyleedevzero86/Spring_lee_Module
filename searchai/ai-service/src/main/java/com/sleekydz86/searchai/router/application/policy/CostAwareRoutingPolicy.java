@@ -52,7 +52,7 @@ public final class CostAwareRoutingPolicy {
 		}
 		double successRate = recent.stream().filter(LlmUsageRecord::success).count() * 1.0 / recent.size();
 		if (successRate >= cfg.minSuccessRateOrDefault()) {
-			log.info("Cost-aware: {} 성공률 {}% ≥ {}% → {} 우선",
+			log.info("비용 인식 라우팅: {} 성공률 {}% ≥ {}% → {} 우선",
 				cheaper, String.format("%.1f", successRate * 100),
 				String.format("%.0f", cfg.minSuccessRateOrDefault() * 100), cheaper);
 			return decision.withTier(cheaper, cheaperModel);

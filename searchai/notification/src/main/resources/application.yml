@@ -18,3 +18,7 @@ app:
     telegram-chat-id: ${TELEGRAM_CHAT_ID:}
     slack-enabled: ${NOTIFY_SLACK_ENABLED:false}
     slack-webhook-url: ${SLACK_WEBHOOK_URL:}
+    email-enabled: ${NOTIFY_EMAIL_ENABLED:false}
+    email-to: ${NOTIFY_EMAIL_TO:}
+    email-from: ${NOTIFY_EMAIL_FROM:searchai@localhost}
+    email-webhook-url: ${NOTIFY_EMAIL_WEBHOOK_URL:}
