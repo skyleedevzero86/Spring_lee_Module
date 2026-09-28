@@ -1,0 +1,24 @@
+:root {
+  color: #102a43;
+  background:
+    radial-gradient(circle at top left, #d9f3ff 0, transparent 35%),
+    linear-gradient(160deg, #f7fbff 0%, #eef6f1 45%, #f8f1eb 100%);
+  font-family: "Pretendard", "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}

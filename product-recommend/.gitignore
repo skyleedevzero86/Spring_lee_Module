@@ -1,0 +1,15 @@
+.gradle/
+build/
+/out/
+bin/
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.log
+*.class
+.DS_Store
+frontend/node_modules/
+frontend/dist/
+data/

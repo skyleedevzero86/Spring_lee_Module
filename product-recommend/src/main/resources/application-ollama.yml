@@ -1,0 +1,17 @@
+spring:
+  ai:
+    model:
+      embedding: ollama
+      chat: ollama
+  autoconfigure:
+    exclude: []
+
+app:
+  embedding:
+    provider: ollama
+    model: ${OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+    backfill-enabled: true
+  vector:
+    mode: ${VECTOR_MODE:pgvector}
+  chat:
+    enabled: ${CHAT_ENABLED:true}

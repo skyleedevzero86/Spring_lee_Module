@@ -1,0 +1,77 @@
+server:
+  port: ${SERVER_PORT:8087}
+
+spring:
+  application:
+    name: product-recommend
+  profiles:
+    default: local
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:127.0.0.1}:${POSTGRES_PORT:5433}/${DATABASE_NAME:product_recommend}
+    username: ${DATABASE_USERNAME:recommend}
+    password: ${DATABASE_PASSWORD:recommend}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-local-demo}
+      embedding:
+        options:
+          dimensions: 384
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://127.0.0.1:11434}
+      embedding:
+        options:
+          dimensions: 384
+          model: ${OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+      chat:
+        model: ${OLLAMA_CHAT_MODEL:llama3.2}
+    model:
+      embedding: none
+      chat: none
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 384
+        initialize-schema: true
+    mcp:
+      server:
+        name: product-recommend
+        version: 0.0.1
+        type: SYNC
+        protocol: STREAMABLE
+        enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+app:
+  embedding:
+    provider: ${EMBEDDING_PROVIDER:hash}
+    model: ${EMBEDDING_MODEL:hash-sha256-v1}
+    backfill-enabled: ${EMBEDDING_BACKFILL_ENABLED:false}
+    backfill-interval-ms: ${EMBEDDING_BACKFILL_INTERVAL_MS:300000}
+  vector:
+    mode: ${VECTOR_MODE:memory}
+  chat:
+    enabled: ${CHAT_ENABLED:false}

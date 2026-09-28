@@ -25,6 +25,7 @@ TestResults.xml
 **/.gradle/
 
 /*
+!/product-recommend/
 !/searchai/
 !/opspilot/
 !/jvmperf/

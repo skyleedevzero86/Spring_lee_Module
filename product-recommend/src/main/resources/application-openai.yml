@@ -1,0 +1,21 @@
+spring:
+  ai:
+    model:
+      embedding: openai
+      chat: openai
+    mcp:
+      server:
+        enabled: true
+        protocol: STREAMABLE
+  autoconfigure:
+    exclude: []
+
+app:
+  embedding:
+    provider: openai
+    model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+    backfill-enabled: true
+  vector:
+    mode: ${VECTOR_MODE:pgvector}
+  chat:
+    enabled: ${CHAT_ENABLED:true}

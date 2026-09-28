@@ -7,23 +7,34 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 
 ## 프로젝트
 
-| 경로                             | 요약                                                                                                                                                                                        |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [loginstudy](./loginstudy)       | 회원·인증 플랫폼 축소판. OAuth2 Authorization Server, OIDC, SSO, Resource Server, Redis Session, PostgreSQL 튜닝을 **Spring Boot 4.1** 기준으로 구성합니다.                                 |
-| [catalogflow](./catalogflow)     | 상품 카탈로그 CQRS 플랫폼. Command/Query 분리, RabbitMQ Outbox, MongoDB Read Model, Redis Cache, LocalStack S3, Stub/Ollama/Gemini AI Enrichment를 **Spring Boot 4.1** 기준으로 구성합니다. |
-| [jvmboard](./jvmboard)           | JVM 런타임 대시보드. MXBean으로 Java/힙/GC/가동시간을 조회하고 Vue 3 Dashboard로 표시합니다. <br>헥사고날·DDD·SOLID를 **Spring Boot 4.1 + Java 27** 기준으로 구성합니다.                    |
-| [concurrentlab](./concurrentlab) | Concurrent API Lab. 고객 통합조회(프로필·주문·추천)를 Sequential vs `StructuredTaskScope`로 비교합니다. <br>헥사고날·Strategy·Vue 3· **Java 27 Preview** 기준입니다.                        |
-| [failurelab](./failurelab)       | 장애/Timeout Lab. 하위 작업 실패·타임아웃 시 SUCCESS/FAILED/CANCELLED와 예외 전파를 보여줍니다. <br>헥사고날·`StructuredTaskScope`·Vue 3· **Java 27 Preview** 기준입니다.                   |
-| [lazylab](./lazylab)             | Lazy Constant Lab. `LazyConstant`로 AI 모델 설정을 최초 접근 시 한 번만 로드합니다. <br>헥사고날·JEP 531·Vue 3·**Java 27 Preview** 기준입니다.                                              |
-| [pemlab](./pemlab)               | PEM Security Lab. `PEMEncoder`/`PEMDecoder`로 키 분석·RSA 키 쌍 생성을 보여줍니다. <br>헥사고날·JEP 538·Vue 3·**Java 27 Preview** 기준입니다.                                               |
-| [patternlab](./patternlab)       | Primitive Pattern Lab. `switch`/`instanceof` primitive pattern으로 숫자 정확 변환을 보여줍니다. <br> JEP 532·Vue 3(TS)·**Java 27 Preview** 기준입니다.                                      |
-| [jvmperf](./jvmperf)             | JVM Performance Lab. 힙·G1 GC·스레드 모니터와 100MB 할당 전후 비교를 보여줍니다. <br>MXBean·Vue 3·**Java 27** 기준입니다.                                                                   |
-| [opspilot](./opspilot)           | OpsPilot. Jev/Mock AI 장애 분류, Fault Simulator, Resilience4j, Redis 캐시, 통계 차트 UI. <br>Virtual Thread·Vue 3·**Spring Boot 4.1 + Java 25** 기준입니다.                                |
-| [searchai](./searchai)           | RAG·SearXNG 스트리밍 채팅. Gateway(SSE/JWT) ↔ AI Service. ADMIN=PDF·검색엔진, USER=채팅만. <br>WebFlux·Vue 3·**Spring Boot 4.1 + Java 27** 기준입니다.                                      |
+| 경로                                     | 요약                                                                                                                                                                                        |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [loginstudy](./loginstudy)               | 회원·인증 플랫폼 축소판. OAuth2 Authorization Server, OIDC, SSO, Resource Server, Redis Session, PostgreSQL 튜닝을 **Spring Boot 4.1** 기준으로 구성합니다.                                 |
+| [catalogflow](./catalogflow)             | 상품 카탈로그 CQRS 플랫폼. Command/Query 분리, RabbitMQ Outbox, MongoDB Read Model, Redis Cache, LocalStack S3, Stub/Ollama/Gemini AI Enrichment를 **Spring Boot 4.1** 기준으로 구성합니다. |
+| [jvmboard](./jvmboard)                   | JVM 런타임 대시보드. MXBean으로 Java/힙/GC/가동시간을 조회하고 Vue 3 Dashboard로 표시합니다. <br>헥사고날·DDD·SOLID를 **Spring Boot 4.1 + Java 27** 기준으로 구성합니다.                    |
+| [concurrentlab](./concurrentlab)         | Concurrent API Lab. 고객 통합조회(프로필·주문·추천)를 Sequential vs `StructuredTaskScope`로 비교합니다. <br>헥사고날·Strategy·Vue 3· **Java 27 Preview** 기준입니다.                        |
+| [failurelab](./failurelab)               | 장애/Timeout Lab. 하위 작업 실패·타임아웃 시 SUCCESS/FAILED/CANCELLED와 예외 전파를 보여줍니다. <br>헥사고날·`StructuredTaskScope`·Vue 3· **Java 27 Preview** 기준입니다.                   |
+| [lazylab](./lazylab)                     | Lazy Constant Lab. `LazyConstant`로 AI 모델 설정을 최초 접근 시 한 번만 로드합니다. <br>헥사고날·JEP 531·Vue 3·**Java 27 Preview** 기준입니다.                                              |
+| [pemlab](./pemlab)                       | PEM Security Lab. `PEMEncoder`/`PEMDecoder`로 키 분석·RSA 키 쌍 생성을 보여줍니다. <br>헥사고날·JEP 538·Vue 3·**Java 27 Preview** 기준입니다.                                               |
+| [patternlab](./patternlab)               | Primitive Pattern Lab. `switch`/`instanceof` primitive pattern으로 숫자 정확 변환을 보여줍니다. <br> JEP 532·Vue 3(TS)·**Java 27 Preview** 기준입니다.                                      |
+| [jvmperf](./jvmperf)                     | JVM Performance Lab. 힙·G1 GC·스레드 모니터와 100MB 할당 전후 비교를 보여줍니다. <br>MXBean·Vue 3·**Java 27** 기준입니다.                                                                   |
+| [opspilot](./opspilot)                   | OpsPilot. Jev/Mock AI 장애 분류, Fault Simulator, Resilience4j, Redis 캐시, 통계 차트 UI. <br>Virtual Thread·Vue 3·**Spring Boot 4.1 + Java 25** 기준입니다.                                |
+| [searchai](./searchai)                   | RAG·SearXNG 스트리밍 채팅. Gateway(SSE/JWT) ↔ AI Service. ADMIN=PDF·검색엔진, USER=채팅만. <br>WebFlux·Vue 3·**Spring Boot 4.1 + Java 27** 기준입니다.                                      |
+| [product-recommend](./product-recommend) | 벡터 검색 상품 추천. JPA+**pgvector HNSW**·키워드 임베딩·비동기 인덱싱·MCP Tool·챗/SSE. <br>Vue 3·pnpm·**Spring Boot 4.1 + Java 25** 기준입니다.                                            |
 
 ## Spring 학습 기록
 
 학습할 때마다 날짜·주제·실습 모듈을 이어서 적습니다.
+
+### 2026-09-28 — Product Recommend (pgvector + Spring AI)
+
+- **버전**: Spring Boot 4.1.1, Java 25, Gradle Kotlin DSL, Spring AI 2.0, Vue 3, pnpm
+- **모듈**: `product-recommend` (backend) · `product-recommend/frontend`
+- **익힌 기능**
+  - Product–ProductKeyword 1:N, 키워드 임베딩 평균 + pgvector HNSW cosine
+  - AFTER_COMMIT 비동기 임베딩 · 모델 교체 시 재인덱싱 API
+  - ProductSearchTool + MCP · 챗봇 SSE · PgVector 장기 메모리
+  - Recall@k / MRR 골든셋 · RelevancyEvaluator 훅
 
 ### 2026-09-25 — SearchAI RAG + SearXNG Streaming
 

@@ -1,0 +1,14 @@
+[
+  {
+    "query": "무선 이어폰",
+    "relevantProductNames": ["노이즈캔슬링 이어폰", "블루투스 이어버드"]
+  },
+  {
+    "query": "MacBook Pro 16",
+    "relevantProductNames": ["MacBook Pro 16 inch", "맥북 프로 16"]
+  },
+  {
+    "query": "원두 커피",
+    "relevantProductNames": ["에티오피아 원두", "스페셜티 블렌드"]
+  }
+]
