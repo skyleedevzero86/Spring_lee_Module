@@ -29,4 +29,30 @@ public final class SearchMetrics {
 		}
 		return 0.0;
 	}
+
+	public static double precisionAtK(List<String> rankedIds, Set<String> relevantIds, int k) {
+		if (k <= 0 || relevantIds == null || relevantIds.isEmpty()) {
+			return 0.0;
+		}
+		long hits = rankedIds.stream().limit(k).filter(relevantIds::contains).count();
+		return (double) hits / k;
+	}
+
+	public static double ndcgAtK(List<String> rankedIds, Set<String> relevantIds, int k) {
+		if (k <= 0 || relevantIds == null || relevantIds.isEmpty()) {
+			return 0.0;
+		}
+		double dcg = 0;
+		for (int i = 0; i < Math.min(k, rankedIds.size()); i++) {
+			if (relevantIds.contains(rankedIds.get(i))) {
+				dcg += 1.0 / (Math.log(i + 2) / Math.log(2));
+			}
+		}
+		int idealHits = Math.min(k, relevantIds.size());
+		double idcg = 0;
+		for (int i = 0; i < idealHits; i++) {
+			idcg += 1.0 / (Math.log(i + 2) / Math.log(2));
+		}
+		return idcg == 0 ? 0.0 : dcg / idcg;
+	}
 }

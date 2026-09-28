@@ -1,13 +1,25 @@
 package com.sleekydz86.productrecommend.application.service;
 
+import com.sleekydz86.productrecommend.application.port.out.BehaviorEventPort;
 import com.sleekydz86.productrecommend.application.port.out.EmbeddingPort;
+import com.sleekydz86.productrecommend.application.port.out.OutboxPort;
 import com.sleekydz86.productrecommend.application.port.out.ProductRepositoryPort;
+import com.sleekydz86.productrecommend.application.port.out.UserPreferencePort;
+import com.sleekydz86.productrecommend.domain.outbox.OutboxMessage;
+import com.sleekydz86.productrecommend.domain.outbox.OutboxStatus;
 import com.sleekydz86.productrecommend.domain.product.EmbeddingStatus;
 import com.sleekydz86.productrecommend.domain.product.Product;
-import com.sleekydz86.productrecommend.domain.product.ProductEmbeddingRequested;
+import com.sleekydz86.productrecommend.domain.product.ProductStatus;
+import com.sleekydz86.productrecommend.domain.recommend.ProductSearchFilter;
+import com.sleekydz86.productrecommend.domain.recommend.RankedRecommendation;
+import com.sleekydz86.productrecommend.domain.user.BehaviorEvent;
+import com.sleekydz86.productrecommend.domain.user.BehaviorEventType;
+import com.sleekydz86.productrecommend.domain.user.UserPreference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -21,12 +33,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ProductApplicationServiceTest {
 
 	private ProductApplicationService service;
-	private ProductEmbeddingListener embeddingListener;
 	private FakeRepo repo;
+	private FakeOutbox outbox;
+	private ProductEmbeddingListener embeddingListener;
 
 	@BeforeEach
 	void setUp() {
 		repo = new FakeRepo();
+		outbox = new FakeOutbox();
 		EmbeddingPort embedding = new EmbeddingPort() {
 			@Override
 			public int dimensions() {
@@ -37,7 +51,7 @@ class ProductApplicationServiceTest {
 			public float[] embed(String text) {
 				float[] v = new float[8];
 				String lower = text.toLowerCase();
-				if (lower.contains("gaming") || lower.contains("게임") || lower.contains("그래픽")) {
+				if (lower.contains("gaming") || lower.contains("게임") || lower.contains("그래픽") || lower.contains("러닝")) {
 					v[0] = 1;
 				} else if (lower.contains("office") || lower.contains("사무") || lower.contains("비즈니스")) {
 					v[1] = 1;
@@ -58,39 +72,124 @@ class ProductApplicationServiceTest {
 			}
 		};
 		embeddingListener = new ProductEmbeddingListener(repo, embedding);
-		service = new ProductApplicationService(repo, embedding, event -> {
-			if (event instanceof ProductEmbeddingRequested requested) {
-				embeddingListener.embedProduct(requested.productId());
+		service = new ProductApplicationService(
+			repo,
+			embedding,
+			outbox,
+			new FakePreference(),
+			new FakeBehavior()
+		);
+	}
+
+	@Test
+	void createsAndRecommendsWithEvidence() {
+		Product nike = service.create(
+			"나이키 페가수스",
+			List.of("러닝", "운동화"),
+			"RUNNING_SHOES",
+			"NIKE",
+			"BLACK",
+			BigDecimal.valueOf(139000),
+			10
+		);
+		service.create(
+			"아디다스 울트라부스트",
+			List.of("러닝", "운동화"),
+			"RUNNING_SHOES",
+			"ADIDAS",
+			"BLACK",
+			BigDecimal.valueOf(99000),
+			10
+		);
+		service.create(
+			"비즈니스 노트북",
+			List.of("office", "laptop"),
+			"LAPTOP",
+			"DELL",
+			"BLACK",
+			BigDecimal.valueOf(1500000),
+			5
+		);
+		drainOutbox();
+
+		List<RankedRecommendation> ranked = service.recommend(
+			"u1",
+			"10만원 이하 검정 러닝화 나이키 말고",
+			5
+		);
+		assertThat(ranked).isNotEmpty();
+		assertThat(ranked.getFirst().product().brand()).isNotEqualToIgnoringCase("NIKE");
+		assertThat(ranked.getFirst().reasons()).isNotEmpty();
+		assertThat(nike.embeddingStatus()).isEqualTo(EmbeddingStatus.PENDING);
+	}
+
+	private void drainOutbox() {
+		for (OutboxMessage message : outbox.findByStatus(OutboxStatus.PENDING, 100)) {
+			if ("PRODUCT_EMBEDDING_REQUESTED".equals(message.eventType())) {
+				embeddingListener.embedProduct(Long.valueOf(message.aggregateId()));
 			}
-		});
+			outbox.save(message.markPublished());
+		}
 	}
 
-	@Test
-	void createsAndFindsSimilarProducts() {
-		Product created = service.create("게이밍 노트북", List.of("gaming", "high-performance", "graphics-card"));
-		service.create("비즈니스 노트북", List.of("office", "document", "lightweight"));
-		service.create("게이밍 마우스", List.of("gaming", "high-sensitivity", "RGB"));
+	private static final class FakeOutbox implements OutboxPort {
+		private final Map<String, OutboxMessage> store = new ConcurrentHashMap<>();
 
-		Product gamingLaptop = service.findById(created.id()).orElseThrow();
-		assertThat(gamingLaptop.embeddingStatus()).isEqualTo(EmbeddingStatus.READY);
+		@Override
+		public OutboxMessage save(OutboxMessage message) {
+			store.put(message.id(), message);
+			return message;
+		}
 
-		List<Product> results = service.knnSearch(List.of("gaming computer"), 3);
-		assertThat(results).isNotEmpty();
-		assertThat(results.getFirst().name()).contains("게이밍");
-
-		Long gamingId = gamingLaptop.id();
-		List<Product> similar = service.findSimilarProducts(gamingId, 2);
-		assertThat(similar).noneMatch(p -> p.id().equals(gamingId));
+		@Override
+		public List<OutboxMessage> findByStatus(OutboxStatus status, int limit) {
+			return store.values().stream().filter(m -> m.status() == status).limit(limit).toList();
+		}
 	}
 
-	@Test
-	void hybridSearchMergesVectorAndKeywordHits() {
-		service.create("MacBook Pro 16", List.of("laptop", "apple", "developer"));
-		service.create("게이밍 노트북", List.of("gaming", "laptop"));
+	private static final class FakePreference implements UserPreferencePort {
+		private final Map<String, UserPreference> store = new ConcurrentHashMap<>();
 
-		List<Product> hits = service.hybridSearch(List.of("MacBook Pro 16"), 5);
-		assertThat(hits).isNotEmpty();
-		assertThat(hits.getFirst().name()).containsIgnoringCase("MacBook");
+		@Override
+		public Optional<UserPreference> findByUserId(String userId) {
+			return Optional.ofNullable(store.get(userId));
+		}
+
+		@Override
+		public UserPreference save(UserPreference preference) {
+			store.put(preference.userId(), preference);
+			return preference;
+		}
+	}
+
+	private static final class FakeBehavior implements BehaviorEventPort {
+		private final List<BehaviorEvent> events = new ArrayList<>();
+
+		@Override
+		public BehaviorEvent save(BehaviorEvent event) {
+			events.add(event);
+			return event;
+		}
+
+		@Override
+		public List<BehaviorEvent> findByUserId(String userId, int limit) {
+			return events.stream().filter(e -> e.userId().equals(userId)).limit(limit).toList();
+		}
+
+		@Override
+		public long countByEventType(String eventType) {
+			return events.stream().filter(e -> e.eventType().name().equals(eventType)).count();
+		}
+
+		@Override
+		public long countRecommendationClicks() {
+			return countByEventType(BehaviorEventType.RECOMMENDATION_CLICK.name());
+		}
+
+		@Override
+		public long countRecommendationImpressions() {
+			return countByEventType(BehaviorEventType.RECOMMENDATION_IMPRESSION.name());
+		}
 	}
 
 	private static final class FakeRepo implements ProductRepositoryPort {
@@ -104,6 +203,14 @@ class ProductApplicationServiceTest {
 				id,
 				product.name(),
 				product.keywords(),
+				product.category(),
+				product.brand(),
+				product.color(),
+				product.price(),
+				product.stock(),
+				product.status() == null ? ProductStatus.ACTIVE : product.status(),
+				product.popularityScore(),
+				product.createdAt() == null ? Instant.now() : product.createdAt(),
 				product.embedding(),
 				product.embeddingStatus(),
 				product.embeddingModel()
@@ -129,8 +236,17 @@ class ProductApplicationServiceTest {
 
 		@Override
 		public List<Product> searchByEmbeddingNear(float[] queryVector, int limit) {
+			return searchByEmbeddingNearFiltered(queryVector, new ProductSearchFilter(null, null, null, null, null, null, false), limit);
+		}
+
+		@Override
+		public List<Product> searchByEmbeddingNearFiltered(float[] queryVector, ProductSearchFilter filter, int limit) {
 			return store.values().stream()
 				.filter(p -> p.embedding() != null)
+				.filter(p -> filter.excludeBrand() == null || p.brand() == null || !p.brand().equalsIgnoreCase(filter.excludeBrand()))
+				.filter(p -> filter.maxPrice() == null || p.price().compareTo(filter.maxPrice()) <= 0)
+				.filter(p -> filter.category() == null || filter.category().equalsIgnoreCase(p.category()))
+				.filter(p -> !filter.availableOnly() || p.available())
 				.map(p -> Map.entry(p, dot(queryVector, p.embedding())))
 				.sorted(Comparator.comparingDouble((Map.Entry<Product, Double> e) -> e.getValue()).reversed())
 				.limit(limit)
@@ -161,6 +277,14 @@ class ProductApplicationServiceTest {
 		public List<Product> findByEmbeddingModelNot(String model) {
 			return store.values().stream()
 				.filter(p -> p.embeddingModel() == null || !model.equals(p.embeddingModel()))
+				.toList();
+		}
+
+		@Override
+		public List<Product> findPopular(int limit) {
+			return store.values().stream()
+				.sorted(Comparator.comparingDouble(Product::popularityScore).reversed())
+				.limit(limit)
 				.toList();
 		}
 

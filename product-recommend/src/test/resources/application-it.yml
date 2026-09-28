@@ -23,6 +23,7 @@ spring:
       - org.springframework.ai.model.ollama.autoconfigure.OllamaEmbeddingAutoConfiguration
       - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
       - org.springframework.ai.model.chat.memory.repository.jdbc.autoconfigure.JdbcChatMemoryRepositoryAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
 
 app:
   embedding:
@@ -32,3 +33,6 @@ app:
     mode: pgvector
   chat:
     enabled: false
+  outbox:
+    enabled: true
+    kafka-enabled: false

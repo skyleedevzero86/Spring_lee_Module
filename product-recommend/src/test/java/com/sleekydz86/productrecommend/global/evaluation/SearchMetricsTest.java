@@ -17,5 +17,7 @@ class SearchMetricsTest {
 
 		assertThat(SearchMetrics.recallAtK(ranked, relevant, 3)).isCloseTo(0.5, within(1e-9));
 		assertThat(SearchMetrics.mrr(ranked, relevant)).isCloseTo(1.0 / 3.0, within(1e-9));
+		assertThat(SearchMetrics.precisionAtK(ranked, relevant, 3)).isCloseTo(1.0 / 3.0, within(1e-9));
+		assertThat(SearchMetrics.ndcgAtK(ranked, relevant, 3)).isCloseTo(0.30657359638272924, within(1e-9));
 	}
 }

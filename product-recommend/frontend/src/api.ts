@@ -2,13 +2,40 @@ export type Product = {
   id: number
   name: string
   keywords: string[]
+  category?: string | null
+  brand?: string | null
+  color?: string | null
+  price?: number
+  stock?: number
+  status?: string
+  popularityScore?: number
   embeddingStatus?: string
   embeddingModel?: string | null
+}
+
+export type RecommendationItem = {
+  id: number
+  name: string
+  keywords: string[]
+  category?: string | null
+  brand?: string | null
+  color?: string | null
+  price?: number
+  stock?: number
+  score: number
+  reasons: string[]
+}
+
+export type RecommendResult = {
+  userId: string
+  condition: Record<string, unknown>
+  items: RecommendationItem[]
 }
 
 export type RecommendationResponse = {
   productIds: number[]
   explanation: string
+  evidences?: { productId: number; score: number; reasons: string[] }[]
 }
 
 export type ChatResult = {
@@ -19,6 +46,7 @@ export type ChatResult = {
 
 const base = '/api/v1/products'
 const CONVERSATION_KEY = 'product-recommend.conversationId'
+const USER_KEY = 'product-recommend.userId'
 
 function conversationHeaders(): HeadersInit {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -33,6 +61,15 @@ function rememberConversation(conversationId?: string | null) {
   if (conversationId) {
     localStorage.setItem(CONVERSATION_KEY, conversationId)
   }
+}
+
+function currentUserId(): string {
+  let userId = localStorage.getItem(USER_KEY)
+  if (!userId) {
+    userId = `user-${crypto.randomUUID()}`
+    localStorage.setItem(USER_KEY, userId)
+  }
+  return userId
 }
 
 async function parse<T>(response: Response): Promise<T> {
@@ -53,6 +90,11 @@ export async function listProducts(): Promise<Product[]> {
 export async function createProduct(body: {
   name: string
   keywords: string[]
+  category?: string
+  brand?: string
+  color?: string
+  price?: number
+  stock?: number
 }): Promise<Product> {
   return parse(
     await fetch(base, {
@@ -75,6 +117,34 @@ export async function searchProducts(
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ keywords, k, hybrid })
+    })
+  )
+}
+
+export async function recommendProducts(query: string, limit = 5): Promise<RecommendResult> {
+  return parse(
+    await fetch(`${base}/recommend`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, userId: currentUserId(), limit })
+    })
+  )
+}
+
+export async function trackEvent(body: {
+  productId?: number
+  eventType: string
+  impressionId?: string
+  position?: number
+  query?: string
+}): Promise<void> {
+  await parse(
+    await fetch(`${base}/events`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, userId: currentUserId() })
     })
   )
 }

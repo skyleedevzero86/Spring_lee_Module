@@ -19,6 +19,8 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:127.0.0.1:9092}
   ai:
     openai:
       api-key: ${OPENAI_API_KEY:sk-local-demo}
@@ -75,3 +77,8 @@ app:
     mode: ${VECTOR_MODE:memory}
   chat:
     enabled: ${CHAT_ENABLED:false}
+  outbox:
+    enabled: ${OUTBOX_ENABLED:true}
+    poll-interval-ms: ${OUTBOX_POLL_INTERVAL_MS:2000}
+    kafka-enabled: ${OUTBOX_KAFKA_ENABLED:false}
+    kafka-topic: ${OUTBOX_KAFKA_TOPIC:product-recommend.events}

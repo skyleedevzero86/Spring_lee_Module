@@ -20,7 +20,7 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 | [jvmperf](./jvmperf)                     | JVM Performance Lab. 힙·G1 GC·스레드 모니터와 100MB 할당 전후 비교를 보여줍니다. <br>MXBean·Vue 3·**Java 27** 기준입니다.                                                                   |
 | [opspilot](./opspilot)                   | OpsPilot. Jev/Mock AI 장애 분류, Fault Simulator, Resilience4j, Redis 캐시, 통계 차트 UI. <br>Virtual Thread·Vue 3·**Spring Boot 4.1 + Java 25** 기준입니다.                                |
 | [searchai](./searchai)                   | RAG·SearXNG 스트리밍 채팅. Gateway(SSE/JWT) ↔ AI Service. ADMIN=PDF·검색엔진, USER=채팅만. <br>WebFlux·Vue 3·**Spring Boot 4.1 + Java 27** 기준입니다.                                      |
-| [product-recommend](./product-recommend) | 벡터 검색 상품 추천. JPA+**pgvector HNSW**·키워드 임베딩·비동기 인덱싱·MCP Tool·챗/SSE. <br>Vue 3·pnpm·**Spring Boot 4.1 + Java 25** 기준입니다.                                            |
+| [product-recommend](./product-recommend) | 추천 엔진. 조건부 pgvector 검색·개인화 랭킹·RRF/MMR/Reranker·Evidence·Feedback·Outbox. <br>Vue 3·pnpm·**Spring Boot 4.1 + Java 25** 기준입니다.                                             |
 
 ## Spring 학습 기록
 
@@ -31,10 +31,10 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 - **버전**: Spring Boot 4.1.1, Java 25, Gradle Kotlin DSL, Spring AI 2.0, Vue 3, pnpm
 - **모듈**: `product-recommend` (backend) · `product-recommend/frontend`
 - **익힌 기능**
-  - Product–ProductKeyword 1:N, 키워드 임베딩 평균 + pgvector HNSW cosine
-  - AFTER_COMMIT 비동기 임베딩 · 모델 교체 시 재인덱싱 API
-  - ProductSearchTool + MCP · 챗봇 SSE · PgVector 장기 메모리
-  - Recall@k / MRR 골든셋 · RelevancyEvaluator 훅
+  - Query Understanding → 조건부 벡터/텍스트 검색 → RRF → 개인화 점수 → MMR → Reranker
+  - UserPreference·행동 이벤트·CTR Feedback Loop·추천 Evidence
+  - Transactional Outbox로 임베딩/이벤트 릴레이
+  - HNSW cosine · MCP Tool · 구조화 챗/SSE · Recall@k/MRR/NDCG
 
 ### 2026-09-25 — SearchAI RAG + SearXNG Streaming
 

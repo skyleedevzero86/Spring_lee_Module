@@ -4,10 +4,16 @@ import com.sleekydz86.productrecommend.application.port.in.ProductUseCase;
 import com.sleekydz86.productrecommend.application.service.ProductChatService;
 import com.sleekydz86.productrecommend.application.service.StructuredChatResponse;
 import com.sleekydz86.productrecommend.domain.product.Product;
+import com.sleekydz86.productrecommend.domain.product.ProductStatus;
 import com.sleekydz86.productrecommend.domain.product.RecommendationResponse;
+import com.sleekydz86.productrecommend.domain.recommend.RankedRecommendation;
+import com.sleekydz86.productrecommend.domain.recommend.SearchCondition;
+import com.sleekydz86.productrecommend.domain.user.BehaviorEvent;
+import com.sleekydz86.productrecommend.domain.user.BehaviorEventType;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +34,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,6 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ProductController {
 
 	private static final String SESSION_CONVERSATION_KEY = "chat.conversationId";
+	private static final String SESSION_USER_KEY = "recommend.userId";
 
 	private final ProductUseCase productUseCase;
 	private final ObjectProvider<ProductChatService> productChatService;
@@ -52,7 +60,15 @@ public class ProductController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public ProductResponse create(@Valid @RequestBody CreateRequest request) {
-		return ProductResponse.from(productUseCase.create(request.name(), request.keywords()));
+		return ProductResponse.from(productUseCase.create(
+			request.name(),
+			request.keywords(),
+			request.category(),
+			request.brand(),
+			request.color(),
+			request.price(),
+			request.stock() == null ? 10 : request.stock()
+		));
 	}
 
 	@GetMapping("/{id}")
@@ -74,9 +90,17 @@ public class ProductController {
 		@Valid @RequestBody UpdateRequest request
 	) {
 		try {
-			return ResponseEntity.ok(ProductResponse.from(
-				productUseCase.update(id, request.name(), request.keywords())
-			));
+			return ResponseEntity.ok(ProductResponse.from(productUseCase.update(
+				id,
+				request.name(),
+				request.keywords(),
+				request.category(),
+				request.brand(),
+				request.color(),
+				request.price(),
+				request.stock() == null ? 0 : request.stock(),
+				request.status()
+			)));
 		} catch (IllegalArgumentException ex) {
 			return ResponseEntity.notFound().build();
 		}
@@ -94,6 +118,41 @@ public class ProductController {
 			? productUseCase.hybridSearch(request.keywords(), request.k())
 			: productUseCase.knnSearch(request.keywords(), request.k());
 		return hits.stream().map(ProductResponse::from).toList();
+	}
+
+	@PostMapping("/recommend")
+	public RecommendResponse recommend(
+		@Valid @RequestBody RecommendRequest request,
+		HttpSession session
+	) {
+		String userId = resolveUserId(request.userId(), session);
+		SearchCondition condition = productUseCase.understandQuery(request.query(), request.limit());
+		List<RankedRecommendation> ranked = productUseCase.recommend(userId, request.query(), request.limit());
+		return new RecommendResponse(
+			userId,
+			condition,
+			ranked.stream().map(RecommendationItemResponse::from).toList()
+		);
+	}
+
+	@PostMapping("/events")
+	@ResponseStatus(HttpStatus.CREATED)
+	public EventResponse trackEvent(@Valid @RequestBody EventRequest request, HttpSession session) {
+		String userId = resolveUserId(request.userId(), session);
+		BehaviorEvent event = productUseCase.trackEvent(
+			userId,
+			request.productId(),
+			request.eventType(),
+			request.impressionId(),
+			request.position(),
+			request.query()
+		);
+		return new EventResponse(event.eventId(), event.eventType().name());
+	}
+
+	@GetMapping("/stats/recommendations")
+	public ProductUseCase.RecommendationStats recommendationStats() {
+		return productUseCase.stats();
 	}
 
 	@GetMapping("/{id}/similar")
@@ -132,12 +191,9 @@ public class ProductController {
 				.body(new ChatResponse("챗봇 기능이 비활성화되어 있습니다", null, null));
 		}
 		String conversationId = resolveConversationId(conversationHeader, session);
-		StructuredChatResponse response = chatService.chat(request.message(), conversationId);
-		return ResponseEntity.ok(new ChatResponse(
-			response.message(),
-			response.recommendation(),
-			conversationId
-		));
+		String userId = resolveUserId(null, session);
+		StructuredChatResponse response = chatService.chat(request.message(), conversationId, userId);
+		return ResponseEntity.ok(new ChatResponse(response.message(), response.recommendation(), conversationId));
 	}
 
 	@GetMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -153,7 +209,8 @@ public class ProductController {
 			return emitter;
 		}
 		String conversationId = resolveConversationId(conversationHeader, session);
-		Flux<String> response = chatService.chatStream(message, conversationId);
+		String userId = resolveUserId(null, session);
+		Flux<String> response = chatService.chatStream(message, conversationId, userId);
 		AtomicReference<Disposable> disposableRef = new AtomicReference<>();
 		Runnable dispose = () -> {
 			Disposable disposable = disposableRef.getAndSet(null);
@@ -203,10 +260,41 @@ public class ProductController {
 		return generated;
 	}
 
-	public record CreateRequest(@NotBlank String name, List<String> keywords) {
+	private String resolveUserId(String requestUserId, HttpSession session) {
+		if (requestUserId != null && !requestUserId.isBlank()) {
+			session.setAttribute(SESSION_USER_KEY, requestUserId.trim());
+			return requestUserId.trim();
+		}
+		Object existing = session.getAttribute(SESSION_USER_KEY);
+		if (existing instanceof String userId && !userId.isBlank()) {
+			return userId;
+		}
+		String generated = "user-" + UUID.randomUUID();
+		session.setAttribute(SESSION_USER_KEY, generated);
+		return generated;
 	}
 
-	public record UpdateRequest(@NotBlank String name, List<String> keywords) {
+	public record CreateRequest(
+		@NotBlank String name,
+		List<String> keywords,
+		String category,
+		String brand,
+		String color,
+		BigDecimal price,
+		Integer stock
+	) {
+	}
+
+	public record UpdateRequest(
+		@NotBlank String name,
+		List<String> keywords,
+		String category,
+		String brand,
+		String color,
+		BigDecimal price,
+		Integer stock,
+		ProductStatus status
+	) {
 	}
 
 	public record SearchRequest(List<String> keywords, int k, Boolean hybrid) {
@@ -215,6 +303,24 @@ public class ProductController {
 				k = 10;
 			}
 		}
+	}
+
+	public record RecommendRequest(@NotBlank String query, String userId, int limit) {
+		public RecommendRequest {
+			if (limit <= 0) {
+				limit = 5;
+			}
+		}
+	}
+
+	public record EventRequest(
+		String userId,
+		Long productId,
+		@NotNull BehaviorEventType eventType,
+		String impressionId,
+		Integer position,
+		String query
+	) {
 	}
 
 	public record ChatRequest(@NotBlank String message) {
@@ -226,10 +332,52 @@ public class ProductController {
 	public record ReindexResponse(int queued) {
 	}
 
+	public record EventResponse(String eventId, String eventType) {
+	}
+
+	public record RecommendResponse(String userId, SearchCondition condition, List<RecommendationItemResponse> items) {
+	}
+
+	public record RecommendationItemResponse(
+		Long id,
+		String name,
+		List<String> keywords,
+		String category,
+		String brand,
+		String color,
+		BigDecimal price,
+		int stock,
+		double score,
+		List<String> reasons
+	) {
+		static RecommendationItemResponse from(RankedRecommendation ranked) {
+			Product product = ranked.product();
+			return new RecommendationItemResponse(
+				product.id(),
+				product.name(),
+				product.keywords(),
+				product.category(),
+				product.brand(),
+				product.color(),
+				product.price(),
+				product.stock(),
+				ranked.score(),
+				ranked.reasons()
+			);
+		}
+	}
+
 	public record ProductResponse(
 		Long id,
 		String name,
 		List<String> keywords,
+		String category,
+		String brand,
+		String color,
+		BigDecimal price,
+		int stock,
+		String status,
+		double popularityScore,
 		String embeddingStatus,
 		String embeddingModel
 	) {
@@ -238,6 +386,13 @@ public class ProductController {
 				product.id(),
 				product.name(),
 				product.keywords(),
+				product.category(),
+				product.brand(),
+				product.color(),
+				product.price(),
+				product.stock(),
+				product.status() == null ? null : product.status().name(),
+				product.popularityScore(),
 				product.embeddingStatus() == null ? null : product.embeddingStatus().name(),
 				product.embeddingModel()
 			);

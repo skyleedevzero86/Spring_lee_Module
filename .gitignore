@@ -13,7 +13,8 @@ TestResults.xml
 **/bin/
 **/build/
 **/.gradle/
-**/out/
+/out/
+**/build/out/
 **/*.class
 **/node_modules/
 **/.idea/
@@ -52,7 +53,8 @@ loginstudy/gradle/**
 loginstudy/scripts/**/*.ps1
 loginstudy/docker/redis/**
 
-**/out/
+/out/
+**/build/out/
 **/*.class
 **/node_modules/
 **/.idea/
