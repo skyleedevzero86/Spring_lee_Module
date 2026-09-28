@@ -1,3 +1,5 @@
+<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/22eee81d-b62a-4453-b13b-a11570f04b06" />
+
 # Product Recommend — 추천 엔진
 
 Spring Boot **4.1.1** / Java **25** / Gradle KTS  
