@@ -17,6 +17,17 @@ public record AppProperties(
 	}
 
 	public record Vector(String mode) {
+		public boolean isMemory() {
+			return mode == null || mode.isBlank() || "memory".equalsIgnoreCase(mode);
+		}
+
+		public boolean isPgVector() {
+			return "pgvector".equalsIgnoreCase(mode);
+		}
+
+		public boolean isElasticsearch() {
+			return "elasticsearch".equalsIgnoreCase(mode) || "es".equalsIgnoreCase(mode);
+		}
 	}
 
 	public record Chat(boolean enabled) {

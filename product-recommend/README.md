@@ -3,13 +3,36 @@
 # Product Recommend — 추천 엔진
 
 Spring Boot **4.1.1** / Java **25** / Gradle KTS  
-JPA + **pgvector HNSW cosine** + Spring AI + Vue 3
+JPA + **pgvector HNSW** / **Elasticsearch dense_vector kNN** + Spring AI + Vue 3
 
 ## 파이프라인
 
 ```text
 Query Understanding → Filtered Vector/Text Search → RRF
   → Personalized Score → MMR → Reranker → Evidence → LLM/API
+```
+
+## 벡터 모드 (`app.vector.mode`)
+
+| mode            | 설명                                         |
+| --------------- | -------------------------------------------- |
+| `memory`        | 로컬 인메모리 cosine (기본 local 프로필)     |
+| `pgvector`      | Postgres + HNSW cosine                       |
+| `elasticsearch` | Elasticsearch dense_vector kNN (+ 메타 필터) |
+
+ES 학습용 실행:
+
+```powershell
+cd product-recommend
+docker compose up -d postgres elasticsearch
+.\gradlew.bat bootRun --args="--spring.profiles.active=elasticsearch"
+```
+
+OpenAI 임베딩 + ES:
+
+```powershell
+$env:VECTOR_MODE="elasticsearch"
+.\gradlew.bat bootRun --args="--spring.profiles.active=openai,elasticsearch"
 ```
 
 ## 핵심 기능
@@ -32,7 +55,7 @@ docker compose up -d
 .\gradlew.bat bootRun --args="--spring.profiles.active=local"
 ```
 
-실벡터/챗:
+실벡터/챗 (pgvector):
 
 ```powershell
 .\gradlew.bat bootRun --args="--spring.profiles.active=openai"
@@ -56,3 +79,5 @@ docker compose up -d
 ```powershell
 .\gradlew.bat test
 ```
+
+Testcontainers: Postgres(pgvector) + Elasticsearch 8.15 (`TestcontainersConfiguration`)

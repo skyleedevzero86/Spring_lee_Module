@@ -20,6 +20,28 @@ services:
       - ./src/main/resources/db/init-pgvector.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     restart: unless-stopped
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.security.http.ssl.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:9200/_cluster/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
   kafka:
     image: bitnami/kafka:3.9
     profiles: ["kafka"]
@@ -39,3 +61,4 @@ services:
 volumes:
   ollama-data:
   postgres-data:
+  elasticsearch-data:

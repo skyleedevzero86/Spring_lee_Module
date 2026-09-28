@@ -1,10 +1,6 @@
 spring:
-  main:
-    allow-bean-definition-overriding: true
-  jpa:
-    hibernate:
-      ddl-auto: update
-    open-in-view: false
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URIS:http://127.0.0.1:9200}
   ai:
     mcp:
       server:
@@ -12,11 +8,6 @@ spring:
     model:
       chat: none
       embedding: none
-    chat:
-      memory:
-        repository:
-          jdbc:
-            initialize-schema: never
   autoconfigure:
     exclude:
       - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
@@ -24,17 +15,14 @@ spring:
       - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
       - org.springframework.ai.model.chat.memory.repository.jdbc.autoconfigure.JdbcChatMemoryRepositoryAutoConfiguration
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
-      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
 
 app:
   embedding:
     provider: hash
     model: hash-sha256-v1
+    backfill-enabled: true
   vector:
-    mode: pgvector
+    mode: elasticsearch
   chat:
     enabled: false
   outbox:
