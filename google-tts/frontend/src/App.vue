@@ -7,7 +7,6 @@ import {
   listFiles,
   synthesize,
   TtsApiError,
-  voiceName,
   type Gender,
   type SavedAudio,
   type VoiceStyle,
@@ -49,7 +48,12 @@ const player = ref<HTMLAudioElement | null>(null)
 const localeItems = LOCALES.map((id) => ({ id, label: LOCALE_LABEL[id] }))
 const bytes = computed(() => new TextEncoder().encode(text.value).length)
 const tooLong = computed(() => bytes.value > 5000)
-const currentVoice = computed(() => voiceName(speechLanguage.value, gender.value, voiceStyle.value))
+const languageLabel = computed(
+  () => SPEECH_LANGUAGES.find((item) => item.code === speechLanguage.value)?.label ?? speechLanguage.value,
+)
+const genderLabel = computed(() => (gender.value === 'FEMALE' ? String(t('female')) : String(t('male'))))
+const styleLabel = computed(() => (voiceStyle.value === 'NEURAL2' ? String(t('neural')) : String(t('standard'))))
+const localeLabel = computed(() => LOCALE_LABEL[currentLocale()])
 const rateLabel = computed(() => `${speakingRate.value.toFixed(2)}×`)
 const pitchLabel = computed(() => `${pitch.value > 0 ? '+' : ''}${pitch.value.toFixed(1)}`)
 const errorText = computed(() => {
@@ -173,14 +177,20 @@ async function generate() {
   }
 }
 
-function download() {
-  if (!audioUrl.value || !resultName.value) {
-    return
+async function downloadSaved(name: string) {
+  errorCode.value = null
+  errorDetail.value = ''
+  try {
+    const blob = await fetchFile(name)
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = name
+    link.click()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+  } catch (error) {
+    showError(error)
   }
-  const link = document.createElement('a')
-  link.href = audioUrl.value
-  link.download = resultName.value
-  link.click()
 }
 
 async function openSaved(name: string) {
@@ -213,117 +223,148 @@ async function removeSaved(name: string) {
 
 <template>
   <div class="page">
-    <header class="top">
-      <div>
-        <p class="eyebrow">Google Cloud Text-to-Speech</p>
-        <h1>{{ t('title') }}</h1>
-        <p class="lede">{{ t('lede') }}</p>
+    <header class="site-header">
+      <div class="shell bar">
+        <p class="brand">음성 생성기</p>
+        <nav class="locales" :aria-label="String(t('uiLanguage'))">
+          <button
+            v-for="item in localeItems"
+            :key="item.id"
+            type="button"
+            :class="{ active: locale === item.id }"
+            :aria-pressed="locale === item.id"
+            @click="setLocale(item.id)"
+          >
+            {{ item.label }}<span v-if="locale === item.id" class="star" aria-hidden="true">★</span>
+          </button>
+        </nav>
       </div>
-      <nav class="locales" :aria-label="String(t('uiLanguage'))">
-        <button
-          v-for="item in localeItems"
-          :key="item.id"
-          type="button"
-          :class="{ active: locale === item.id }"
-          :aria-pressed="locale === item.id"
-          @click="setLocale(item.id)"
-        >
-          {{ item.label }}
-        </button>
-      </nav>
     </header>
 
-    <main class="layout">
-      <form class="card" @submit.prevent="generate">
-        <label class="field" for="text">
-          <span class="label-row">
-            <span>{{ t('text') }}</span>
-            <span :class="{ over: tooLong }">{{ bytes.toLocaleString() }} / 5,000 {{ t('bytes') }}</span>
-          </span>
-          <textarea id="text" v-model="text" rows="7" required />
-        </label>
+    <main class="shell board">
+      <article>
+        <form id="speech-form" @submit.prevent="generate">
+          <section>
+            <label class="field" for="text">
+              <span class="label-row">
+                <span class="sr">{{ t('text') }}</span>
+                <span class="bytes" :class="{ over: tooLong }">{{ bytes.toLocaleString() }} / 5,000 {{ t('bytes') }}</span>
+              </span>
+              <textarea id="text" v-model="text" rows="8" required />
+            </label>
+          </section>
 
-        <div class="split">
-          <label class="field" for="filename">
-            <span>{{ t('filename') }}</span>
-            <input id="filename" v-model="filename" type="text" autocomplete="off" />
-          </label>
-          <label class="field" for="language">
-            <span>{{ t('speechLanguage') }}</span>
-            <select id="language" v-model="speechLanguage">
-              <option v-for="item in SPEECH_LANGUAGES" :key="item.code" :value="item.code">
-                {{ item.label }}
-              </option>
-            </select>
-          </label>
-        </div>
+          <section>
+            <div class="split">
+              <label class="field" for="filename">
+                <span>{{ t('filename') }}</span>
+                <input id="filename" v-model="filename" type="text" autocomplete="off" />
+              </label>
+              <label class="field" for="language">
+                <span>{{ t('speechLanguage') }}</span>
+                <select id="language" v-model="speechLanguage">
+                  <option v-for="item in SPEECH_LANGUAGES" :key="item.code" :value="item.code">
+                    {{ item.label }}
+                  </option>
+                </select>
+              </label>
+            </div>
 
-        <fieldset>
-          <legend>{{ t('gender') }}</legend>
-          <label><input v-model="gender" type="radio" value="FEMALE" /> {{ t('female') }}</label>
-          <label><input v-model="gender" type="radio" value="MALE" /> {{ t('male') }}</label>
-        </fieldset>
-
-        <fieldset>
-          <legend>{{ t('voice') }}</legend>
-          <label><input v-model="voiceStyle" type="radio" value="NEURAL2" /> {{ t('neural') }}</label>
-          <label><input v-model="voiceStyle" type="radio" value="STANDARD" /> {{ t('standard') }}</label>
-          <p class="hint">{{ t('voiceHint') }} <code>{{ currentVoice }}</code></p>
-        </fieldset>
-
-        <label class="field" for="rate">
-          <span class="label-row">
-            <span>{{ t('rate') }}</span>
-            <span>{{ rateLabel }}</span>
-          </span>
-          <input id="rate" v-model.number="speakingRate" type="range" min="0.25" max="2" step="0.05" />
-        </label>
-
-        <label class="field" for="pitch">
-          <span class="label-row">
-            <span>{{ t('pitch') }}</span>
-            <span>{{ pitchLabel }}</span>
-          </span>
-          <input id="pitch" v-model.number="pitch" type="range" min="-10" max="10" step="0.5" />
-        </label>
-
-        <button class="primary" type="submit" :disabled="loading || tooLong">
-          {{ loading ? t('generating') : t('generate') }}
-        </button>
-        <p class="hint billing">{{ t('billing') }}</p>
-      </form>
-
-      <section class="card result">
-        <h2>{{ t('result') }}</h2>
-        <p v-if="errorText" class="error" role="alert">
-          {{ errorText }}
-          <span v-if="showDetail">{{ errorDetail }}</span>
-        </p>
-        <p v-if="!audioUrl" class="muted">{{ t('emptyResult') }}</p>
-        <template v-else>
-          <p class="filename">{{ resultName }}</p>
-          <audio ref="player" :src="audioUrl" controls />
-          <button class="secondary" type="button" @click="download">{{ t('download') }}</button>
-        </template>
-
-        <div class="saved">
-          <h2>{{ t('saved') }}</h2>
-          <p v-if="listFailed" class="error">{{ t('error.NETWORK') }}</p>
-          <p v-else-if="savedFiles.length === 0" class="muted">{{ t('emptySaved') }}</p>
-          <ul v-else>
-            <li v-for="file in savedFiles" :key="file.filename">
-              <div>
-                <strong>{{ file.filename }}</strong>
-                <span>{{ formatSize(file.size) }} · {{ formatTime(file.modifiedAt) }}</span>
+            <fieldset>
+              <legend>{{ t('gender') }}</legend>
+              <div class="choices">
+                <label><input v-model="gender" type="radio" value="FEMALE" /> {{ t('female') }}</label>
+                <label><input v-model="gender" type="radio" value="MALE" /> {{ t('male') }}</label>
               </div>
-              <div class="row-actions">
-                <button type="button" @click="openSaved(file.filename)">{{ t('play') }}</button>
-                <button type="button" @click="removeSaved(file.filename)">{{ t('remove') }}</button>
+            </fieldset>
+
+            <fieldset>
+              <legend>{{ t('voice') }}</legend>
+              <div class="choices">
+                <label><input v-model="voiceStyle" type="radio" value="NEURAL2" /> {{ t('neural') }}</label>
+                <label><input v-model="voiceStyle" type="radio" value="STANDARD" /> {{ t('standard') }}</label>
               </div>
-            </li>
-          </ul>
+            </fieldset>
+
+            <label class="field" for="rate">
+              <span class="label-row">
+                <span>{{ t('rate') }}</span>
+                <span>{{ rateLabel }}</span>
+              </span>
+              <input id="rate" v-model.number="speakingRate" type="range" min="0.25" max="2" step="0.05" />
+            </label>
+
+            <label class="field" for="pitch">
+              <span class="label-row">
+                <span>{{ t('pitch') }}</span>
+                <span>{{ pitchLabel }}</span>
+              </span>
+              <input id="pitch" v-model.number="pitch" type="range" min="-10" max="10" step="0.5" />
+            </label>
+          </section>
+
+          <section class="saved">
+            <h2>{{ t('saved') }}</h2>
+            <p v-if="listFailed" class="error">{{ t('error.NETWORK') }}</p>
+            <p v-else-if="savedFiles.length === 0" class="muted">{{ t('emptySaved') }}</p>
+            <ul v-else>
+              <li v-for="file in savedFiles" :key="file.filename">
+                <button type="button" class="file-name" @click="openSaved(file.filename)">
+                  <strong>{{ file.filename }}</strong>
+                </button>
+                <span class="file-meta">{{ formatSize(file.size) }} · {{ formatTime(file.modifiedAt) }}</span>
+                <div class="row-actions">
+                  <button type="button" @click="downloadSaved(file.filename)">{{ t('download') }}</button>
+                  <button type="button" @click="removeSaved(file.filename)">{{ t('remove') }}</button>
+                </div>
+              </li>
+            </ul>
+          </section>
+        </form>
+      </article>
+
+      <aside class="aside">
+        <div class="spec">
+          <dl>
+            <div class="spec-row">
+              <dt>{{ t('uiLanguage') }}</dt>
+              <dd>{{ localeLabel }}</dd>
+            </div>
+            <div class="spec-row">
+              <dt>{{ t('speechLanguage') }}</dt>
+              <dd>{{ languageLabel }}</dd>
+            </div>
+            <div class="spec-row">
+              <dt>{{ t('gender') }}</dt>
+              <dd>{{ genderLabel }}</dd>
+            </div>
+            <div class="spec-row">
+              <dt>{{ t('voice') }}</dt>
+              <dd>{{ styleLabel }}</dd>
+            </div>
+            <div class="spec-row">
+              <dt>{{ t('filename') }}</dt>
+              <dd>{{ filename || 'speech' }}</dd>
+            </div>
+          </dl>
+
+          <div class="preview">
+            <p v-if="errorText" class="error" role="alert">
+              {{ errorText }}
+              <span v-if="showDetail">{{ errorDetail }}</span>
+            </p>
+            <p v-if="!audioUrl" class="muted">{{ t('emptyResult') }}</p>
+            <template v-else>
+              <p class="filename">{{ resultName }}</p>
+              <audio ref="player" :src="audioUrl" controls />
+            </template>
+          </div>
+
+          <button class="apply" type="submit" form="speech-form" :disabled="loading || tooLong">
+            {{ loading ? t('generating') : t('generate') }}
+          </button>
         </div>
-      </section>
+      </aside>
     </main>
   </div>
 </template>

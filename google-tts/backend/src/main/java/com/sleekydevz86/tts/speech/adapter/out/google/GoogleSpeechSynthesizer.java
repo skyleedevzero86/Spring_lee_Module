@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -109,20 +110,23 @@ public class GoogleSpeechSynthesizer implements SpeechSynthesizer {
     }
 
     private GoogleCredentials loadCredentials() throws IOException {
-        if (!properties.credentialsFile().isBlank()) {
-            Path path = Path.of(properties.credentialsFile());
-            if (!Files.isRegularFile(path)) {
+        String configured = properties.credentialsFile().trim();
+        if (configured.startsWith("classpath:")) {
+            return readClasspath(configured.substring("classpath:".length()));
+        }
+        if (!configured.isBlank()) {
+            if (!isRegularFile(configured)) {
                 throw new TtsException("CREDENTIALS_MISSING", "설정한 자격 증명 파일을 찾지 못했습니다.");
             }
-            try (InputStream input = Files.newInputStream(path)) {
-                return GoogleCredentials.fromStream(input).createScoped(List.of(cloudPlatform));
+            try (InputStream input = Files.newInputStream(Path.of(configured))) {
+                return scoped(input);
             }
         }
 
         ClassPathResource resource = new ClassPathResource("service-account-file.json");
         if (resource.exists()) {
             try (InputStream input = resource.getInputStream()) {
-                return GoogleCredentials.fromStream(input).createScoped(List.of(cloudPlatform));
+                return scoped(input);
             }
         }
 
@@ -134,5 +138,28 @@ public class GoogleSpeechSynthesizer implements SpeechSynthesizer {
                 "CREDENTIALS_MISSING",
                 "Google Cloud 자격 증명을 찾지 못했습니다. service-account-file.json 또는 tts.google.credentials-file 을 설정하세요."
         );
+    }
+
+    private GoogleCredentials readClasspath(String location) throws IOException {
+        String path = location.startsWith("/") ? location.substring(1) : location;
+        ClassPathResource resource = new ClassPathResource(path);
+        if (!resource.exists()) {
+            throw new TtsException("CREDENTIALS_MISSING", "클래스패스의 자격 증명 파일을 찾지 못했습니다.");
+        }
+        try (InputStream input = resource.getInputStream()) {
+            return scoped(input);
+        }
+    }
+
+    private boolean isRegularFile(String configured) {
+        try {
+            return Files.isRegularFile(Path.of(configured));
+        } catch (InvalidPathException exception) {
+            return false;
+        }
+    }
+
+    private GoogleCredentials scoped(InputStream input) throws IOException {
+        return GoogleCredentials.fromStream(input).createScoped(List.of(cloudPlatform));
     }
 }

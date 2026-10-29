@@ -14,6 +14,7 @@ const messages = {
   ko: {
     title: '음성 생성기',
     lede: '텍스트를 한국어, 일본어, 중국어, 영어 음성으로 바꿉니다. 속도와 음높이도 조절할 수 있습니다.',
+    settings: '음성 설정',
     uiLanguage: '화면 언어',
     text: '텍스트',
     sample: '안녕하세요. 스프링과 뷰로 만든 음성 합성입니다.',
@@ -56,6 +57,7 @@ const messages = {
   ja: {
     title: '音声ジェネレーター',
     lede: 'テキストを韓国語、日本語、中国語、英語の音声に変換します。速さと高さも調整できます。',
+    settings: '音声設定',
     uiLanguage: '表示言語',
     text: 'テキスト',
     sample: 'こんにちは。スプリングとビューで作った音声合成です。',
@@ -98,6 +100,7 @@ const messages = {
   zh: {
     title: '语音生成器',
     lede: '把文本转换成韩语、日语、中文或英语语音，并可以调节语速和音高。',
+    settings: '语音设置',
     uiLanguage: '界面语言',
     text: '文本',
     sample: '你好。这是用 Spring 和 Vue 做的语音合成。',
@@ -140,6 +143,7 @@ const messages = {
   en: {
     title: 'Speech generator',
     lede: 'Turn text into Korean, Japanese, Chinese, or English speech. You can also change the speed and pitch.',
+    settings: 'Voice settings',
     uiLanguage: 'Interface language',
     text: 'Text',
     sample: 'Hello. This is speech made with Spring and Vue.',
