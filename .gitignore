@@ -42,6 +42,8 @@ TestResults.xml
 !loginstudy/
 !loginstudy/**
 !catalogflow/
+!/google-tts/
+!/google-tts/**
 
 loginstudy/auth-server/keys/
 loginstudy/auth-server/keys/**
