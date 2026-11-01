@@ -44,6 +44,7 @@ TestResults.xml
 !catalogflow/
 !/google-tts/
 !/google-tts/**
+!/s3download/
 
 loginstudy/auth-server/keys/
 loginstudy/auth-server/keys/**
