@@ -1,0 +1,5 @@
+frontend/dist/
+*.yml
+backend/target/
+frontend/node_modules/
+backend/.idea/

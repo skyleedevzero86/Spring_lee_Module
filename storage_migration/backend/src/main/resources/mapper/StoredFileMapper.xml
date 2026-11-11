@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.storagemigration.file.adapter.out.persistence.StoredFileMapper">
+
+    <sql id="columns">
+        ID, STORAGE_SERVER_ID, BUCKET, OBJECT_KEY, ORIGINAL_NAME, CONTENT_TYPE, FILE_SIZE, CHECKSUM, TITLE,
+        DESCRIPTION, TAGS, STATUS, UPLOADED_AT, SAVED_AT, UPDATED_AT, WORKER, WORK_IP, WORK_DT
+    </sql>
+
+    <update id="cud" statementType="CALLABLE"
+            parameterType="com.sleekydz86.storagemigration.file.adapter.out.persistence.StoredFileProc">
+        {call SP_SM_STORED_FILE_CUD(
+            #{operation, mode=IN, jdbcType=VARCHAR},
+            #{worker, mode=IN, jdbcType=VARCHAR},
+            #{workip, mode=IN, jdbcType=VARCHAR},
+            #{id, mode=IN, jdbcType=VARCHAR},
+            #{storageServerId, mode=IN, jdbcType=VARCHAR},
+            #{bucket, mode=IN, jdbcType=VARCHAR},
+            #{objectKey, mode=IN, jdbcType=VARCHAR},
+            #{originalName, mode=IN, jdbcType=VARCHAR},
+            #{contentType, mode=IN, jdbcType=VARCHAR},
+            #{fileSize, mode=IN, jdbcType=BIGINT},
+            #{checksum, mode=IN, jdbcType=VARCHAR},
+            #{title, mode=IN, jdbcType=VARCHAR},
+            #{description, mode=IN, jdbcType=VARCHAR},
+            #{tags, mode=IN, jdbcType=VARCHAR},
+            #{status, mode=IN, jdbcType=VARCHAR},
+            #{uploadedAt, mode=IN, jdbcType=TIMESTAMP},
+            #{savedAt, mode=IN, jdbcType=TIMESTAMP},
+            #{rtnCod, mode=INOUT, jdbcType=VARCHAR},
+            #{errMsg, mode=INOUT, jdbcType=VARCHAR}
+        )}
+    </update>
+
+    <update id="saveContent" statementType="CALLABLE"
+            parameterType="com.sleekydz86.storagemigration.file.adapter.out.persistence.StoredFileContentProc">
+        {call SP_SM_STORED_FILE_CONTENT_U(
+            #{worker, mode=IN, jdbcType=VARCHAR},
+            #{workip, mode=IN, jdbcType=VARCHAR},
+            #{id, mode=IN, jdbcType=VARCHAR},
+            #{content, mode=IN, jdbcType=BLOB, typeHandler=com.sleekydz86.storagemigration.global.mybatis.BlobSourceTypeHandler},
+            #{savedAt, mode=IN, jdbcType=TIMESTAMP},
+            #{rtnCod, mode=INOUT, jdbcType=VARCHAR},
+            #{errMsg, mode=INOUT, jdbcType=VARCHAR}
+        )}
+    </update>
+
+    <select id="contentLength" resultType="java.lang.Long" databaseId="oracle">
+        SELECT NVL(DBMS_LOB.GETLENGTH(CONTENT), 0) FROM SM_STORED_FILE WHERE ID = #{id}
+    </select>
+
+    <select id="contentLength" resultType="java.lang.Long">
+        SELECT COALESCE(LENGTH(CONTENT), 0) FROM SM_STORED_FILE WHERE ID = #{id}
+    </select>
+
+    <select id="findContent" resultType="com.sleekydz86.storagemigration.file.adapter.out.persistence.StoredFileContentRow">
+        SELECT CONTENT FROM SM_STORED_FILE WHERE ID = #{id}
+    </select>
+
+    <select id="findById" resultType="com.sleekydz86.storagemigration.file.adapter.out.persistence.StoredFileRow">
+        SELECT <include refid="columns"/>
+          FROM SM_STORED_FILE
+         WHERE ID = #{id}
+    </select>
+
+    <select id="findByStorageServer" resultType="com.sleekydz86.storagemigration.file.adapter.out.persistence.StoredFileRow">
+        SELECT <include refid="columns"/>
+          FROM SM_STORED_FILE
+         WHERE STORAGE_SERVER_ID = #{storageServerId}
+    </select>
+
+    <select id="search" resultType="com.sleekydz86.storagemigration.file.adapter.out.persistence.StoredFileRow">
+        SELECT <include refid="columns"/>
+          FROM SM_STORED_FILE
+        <where>
+            <if test="storageServerId != null and storageServerId != ''">
+                AND STORAGE_SERVER_ID = #{storageServerId}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (LOWER(ORIGINAL_NAME) LIKE #{keyword}
+                  OR LOWER(TITLE) LIKE #{keyword}
+                  OR LOWER(TAGS) LIKE #{keyword}
+                  OR LOWER(DESCRIPTION) LIKE #{keyword})
+            </if>
+        </where>
+         ORDER BY UPLOADED_AT DESC
+    </select>
+</mapper>

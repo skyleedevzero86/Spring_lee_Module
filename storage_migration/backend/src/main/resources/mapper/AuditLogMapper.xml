@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.storagemigration.audit.adapter.out.persistence.AuditLogMapper">
+
+    <update id="record" statementType="CALLABLE"
+            parameterType="com.sleekydz86.storagemigration.audit.adapter.out.persistence.AuditLogProc">
+        {call SP_SM_AUDIT_LOG_C(
+            #{worker, mode=IN, jdbcType=VARCHAR},
+            #{workip, mode=IN, jdbcType=VARCHAR},
+            #{action, mode=IN, jdbcType=VARCHAR},
+            #{targetType, mode=IN, jdbcType=VARCHAR},
+            #{targetId, mode=IN, jdbcType=VARCHAR},
+            #{detail, mode=IN, jdbcType=VARCHAR},
+            #{rtnCod, mode=INOUT, jdbcType=VARCHAR},
+            #{errMsg, mode=INOUT, jdbcType=VARCHAR}
+        )}
+    </update>
+
+    <select id="search" resultType="com.sleekydz86.storagemigration.audit.adapter.out.persistence.AuditLogRow">
+        SELECT LOG_ID, ACTION, TARGET_TYPE, TARGET_ID, DETAIL, WORKER, WORK_IP, WORK_DT
+          FROM SM_AUDIT_LOG
+        <where>
+            <if test="targetType != null and targetType != ''">
+                AND TARGET_TYPE = #{targetType}
+            </if>
+            <if test="targetId != null and targetId != ''">
+                AND TARGET_ID = #{targetId}
+            </if>
+            <if test="worker != null and worker != ''">
+                AND WORKER = #{worker}
+            </if>
+        </where>
+         ORDER BY WORK_DT DESC, LOG_ID DESC
+        <choose>
+            <when test="_databaseId == 'oracle'">
+                FETCH FIRST #{limit} ROWS ONLY
+            </when>
+            <otherwise>
+                LIMIT #{limit}
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

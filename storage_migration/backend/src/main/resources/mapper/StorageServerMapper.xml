@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sleekydz86.storagemigration.storage.adapter.out.persistence.StorageServerMapper">
+
+    <sql id="columns">
+        ID, NAME, STORAGE_TYPE, ENDPOINT, REGION, BUCKET, ACCESS_KEY, SECRET_KEY, STATUS, LAST_MESSAGE,
+        LAST_CHECKED_AT, CREATED_AT, UPDATED_AT, WORKER, WORK_IP, WORK_DT
+    </sql>
+
+    <update id="cud" statementType="CALLABLE"
+            parameterType="com.sleekydz86.storagemigration.storage.adapter.out.persistence.StorageServerProc">
+        {call SP_SM_STORAGE_SERVER_CUD(
+            #{operation, mode=IN, jdbcType=VARCHAR},
+            #{worker, mode=IN, jdbcType=VARCHAR},
+            #{workip, mode=IN, jdbcType=VARCHAR},
+            #{id, mode=IN, jdbcType=VARCHAR},
+            #{name, mode=IN, jdbcType=VARCHAR},
+            #{storageType, mode=IN, jdbcType=VARCHAR},
+            #{endpoint, mode=IN, jdbcType=VARCHAR},
+            #{region, mode=IN, jdbcType=VARCHAR},
+            #{bucket, mode=IN, jdbcType=VARCHAR},
+            #{accessKey, mode=IN, jdbcType=VARCHAR},
+            #{secretKey, mode=IN, jdbcType=VARCHAR},
+            #{status, mode=IN, jdbcType=VARCHAR},
+            #{lastMessage, mode=IN, jdbcType=VARCHAR},
+            #{lastCheckedAt, mode=IN, jdbcType=TIMESTAMP},
+            #{rtnCod, mode=INOUT, jdbcType=VARCHAR},
+            #{errMsg, mode=INOUT, jdbcType=VARCHAR}
+        )}
+    </update>
+
+    <select id="findById" resultType="com.sleekydz86.storagemigration.storage.adapter.out.persistence.StorageServerRow">
+        SELECT <include refid="columns"/>
+          FROM SM_STORAGE_SERVER
+         WHERE ID = #{id}
+    </select>
+
+    <select id="findAll" resultType="com.sleekydz86.storagemigration.storage.adapter.out.persistence.StorageServerRow">
+        SELECT <include refid="columns"/>
+          FROM SM_STORAGE_SERVER
+         ORDER BY CREATED_AT
+    </select>
+</mapper>

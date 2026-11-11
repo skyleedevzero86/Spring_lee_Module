@@ -45,6 +45,7 @@ TestResults.xml
 !/google-tts/
 !/google-tts/**
 !/s3download/
+!/storage_migration/
 
 loginstudy/auth-server/keys/
 loginstudy/auth-server/keys/**
