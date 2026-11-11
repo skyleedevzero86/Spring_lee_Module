@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, formatDate } from '../api.js';
 import { Notice, StatusBadge, useNotice } from '../hooks.jsx';
+import Pager, { usePaged } from '../components/Pager.jsx';
 import HelpHeading from '../components/HelpHeading.jsx';
 
 const DEFAULT_PORTS = { ORACLE: 1521, MYSQL: 3306, POSTGRESQL: 5432 };
@@ -11,6 +12,7 @@ export default function DbConnectionPage({ onChanged }) {
   const [connections, setConnections] = useState([]);
   const [form, setForm] = useState(EMPTY);
   const [notice, run] = useNotice();
+  const paged = usePaged(connections);
 
   const load = useCallback(() => {
     run(() => api.get('/api/db-connections')).then((data) => data && setConnections(data));
@@ -75,7 +77,7 @@ export default function DbConnectionPage({ onChanged }) {
             <tr><th>이름</th><th>종류</th><th>접속 정보</th><th>아이디</th><th>상태</th><th>확인 시각</th></tr>
           </thead>
           <tbody>
-            {connections.map((connection) => (
+            {paged.pageItems.map((connection) => (
               <tr key={connection.id} className={form.id === connection.id ? 'selected' : ''} onClick={() => select(connection)}>
                 <td>{connection.name}{connection.active && <span className="badge badge-ok inline">사용 중</span>}</td>
                 <td>{connection.vendor}</td>
@@ -88,6 +90,7 @@ export default function DbConnectionPage({ onChanged }) {
             {connections.length === 0 && <tr><td colSpan="6" className="empty">등록된 DB가 없습니다.</td></tr>}
           </tbody>
         </table>
+        <Pager paged={paged} />
       </div>
       <div className="panel">
         <HelpHeading title={form.id ? 'DB 수정' : '새 DB 등록'}>

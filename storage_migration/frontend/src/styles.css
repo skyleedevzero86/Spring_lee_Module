@@ -866,3 +866,251 @@ button.danger:hover {
     padding: 22px 16px 18px;
   }
 }
+
+.need-db {
+  padding: 48px 24px;
+  text-align: center;
+  line-height: 1.9;
+}
+
+.need-db p {
+  margin: 0;
+}
+
+.need-db p:first-child {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.need-db .actions {
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.status-board {
+  margin: 28px 0 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--line-strong);
+  background: var(--panel);
+}
+
+.status-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 14px;
+}
+
+.status-head strong {
+  font-size: 17px;
+  color: var(--heading);
+}
+
+.status-head button {
+  margin-left: auto;
+  padding: 6px 14px;
+}
+
+.status-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.status-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--soft-bg);
+  border-left: 4px solid var(--accent);
+}
+
+.status-card.ok {
+  border-left-color: #1e8e4e;
+}
+
+.status-card.warn {
+  border-left-color: var(--emphasis);
+}
+
+.status-label {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.status-value {
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.status-sub {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 4px 0 12px;
+}
+
+.pager-total {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pager-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pager-buttons button {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  text-align: center;
+}
+
+.pager-buttons button.current {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .status-board {
+    margin-top: 20px;
+    padding: 14px;
+  }
+
+  .status-value {
+    font-size: 19px;
+  }
+
+  .pager {
+    justify-content: center;
+  }
+}
+
+.upload-target {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+@media (max-width: 720px) {
+  .upload-target {
+    width: 100%;
+  }
+
+  .upload-target select {
+    flex: 1;
+  }
+}
+
+:root {
+  --chart-series-1: #2a78d6;
+  --chart-grid: #e6e8ec;
+  --chart-ink: #52514e;
+}
+
+.status-board {
+  border-top: 1px solid var(--line);
+}
+
+.status-card,
+.status-card.ok,
+.status-card.warn {
+  border-left: 0;
+}
+
+.stat-chart {
+  margin: 16px 0 0;
+  padding: 16px 18px 12px;
+  background: var(--soft-bg);
+}
+
+.stat-chart figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.chart-toggle {
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.chart-frame {
+  position: relative;
+}
+
+.chart-frame svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart-grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.chart-axis {
+  fill: var(--chart-ink);
+  font-size: 12px;
+}
+
+.chart-label {
+  fill: var(--text);
+  font-size: 13px;
+}
+
+.chart-value {
+  fill: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.chart-tip {
+  position: absolute;
+  z-index: 5;
+  padding: 6px 10px;
+  background: var(--panel);
+  border: 1px solid var(--box-line);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.chart-empty {
+  margin: 12px 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.chart-table {
+  margin: 0;
+  border-top: 2px solid var(--line-strong);
+}

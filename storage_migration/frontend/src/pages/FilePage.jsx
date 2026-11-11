@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, formatBytes, formatDate, toQuery } from '../api.js';
 import { Notice, ServerSelect, StatusBadge, useNotice, useStorageServers } from '../hooks.jsx';
 import FilePick from '../components/FilePick.jsx';
+import Pager, { usePaged } from '../components/Pager.jsx';
 
 export default function FilePage({ dbVersion }) {
   const [servers] = useStorageServers(dbVersion);
@@ -12,9 +13,11 @@ export default function FilePage({ dbVersion }) {
   const [checked, setChecked] = useState([]);
   const [selected, setSelected] = useState(null);
   const [uploads, setUploads] = useState([]);
+  const [uploadServerId, setUploadServerId] = useState('');
   const [saveOnUpload, setSaveOnUpload] = useState(true);
   const [deleteFromStorage, setDeleteFromStorage] = useState(false);
   const [notice, run] = useNotice();
+  const paged = usePaged(files);
 
   const search = useCallback(async () => {
     const data = await run(() => api.get(`/api/files${toQuery({ keyword, status, storageServerId: serverId })}`));
@@ -28,20 +31,31 @@ export default function FilePage({ dbVersion }) {
     search();
   }, [dbVersion]);
 
+  const reloadQuietly = async () => {
+    const data = await api.get(`/api/files${toQuery({ keyword, status, storageServerId: serverId })}`).catch(() => null);
+    if (data) setFiles(data);
+  };
+
+  useEffect(() => {
+    if (uploadServerId && servers.some((server) => server.id === uploadServerId)) return;
+    const preferred = servers.find((server) => server.status === 'CONNECTED') || servers[0];
+    setUploadServerId(preferred ? preferred.id : '');
+  }, [servers, uploadServerId]);
+
   const upload = async () => {
-    if (!serverId) {
-      await run(() => Promise.reject(new Error('업로드할 스토리지를 먼저 선택하세요.')));
+    if (!uploadServerId) {
+      await run(() => Promise.reject(new Error('올릴 스토리지가 없습니다. 스토리지 서버 탭에서 먼저 등록하세요.')));
       return;
     }
     const form = new FormData();
     uploads.forEach((file) => form.append('files', file));
     const result = await run(
-      () => api.upload(`/api/files${toQuery({ storageServerId: serverId, saveToDb: saveOnUpload })}`, form),
+      () => api.upload(`/api/files${toQuery({ storageServerId: uploadServerId, saveToDb: saveOnUpload })}`, form),
       (data) => `${data.length}개를 올렸습니다.${saveOnUpload ? ' 파일 내용도 DB에 저장했습니다.' : ''}`,
     );
     if (result) {
       setUploads([]);
-      search();
+      reloadQuietly();
     }
   };
 
@@ -55,7 +69,7 @@ export default function FilePage({ dbVersion }) {
     if (result) {
       if (selected && checked.includes(selected.id)) setSelected(null);
       setChecked([]);
-      search();
+      reloadQuietly();
     }
   };
 
@@ -83,10 +97,14 @@ export default function FilePage({ dbVersion }) {
           <button onClick={search}>검색</button>
         </div>
         <div className="toolbar upload-row">
+          <label className="upload-target">올릴 스토리지
+            <ServerSelect servers={servers} value={uploadServerId} onChange={setUploadServerId} />
+          </label>
           <FilePick files={uploads} multiple onChange={setUploads} />
           <label className="check"><input type="checkbox" checked={saveOnUpload} onChange={(event) => setSaveOnUpload(event.target.checked)} /> 파일 내용도 DB에 저장</label>
-          <button className="primary" onClick={upload} disabled={uploads.length === 0}>올리기</button>
+          <button className="primary" onClick={upload} disabled={uploads.length === 0 || !uploadServerId}>올리기</button>
         </div>
+        {servers.length === 0 && <p className="hint">올릴 스토리지가 없습니다. 스토리지 서버 탭에서 먼저 등록하세요.</p>}
         <table>
           <thead>
             <tr>
@@ -95,7 +113,7 @@ export default function FilePage({ dbVersion }) {
             </tr>
           </thead>
           <tbody>
-            {files.map((file) => (
+            {paged.pageItems.map((file) => (
               <tr key={file.id} className={selected?.id === file.id ? 'selected' : ''}>
                 <td><input type="checkbox" checked={checked.includes(file.id)} onChange={() => toggle(file.id)} /></td>
                 <td><button className="link" onClick={() => setSelected(file)}>{file.originalName}</button>{file.title && <div className="sub">{file.title}</div>}</td>
@@ -108,6 +126,7 @@ export default function FilePage({ dbVersion }) {
             {files.length === 0 && <tr><td colSpan="6" className="empty">파일이 없습니다.</td></tr>}
           </tbody>
         </table>
+        <Pager paged={paged} />
         <div className="toolbar end">
           <label className="check"><input type="checkbox" checked={deleteFromStorage} onChange={(event) => setDeleteFromStorage(event.target.checked)} /> 스토리지 파일도 함께 삭제</label>
           <button className="danger" onClick={remove} disabled={checked.length === 0}>선택한 {checked.length}개 삭제</button>

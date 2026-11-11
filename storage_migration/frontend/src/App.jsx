@@ -5,28 +5,45 @@ import StorageServerPage from './pages/StorageServerPage.jsx';
 import FilePage from './pages/FilePage.jsx';
 import StorageBrowserPage from './pages/StorageBrowserPage.jsx';
 import AuditLogPage from './pages/AuditLogPage.jsx';
+import StatusBoard from './components/StatusBoard.jsx';
 
 const ApiDocsPage = lazy(() => import('./pages/ApiDocsPage.jsx'));
 
 const TABS = [
   { id: 'db', label: 'DB 연결' },
-  { id: 'storage', label: '스토리지 서버' },
-  { id: 'files', label: '파일 관리' },
-  { id: 'browser', label: '스토리지 탐색' },
-  { id: 'audit', label: '작업 로그' },
+  { id: 'storage', label: '스토리지 서버', needsDb: true },
+  { id: 'files', label: '파일 관리', needsDb: true },
+  { id: 'browser', label: '스토리지 탐색', needsDb: true },
+  { id: 'audit', label: '작업 로그', needsDb: true },
   { id: 'docs', label: 'API 문서' },
 ];
+
+function NeedDbConnection({ onGo }) {
+  return (
+    <section className="page">
+      <div className="panel need-db">
+        <p>연결된 DB가 없습니다.</p>
+        <p>DB 연결 탭에서 DB를 등록하고 연결 테스트를 한 뒤 이 DB 사용을 누르세요.</p>
+        <div className="actions">
+          <button type="button" className="go" onClick={onGo}>DB 연결로 가기</button>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function App() {
   const [tab, setTab] = useState('db');
   const [worker, setWorker] = useState(getWorker());
   const [activeDb, setActiveDb] = useState(null);
+  const [activeChecked, setActiveChecked] = useState(false);
   const [dbVersion, setDbVersion] = useState(0);
 
   const refreshActive = useCallback(() => {
     api.get('/api/db-connections/active')
       .then((data) => setActiveDb(data || null))
-      .catch(() => setActiveDb(null));
+      .catch(() => setActiveDb(null))
+      .finally(() => setActiveChecked(true));
   }, []);
 
   useEffect(() => {
@@ -39,6 +56,9 @@ export default function App() {
   };
 
   const dbChanged = () => setDbVersion((value) => value + 1);
+
+  const current = TABS.find((item) => item.id === tab);
+  const blocked = current?.needsDb && !activeDb;
 
   return (
     <div className="app">
@@ -60,14 +80,15 @@ export default function App() {
           </button>
         ))}
       </nav>
-      <h2 className="page-title">{TABS.find((item) => item.id === tab)?.label}</h2>
+      <StatusBoard tab={tab} activeDb={activeDb} reloadKey={dbVersion} />
+      <h2 className="page-title">{current?.label}</h2>
       <main>
-        {!worker.trim() && <div className="notice notice-warn">작업자를 입력하면 작업 로그에 이름이 남습니다.<br />비워 두면 익명으로 기록됩니다.</div>}
         {tab === 'db' && <DbConnectionPage onChanged={dbChanged} />}
-        {tab === 'storage' && <StorageServerPage dbVersion={dbVersion} />}
-        {tab === 'files' && <FilePage dbVersion={dbVersion} />}
-        {tab === 'browser' && <StorageBrowserPage dbVersion={dbVersion} />}
-        {tab === 'audit' && <AuditLogPage dbVersion={dbVersion} />}
+        {blocked && activeChecked && <NeedDbConnection onGo={() => setTab('db')} />}
+        {!blocked && tab === 'storage' && <StorageServerPage dbVersion={dbVersion} />}
+        {!blocked && tab === 'files' && <FilePage dbVersion={dbVersion} />}
+        {!blocked && tab === 'browser' && <StorageBrowserPage dbVersion={dbVersion} />}
+        {!blocked && tab === 'audit' && <AuditLogPage dbVersion={dbVersion} />}
         {tab === 'docs' && (
           <Suspense fallback={<p className="empty">API 문서를 불러오는 중…</p>}>
             <ApiDocsPage />

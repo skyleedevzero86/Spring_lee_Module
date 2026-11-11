@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, formatDate, toQuery } from '../api.js';
 import { Notice, useNotice } from '../hooks.jsx';
+import Pager, { usePaged } from '../components/Pager.jsx';
 
-const ACTION_LABELS = {
+export const ACTION_LABELS = {
   STORAGE_SERVER_C: '스토리지 등록',
   STORAGE_SERVER_U: '스토리지 수정',
   STORAGE_SERVER_D: '스토리지 삭제',
@@ -21,6 +22,7 @@ export default function AuditLogPage({ dbVersion }) {
   const [targetId, setTargetId] = useState('');
   const [logs, setLogs] = useState([]);
   const [notice, run] = useNotice();
+  const paged = usePaged(logs);
 
   const load = useCallback(async () => {
     const data = await run(() => api.get(`/api/audit-logs${toQuery({ targetType, worker, targetId, limit: 300 })}`));
@@ -54,7 +56,7 @@ export default function AuditLogPage({ dbVersion }) {
             <tr><th>일시</th><th>작업자</th><th>IP</th><th>작업</th><th>대상</th><th>내용</th></tr>
           </thead>
           <tbody>
-            {logs.map((log) => (
+            {paged.pageItems.map((log) => (
               <tr key={log.id}>
                 <td>{formatDate(log.workedAt)}</td>
                 <td>{log.worker}</td>
@@ -67,6 +69,7 @@ export default function AuditLogPage({ dbVersion }) {
             {logs.length === 0 && <tr><td colSpan="6" className="empty">로그가 없습니다.</td></tr>}
           </tbody>
         </table>
+        <Pager paged={paged} />
       </div>
     </section>
   );

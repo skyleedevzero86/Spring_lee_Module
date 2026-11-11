@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, formatDate } from '../api.js';
 import { Notice, StatusBadge, useNotice, useStorageServers } from '../hooks.jsx';
+import Pager, { usePaged } from '../components/Pager.jsx';
 import HelpHeading from '../components/HelpHeading.jsx';
 
 const DEFAULT_ENDPOINTS = { MINIO_CONSOLE: 'http://localhost:9001', MINIO: 'http://localhost:9000', S3: '' };
@@ -13,6 +14,7 @@ export default function StorageServerPage({ dbVersion }) {
   const [form, setForm] = useState(EMPTY);
   const [createBucket, setCreateBucket] = useState(false);
   const [notice, run, setNotice] = useNotice();
+  const paged = usePaged(servers);
 
   useEffect(() => {
     if (loadError) setNotice({ type: 'error', text: loadError });
@@ -74,7 +76,7 @@ export default function StorageServerPage({ dbVersion }) {
             <tr><th>이름</th><th>종류</th><th>주소</th><th>버킷</th><th>아이디</th><th>상태</th><th>확인 시각</th></tr>
           </thead>
           <tbody>
-            {servers.map((server) => (
+            {paged.pageItems.map((server) => (
               <tr key={server.id} className={form.id === server.id ? 'selected' : ''} onClick={() => select(server)}>
                 <td>{server.name}</td>
                 <td>{TYPE_LABELS[server.type] || server.type}</td>
@@ -88,6 +90,7 @@ export default function StorageServerPage({ dbVersion }) {
             {servers.length === 0 && <tr><td colSpan="7" className="empty">등록된 스토리지가 없습니다.<br />DB를 먼저 연결하세요.</td></tr>}
           </tbody>
         </table>
+        <Pager paged={paged} />
       </div>
       <div className="panel">
         <HelpHeading title={form.id ? '스토리지 수정' : '새 스토리지 등록'}>

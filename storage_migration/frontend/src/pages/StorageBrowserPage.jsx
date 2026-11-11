@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api, formatBytes, formatDate, toQuery } from '../api.js';
 import { Notice, ServerSelect, StatusBadge, useNotice, useStorageServers } from '../hooks.jsx';
+import Pager, { usePaged } from '../components/Pager.jsx';
 
 export default function StorageBrowserPage({ dbVersion }) {
   const [servers] = useStorageServers(dbVersion);
@@ -9,6 +10,7 @@ export default function StorageBrowserPage({ dbVersion }) {
   const [objects, setObjects] = useState([]);
   const [checked, setChecked] = useState([]);
   const [notice, run] = useNotice();
+  const paged = usePaged(objects);
 
   const load = async (id = serverId) => {
     if (!id) return;
@@ -65,7 +67,7 @@ DB에 등록된 기록도 함께 삭제됩니다.`)) return;
             </tr>
           </thead>
           <tbody>
-            {objects.map((object) => (
+            {paged.pageItems.map((object) => (
               <tr key={object.key}>
                 <td><input type="checkbox" checked={checked.includes(object.key)} onChange={() => toggle(object.key)} /></td>
                 <td>{object.name}<div className="sub mono">{object.key}</div></td>
@@ -77,6 +79,7 @@ DB에 등록된 기록도 함께 삭제됩니다.`)) return;
             {objects.length === 0 && <tr><td colSpan="5" className="empty">{serverId ? '파일이 없습니다.' : '스토리지를 선택하세요.'}</td></tr>}
           </tbody>
         </table>
+        <Pager paged={paged} />
         <div className="toolbar end">
           <span className="sub">선택 {checked.length}개</span>
           <button className="primary" onClick={importSelected} disabled={checked.length === 0}>선택 파일 DB에 등록</button>
