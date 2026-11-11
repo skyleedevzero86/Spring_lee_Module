@@ -150,6 +150,35 @@ class StoredFileServiceTest {
     }
 
     @Test
+    @DisplayName("DB 저장본 보기는 스토리지가 아니라 SM_STORED_FILE.CONTENT의 내용을 돌려준다")
+    void databaseContentReadsBlobInsteadOfStorage() throws IOException {
+        // given
+        byte[] bytes = "saved-copy".getBytes(StandardCharsets.UTF_8);
+        StoredFileResult uploaded = upload("b.txt", bytes);
+        service.save(new UpdateFileDetailCommand(uploaded.id(), null, null, null), ACTOR);
+        storage.objects.put(uploaded.objectKey(), "changed-later".getBytes(StandardCharsets.UTF_8));
+
+        // when
+        FileContent content = service.openDatabaseContent(uploaded.id());
+
+        // then
+        assertThat(content.stream().readAllBytes()).isEqualTo(bytes);
+        assertThat(content.size()).isEqualTo(bytes.length);
+    }
+
+    @Test
+    @DisplayName("DB에 아직 저장하지 않은 파일은 DB 저장본을 볼 수 없다")
+    void databaseContentRequiresSavedFile() {
+        // given
+        StoredFileResult uploaded = upload("c.txt", new byte[]{1, 2, 3});
+
+        // when / then
+        assertThatThrownBy(() -> service.openDatabaseContent(uploaded.id()))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        exception -> assertThat(exception.errorCode()).isEqualTo(ErrorCode.FILE_NOT_SAVED_IN_DB));
+    }
+
+    @Test
     @DisplayName("이미 등록한 스토리지 파일은 다시 가져와도 한 번만 등록한다")
     void importSkipsAlreadyRegisteredKeys() {
         // given

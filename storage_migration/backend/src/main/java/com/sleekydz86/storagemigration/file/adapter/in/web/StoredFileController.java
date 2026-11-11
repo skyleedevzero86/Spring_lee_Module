@@ -135,7 +135,17 @@ public class StoredFileController {
     @GetMapping("/{id}/content")
     public ResponseEntity<InputStreamResource> content(@PathVariable String id,
                                                        @RequestParam(defaultValue = "false") boolean download) {
-        FileContent content = query.openContent(id);
+        return respond(query.openContent(id), download);
+    }
+
+    @Operation(summary = "DB에 저장한 파일 내용 보기·다운로드 (SM_STORED_FILE.CONTENT)")
+    @GetMapping("/{id}/db-content")
+    public ResponseEntity<InputStreamResource> databaseContent(@PathVariable String id,
+                                                               @RequestParam(defaultValue = "false") boolean download) {
+        return respond(query.openDatabaseContent(id), download);
+    }
+
+    private static ResponseEntity<InputStreamResource> respond(FileContent content, boolean download) {
         MediaType mediaType = content.contentType() == null
                 ? MediaType.APPLICATION_OCTET_STREAM
                 : MediaType.parseMediaType(content.contentType());

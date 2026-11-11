@@ -201,6 +201,17 @@ public class StoredFileService implements UploadFileUseCase, ImportStorageFilesU
         }
     }
 
+    @Override
+    public FileContent openDatabaseContent(String id) {
+        StoredFile file = load(id);
+        if (!file.isSaved()) {
+            throw new BusinessException(ErrorCode.FILE_NOT_SAVED_IN_DB, file.originalName());
+        }
+        InputStream stream = repository.openContent(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_SAVED_IN_DB, file.originalName()));
+        return new FileContent(stream, repository.contentLength(id), file.contentType(), file.originalName());
+    }
+
     private StoredFile load(String id) {
         return repository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND, id));
     }

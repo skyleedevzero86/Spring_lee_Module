@@ -17,6 +17,7 @@ public enum ErrorCode {
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "F001", "파일 정보를 찾을 수 없습니다."),
     FILE_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "F002", "파일이 DB에 저장할 수 있는 크기를 넘습니다."),
     FILE_EMPTY(HttpStatus.BAD_REQUEST, "F003", "빈 파일은 업로드할 수 없습니다."),
+    FILE_NOT_SAVED_IN_DB(HttpStatus.CONFLICT, "F004", "DB에 저장된 파일 내용이 없습니다. 먼저 DB에 저장하세요."),
     CRYPTO_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "G001", "암호화 처리에 실패했습니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "G999", "서버 오류가 발생했습니다.");
 

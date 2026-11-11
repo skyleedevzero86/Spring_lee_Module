@@ -15,4 +15,6 @@ public interface FileQueryUseCase {
     List<StorageFileView> browseStorage(String storageServerId, String prefix);
 
     FileContent openContent(String id);
+
+    FileContent openDatabaseContent(String id);
 }

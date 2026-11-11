@@ -165,7 +165,12 @@ function FileDetail({ file, onChanged }) {
     if (result) onChanged(result.file);
   };
 
-  const contentUrl = `/api/files/${file.id}/content?v=${encodeURIComponent(file.updatedAt || '')}`;
+  const [source, setSource] = useState('storage');
+  const version = `v=${encodeURIComponent(file.updatedAt || '')}`;
+  const contentUrl = `/api/files/${file.id}/content?${version}`;
+  const databaseUrl = `/api/files/${file.id}/db-content?${version}`;
+  const saved = file.status === 'SAVED';
+  const previewUrl = source === 'db' && saved ? databaseUrl : contentUrl;
 
   return (
     <div>
@@ -192,7 +197,17 @@ function FileDetail({ file, onChanged }) {
         </div>
       </div>
       <h3>내용 보기</h3>
-      <Preview file={file} url={contentUrl} />
+      <div className="source-switch" role="group" aria-label="미리보기 위치">
+        <button type="button" className={source === 'storage' ? 'current' : ''} aria-pressed={source === 'storage'} onClick={() => setSource('storage')}>스토리지 원본</button>
+        <button type="button" className={source === 'db' && saved ? 'current' : ''} aria-pressed={source === 'db' && saved} disabled={!saved} onClick={() => setSource('db')}>DB 저장본</button>
+        {saved && source === 'db' && <a className="button" href={`${databaseUrl}&download=true`}>DB 저장본 다운로드</a>}
+      </div>
+      <p className="hint">
+        {source === 'db' && saved
+          ? 'SM_STORED_FILE.CONTENT 컬럼에 저장된 내용을 그대로 보여 줍니다.'
+          : saved ? '스토리지에 있는 원본을 보여 줍니다. DB 저장본을 누르면 DB에 저장된 내용을 볼 수 있습니다.' : 'DB에 저장하면 DB 저장본도 볼 수 있습니다.'}
+      </p>
+      <Preview key={previewUrl} file={file} url={previewUrl} />
     </div>
   );
 }
@@ -208,7 +223,7 @@ function Preview({ file, url }) {
     let alive = true;
     fetch(url)
       .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.ok) throw new Error(`응답 코드 ${response.status}`);
         return response.text();
       })
       .then((value) => alive && setText(value.length > 200000 ? `${value.slice(0, 200000)}\n…이후 내용은 생략했습니다.` : value))

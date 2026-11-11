@@ -1114,3 +1114,26 @@ button.danger:hover {
   margin: 0;
   border-top: 2px solid var(--line-strong);
 }
+
+.source-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin: 4px 0 8px;
+}
+
+.source-switch > button {
+  border-radius: 0;
+  margin-right: -1px;
+}
+
+.source-switch > button.current {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.source-switch > .button {
+  margin-left: auto;
+}
