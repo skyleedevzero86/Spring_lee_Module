@@ -7,24 +7,38 @@ Spring Boot **4.x** 학습용 모듈 모음입니다.
 
 ## 프로젝트
 
-| 경로                                     | 요약                                                                                                                                                                                        |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [loginstudy](./loginstudy)               | 회원·인증 플랫폼 축소판. OAuth2 Authorization Server, OIDC, SSO, Resource Server, Redis Session, PostgreSQL 튜닝을 **Spring Boot 4.1** 기준으로 구성합니다.                                 |
-| [catalogflow](./catalogflow)             | 상품 카탈로그 CQRS 플랫폼. Command/Query 분리, RabbitMQ Outbox, MongoDB Read Model, Redis Cache, LocalStack S3, Stub/Ollama/Gemini AI Enrichment를 **Spring Boot 4.1** 기준으로 구성합니다. |
-| [jvmboard](./jvmboard)                   | JVM 런타임 대시보드. MXBean으로 Java/힙/GC/가동시간을 조회하고 Vue 3 Dashboard로 표시합니다. <br>헥사고날·DDD·SOLID를 **Spring Boot 4.1 + Java 27** 기준으로 구성합니다.                    |
-| [concurrentlab](./concurrentlab)         | Concurrent API Lab. 고객 통합조회(프로필·주문·추천)를 Sequential vs `StructuredTaskScope`로 비교합니다. <br>헥사고날·Strategy·Vue 3· **Java 27 Preview** 기준입니다.                        |
-| [failurelab](./failurelab)               | 장애/Timeout Lab. 하위 작업 실패·타임아웃 시 SUCCESS/FAILED/CANCELLED와 예외 전파를 보여줍니다. <br>헥사고날·`StructuredTaskScope`·Vue 3· **Java 27 Preview** 기준입니다.                   |
-| [lazylab](./lazylab)                     | Lazy Constant Lab. `LazyConstant`로 AI 모델 설정을 최초 접근 시 한 번만 로드합니다. <br>헥사고날·JEP 531·Vue 3·**Java 27 Preview** 기준입니다.                                              |
-| [pemlab](./pemlab)                       | PEM Security Lab. `PEMEncoder`/`PEMDecoder`로 키 분석·RSA 키 쌍 생성을 보여줍니다. <br>헥사고날·JEP 538·Vue 3·**Java 27 Preview** 기준입니다.                                               |
-| [patternlab](./patternlab)               | Primitive Pattern Lab. `switch`/`instanceof` primitive pattern으로 숫자 정확 변환을 보여줍니다. <br> JEP 532·Vue 3(TS)·**Java 27 Preview** 기준입니다.                                      |
-| [jvmperf](./jvmperf)                     | JVM Performance Lab. 힙·G1 GC·스레드 모니터와 100MB 할당 전후 비교를 보여줍니다. <br>MXBean·Vue 3·**Java 27** 기준입니다.                                                                   |
-| [opspilot](./opspilot)                   | OpsPilot. Jev/Mock AI 장애 분류, Fault Simulator, Resilience4j, Redis 캐시, 통계 차트 UI. <br>Virtual Thread·Vue 3·**Spring Boot 4.1 + Java 25** 기준입니다.                                |
-| [searchai](./searchai)                   | RAG·SearXNG 스트리밍 채팅. Gateway(SSE/JWT) ↔ AI Service. ADMIN=PDF·검색엔진, USER=채팅만. <br>WebFlux·Vue 3·**Spring Boot 4.1 + Java 27** 기준입니다.                                      |
-| [product-recommend](./product-recommend) | 추천 엔진. 조건부 pgvector 검색·개인화 랭킹·RRF/MMR/Reranker·Evidence·Feedback·Outbox. <br>Vue 3·pnpm·**Spring Boot 4.1 + Java 25** 기준입니다.                                             |
+| 경로                                     | 요약                                                                                                                                                                                                                |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [loginstudy](./loginstudy)               | 회원·인증 플랫폼 축소판. OAuth2 Authorization Server, OIDC, SSO, Resource Server, Redis Session, PostgreSQL 튜닝을 **Spring Boot 4.1** 기준으로 구성합니다.                                                         |
+| [catalogflow](./catalogflow)             | 상품 카탈로그 CQRS 플랫폼. Command/Query 분리, RabbitMQ Outbox, MongoDB Read Model, Redis Cache, LocalStack S3, Stub/Ollama/Gemini AI Enrichment를 **Spring Boot 4.1** 기준으로 구성합니다.                         |
+| [jvmboard](./jvmboard)                   | JVM 런타임 대시보드. MXBean으로 Java/힙/GC/가동시간을 조회하고 Vue 3 Dashboard로 표시합니다. <br>헥사고날·DDD·SOLID를 **Spring Boot 4.1 + Java 27** 기준으로 구성합니다.                                            |
+| [concurrentlab](./concurrentlab)         | Concurrent API Lab. 고객 통합조회(프로필·주문·추천)를 Sequential vs `StructuredTaskScope`로 비교합니다. <br>헥사고날·Strategy·Vue 3· **Java 27 Preview** 기준입니다.                                                |
+| [failurelab](./failurelab)               | 장애/Timeout Lab. 하위 작업 실패·타임아웃 시 SUCCESS/FAILED/CANCELLED와 예외 전파를 보여줍니다. <br>헥사고날·`StructuredTaskScope`·Vue 3· **Java 27 Preview** 기준입니다.                                           |
+| [lazylab](./lazylab)                     | Lazy Constant Lab. `LazyConstant`로 AI 모델 설정을 최초 접근 시 한 번만 로드합니다. <br>헥사고날·JEP 531·Vue 3·**Java 27 Preview** 기준입니다.                                                                      |
+| [pemlab](./pemlab)                       | PEM Security Lab. `PEMEncoder`/`PEMDecoder`로 키 분석·RSA 키 쌍 생성을 보여줍니다. <br>헥사고날·JEP 538·Vue 3·**Java 27 Preview** 기준입니다.                                                                       |
+| [patternlab](./patternlab)               | Primitive Pattern Lab. `switch`/`instanceof` primitive pattern으로 숫자 정확 변환을 보여줍니다. <br> JEP 532·Vue 3(TS)·**Java 27 Preview** 기준입니다.                                                              |
+| [jvmperf](./jvmperf)                     | JVM Performance Lab. 힙·G1 GC·스레드 모니터와 100MB 할당 전후 비교를 보여줍니다. <br>MXBean·Vue 3·**Java 27** 기준입니다.                                                                                           |
+| [opspilot](./opspilot)                   | OpsPilot. Jev/Mock AI 장애 분류, Fault Simulator, Resilience4j, Redis 캐시, 통계 차트 UI. <br>Virtual Thread·Vue 3·**Spring Boot 4.1 + Java 25** 기준입니다.                                                        |
+| [searchai](./searchai)                   | RAG·SearXNG 스트리밍 채팅. Gateway(SSE/JWT) ↔ AI Service. ADMIN=PDF·검색엔진, USER=채팅만. <br>WebFlux·Vue 3·**Spring Boot 4.1 + Java 27** 기준입니다.                                                              |
+| [product-recommend](./product-recommend) | 추천 엔진. 조건부 pgvector 검색·개인화 랭킹·RRF/MMR/Reranker·Evidence·Feedback·Outbox. <br>Vue 3·pnpm·**Spring Boot 4.1 + Java 25** 기준입니다.                                                                     |
+| [storage_migration](./storage_migration) | 스토리지 이관 도구. MinIO·S3 파일을 화면에서 올리고 찾아보고, 파일 정보와 BLOB을 `SP_SM_*_CUD` 프로시저로 DB에 저장합니다. <br>Oracle·MySQL·PostgreSQL·작업 로그·React 19·**Spring Boot 4.1 + Java 25** 기준입니다. |
 
 ## Spring 학습 기록
 
 학습할 때마다 날짜·주제·실습 모듈을 이어서 적습니다.
+
+### 2026-11-11 — Storage Migration
+
+- **버전**: Spring Boot 4.1.2, Java 25, Maven, MyBatis 3.6.0, AWS SDK v2, springdoc-openapi 3.2.0, React 19, Vite 8
+- **모듈**: `storage_migration/backend` · `storage_migration/frontend`
+- **익힌 기능**
+  - MinIO , AWS S3를 같은 포트 인터페이스 뒤에 두고 서버별로 골라 쓰기
+  - Oracle·MySQL·PostgreSQL 접속 정보 등록, 연결 테스트, 사용할 DB를 고르면 테이블과 프로시저 준비
+  - 등록·수정·삭제·BLOB 저장을 DB별 프로시저로 처리하고 결과 받기
+  - 누가·어디서·언제·무엇을 했는지 기록
+  - 스토리지 원본과 DB BLOB의 SHA-256 비교, 아이디·비밀번호 AES 암호화
+  - React 19 화면 · Swagger 탭에서 작업자 이름을 헤더로 전달
+  - Oracle 프로시저는 작성만 하고 아직 검증 전
 
 ### 2026-09-28 — Product Recommend (pgvector + Spring AI)
 

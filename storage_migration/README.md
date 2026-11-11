@@ -3,12 +3,12 @@
 MinIO·S3에 있는 파일을 화면에서 올리고 찾아보고, **파일 정보와 파일 BLOB을 DB 프로시저로 저장**하는 이관 도구입니다.<br/>
 등록·수정·삭제·BLOB 저장은 모두 프로시저가 처리하고, 작업할 때마다 **작업자 · 어디서 · 언제 · 무엇을** 했는지 남깁니다.
 
-| 구분       | 기술                                                                                                     |
-| ---------- | -------------------------------------------------------------------------------------------------------- |
-| 백엔드     | Java 25, Spring Boot 4.1.2 (Maven), MyBatis 3.6.0, HikariCP, AWS SDK v2 2.57.12, springdoc-openapi 3.2.0 |
-| 프론트엔드 | React 19.3.1, Vite 8.3.7, swagger-ui-dist 5.34.0                                                         |
-| DB         | MySQL, PostgreSQL ,oracle(추후)                                                                          |
-| 스토리지   | MinIO S3 API, AWS S3                                                                                     |
+| 구분       | 기술                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| 백엔드     | Java 25, Spring Boot 4.1.2 Maven, MyBatis 3.6.0, HikariCP, AWS SDK v2 2.57.12, springdoc-openapi 3.2.0 |
+| 프론트엔드 | React 19.3.1, Vite 8.3.7, swagger-ui-dist 5.34.0                                                       |
+| DB         | MySQL, PostgreSQL ,oracle(추후)                                                                        |
+| 스토리지   | MinIO S3 API, AWS S3                                                                                   |
 
 DB·MinIO 설치나 Dockerfile은 포함하지 않습니다.<br/> 이미 떠 있는 DB와 스토리지에 접속 정보만 넣어 연동합니다.
 <br/>
